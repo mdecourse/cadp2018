@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="kmol.ico">
+<title>專題簡報：V-rep 在 Delta 3D Printer 虚實整合模擬上的應用</title>
+<link rel="stylesheet" href="css/reveal.css">
+<link rel="stylesheet" href="css/theme/serif.css" id="theme">
+<!-- Theme used for syntax highlighting of code -->
+<link rel="stylesheet" href="lib/css/zenburn.css">
+<!-- Printing and PDF exports -->
+<script>
+var link = document.createElement( 'link' );
+link.rel = 'stylesheet';
+link.type = 'text/css';
+link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+document.getElementsByTagName( 'head' )[0].appendChild( link );
+</script>
+<!--增加對於 IE 早期版本的支援 -->
+<!--[if lt IE 9]>
+<script src="lib/js/html5shiv.js"></script>
+<![endif]-->
+</head>
+<body>
+<style>
+/*內文使用 class="article" 來識別*/
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal ol,
+.reveal p {
+  font-family : "文泉驛微米黑", "新細明體";
+}
+
+.reveal .slides {
+  font-size : 3vh;
+}
+
+/*所有內文*/
+.reveal .article {
+  text-align : left;
+  font-size : 0.75em;
+}
+
+.reveal ol {
+  font-size : 0.9em;
+}
+
+/*頁碼*/
+.reveal .slide-number {
+  font-size : 24pt;
+  position : absolute;
+  right : 2em;
+  top : 1em;
+  background-color : transparent;
+}
+</style>
+<!-- 將整個投影片包在 "reveal" class 中 -->
+<div class="reveal">
+<!-- 將所有投影片包在 "slides" class 中 -->
+<div class="slides">
+<!-- 以下為投影片 -->
+<!-- 每一個 section 都代表一張投影片,  -->
+<!-- section 標註中的多 section 標註, 將往下垂直延伸 -->
+<section id="contents">
+<section>
+<h3>V-rep 在 Delta 3D 印表機</br>虚實整合模擬上的應用</h3>
+<hr>
+<h4 style="font-size:0.8em">組員</h4>
+<h4>40323218 李冠興</h4>
+<h4>40323230 張&nbsp;&nbsp;&nbsp;&nbsp;元</h4>
+<h4>40323231 張立昇</h4>
+<h4>40323250 詹偉志</h4>
+<br>
+<h4 style="font-size:0.8em">指導老師</h4>
+<h4>嚴家銘 教授</h4>
+<h4>李武鉦 教授</h4>
+</section>
+<section>
+<h3>摘要</h3>
+<hr>
+<img src="g2/system1.png"  width="75%">
+<p class="article">
+</p>
+</section>
+<section>
+<h3>研究動機</h3>
+<hr>
+<p class="article">
+一開始我們透過 Solvespace 研究八連桿機構，並利用 3D Printer 印製零件組裝，但是在印製的過程時常出現問題，導致花費許多時間和材料。
+</br></br>
+經過討論想到如果有一套能夠模擬 3D 列印的軟體，先經過這套軟體的模擬可以降低錯誤的發生率，也可以提升印製的品質。
+</p>
+</section>
+</section>
+<section id="vrep">
+<section>
+<h3>印表機實體</h3>
+<hr>
+<img src="g2/system2.png" width="70%">
+</section>
+<section>
+<h3>校正機台</h3>
+<hr>
+<img src="g2/40323231/50.png" width="55%">
+</section>
+</section>
+<section id="vrep">
+<section>
+<h3>虛擬控制</h3>
+<hr>
+<img src="g2/system3.png" width="75%">
+</section>
+<section>
+<h3>V-rep - 準備流程</h3>
+<hr>
+<p class="article">
+</p>
+<img src="g2/p8.png" width="80%">
+</section>
+<section>
+<h3>V-rep - 導入STL檔</h3>
+<hr>
+<img src="g2/v_rep/1.png" width="100%">
+</section>
+<section>
+<h3>V-rep - 加入旋轉軸</h3>
+<hr>
+<img src="g2/v_rep/3.png" width="100%">
+</section>
+<section>
+<h3>V-rep - 排序完成後</h3>
+<hr>
+<img src="g2/v_rep/2.png" width="60%">
+</section>
+<section>
+<h3>V-rep - 設定網格</h3>
+<hr>
+<img src="g2/v_rep/4.png" width="90%">
+</section>
+<section>
+<h3>V-rep - 機構模擬</h3>
+<hr>
+<p class="article">
+八連桿機構能在 V-rep 內做模擬，在未來若朝向 仿生機構 研究，使用此軟體是不錯的選擇。
+</p>
+<img src="g2/v_rep/eightbar_1.png" align="left" width="26%">
+<p align="center">
+</br></br>
+八連桿模擬 與 實際應用
+</p>
+<img src="g2/v_rep/8links.gif" width="40%">
+<img src="g2/solvespace_tutorial.gif" width="28%">
+</section>
+<section>
+<h3>V-rep - Printer校正</h3>
+<hr>
+<p class="article">
+虛擬的 Printer 和實體同樣需要校正，補正參數設定於控制程式內部。
+<br><br>    
+</p>
+<img src="g2/setposition.png" align="left" width="40%">
+<img src="g2/v_rep/example1.png" align="center" width="40%">
+</section>
+<section>
+<h3>V-rep - 內部 Scripts 控制</h3>
+<hr>
+<p class="article">
+V-rep 可透過內部 Scripts 編寫控制指令，但為了達到模擬列印的功能，需要與其他裝置或介面通訊。
+</br>
+</p>
+<img src="g2/v_rep/scripts1.png" align="center" width="70%">
+
+</section>
+<section>
+<h3>控制範例 1 - 可變電阻控制噴頭位置</h3>
+<hr>
+<p class="article">
+透過三個可變電阻的電阻值變化，控制 V-rep 內 Printer 噴頭的座標位置 。
+</p>
+<img src="g2/v_rep/example.png" align="center" width="24%">
+</section>
+<section>
+<h3>可變電阻控制噴頭位置 範例影片</h3>
+<hr>
+<p class="article">
+<br>
+<img src="g2/v_rep/v-rep control with arduino.gif" align="center" width="100%">
+</p>
+</section>
+<section>
+<h3>控制範例 2 - 六軸感測器控制噴頭位置 </h3>
+<hr>
+<p class="article" >
+這個控制採用 MPU6050 六軸加速度感測器，透過和前範例相同的方式，經由感測器的產生數值變化後，將數值傳送到 V-rep 內部，轉換成噴頭欲移動之座標點。
+</p>
+<img src="g2/6axis_arduino.png" align="center" width="100%">
+</section>
+<section>
+<h3>六軸感測器控制噴頭位置 範例影片</h3>
+<hr>
+<img src="g2/v_rep/vrep - printer  simulation  by CJMCU-116.gif"" align="center" width="100%">
+</section>
+<section>
+<h3>V-rep - 模擬列印流程</h3>
+<hr>
+<p class="article">
+
+</p>
+<img src="g2/v_rep/process.png" width="40%">
+</section>
+<section>
+<h3>V-rep - G-Code</h3>
+<hr>
+<p class="article">
+補正參數已設置於Pyquino內，不同的機型須配置相對應的補正值。
+</p>
+<img src="g2/gcode.png" width="76%">
+</section>
+<section>
+<h3>V-rep - Particles</h3>
+<hr>
+<p class="article">
+當噴頭經由 G-Code 得到路徑後，粒子會隨著噴頭的位置改變而產生。
+</p>
+<img src="g2/print1.png" width="80%">
+</section>
+<section>
+<h3>V-rep 列印成果影片</h3>
+<hr>
+<p class="article">
+</p>
+<img src="g2/v_rep/V-rep 3D-Printer simulation.gif" align="center" width="80%">
+</section>
+<section>
+<h3>結論 </h3>
+<hr>
+<p class="article">
+<img src="g2/printer.png"  align="right" width="26%">
+<br><br>
+當自己設計的機構能使用自己寫的程式來驗證，並能透過虛擬列印零件、組立完成加以模擬，完全不用消耗任何實體資源，能夠替我們省下許多修正錯誤的時間。
+<br><br>
+若在未來能夠透過 Pyslvs 設計出最佳的連桿尺寸，並搭配模擬列印及組裝之後的運動模擬，最後再利用 Printer 列印出來，就可以離最佳化設計更進一步發展。
+</p>
+<img src="g2/END.png"  align="left" width="70%">
+</section>
+</section>
+<section id="pyslvs">
+<section>
+<!--專案總覽-->
+<h3>套件開發</h3>
+<hr>
+<img src="g2/pyslvs/Organization_chart.png" width="120%">
+</section>
+<section>
+<!--大概功能介紹-->
+<img src="g2/pyslvs/cover.png">
+<p>
+Planar Linkages Simulation
+<br>
+Dimensional Synthesis
+</p>
+</section>
+<section>
+<!--比對-->
+<h3>與 Solvespace 比對</h3>
+<hr>
+<img src="g2/pyslvs/Evolution.png" width="150%">
+</section>
+<section>
+<!--主畫面-->
+<h3>平面連桿模擬</h3>
+<hr>
+<img src="g2/pyslvs/MainWindow.gif">
+</section>
+<section>
+<!--主畫面-->
+<h3>尺寸合成</h3>
+<hr>
+<img src="g2/pyslvs/algorithm.gif" width="80%">
+</section>
+<section>
+<!--格式-->
+<h3>轉入 V-rep</h3>
+<hr>
+<img src="g2/pyslvs/Format.png" width="150%">
+</section>
+<section>
+<!--格式-->
+<h3>倉儲</h3>
+<hr>
+<h4><a href="https://github.com/KmolYuan/Pyslvs-PyQt5">https://github.com/KmolYuan/Pyslvs-PyQt5</a></h4>
+<img src="g2/pyslvs/github.png" width="75%">
+</section>
+</section>
+</div>
+</div>
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+<script>
+// 啟動 Reveal
+Reveal.initialize({
+    slideNumber: 'c/t',
+    dependencies: [
+        { src: 'plugin/markdown/marked.js', async: true },
+        { src: 'plugin/markdown/markdown.js', async: true },
+        { src: 'plugin/notes/notes.js', async: true },
+        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); }}
+        ]
+    });
+</script>
+</body>
+</html>
