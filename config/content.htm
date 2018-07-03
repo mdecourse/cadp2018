@@ -102,11 +102,585 @@ window:setInterval(draw, 2)
 <h1>工具</h1>
 <h2>Solvespace</h2>
 <p><a href="http://solvespace.com">http://solvespace.com</a>&nbsp;</p>
-<h2>Onshape</h2>
+<p>參考資料:</p>
+<p><a href="http://mde.tw/2017springcd/blog/midterm-collaboration-evaluation.html">http://mde.tw/2017springcd/blog/midterm-collaboration-evaluation.html</a>&nbsp;</p>
+<p>平面多連桿機構模擬:</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import math
+import time
+# 利用 matplotlib 程式庫畫出 contour 輪廓
+import matplotlib.pyplot as plt
+ 
+class Coord(object):
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+ 
+    def __sub__(self,other):
+        # This allows you to substract vectors
+        return Coord(self.x-other.x,self.y-other.y)
+ 
+    def __repr__(self):
+        # Used to get human readable coordinates when printing
+        return "Coord(%f,%f)"%(self.x,self.y)
+ 
+    def length(self):
+        # Returns the length of the vector
+        return math.sqrt(self.x**2 + self.y**2)
+ 
+    def angle(self):
+        # Returns the vector's angle
+        return math.atan2(self.y,self.x)
+ 
+def normalize(coord):
+    return Coord(
+        coord.x/coord.length(),
+        coord.y/coord.length()
+        )
+ 
+def perpendicular(coord):
+    # Shifts the angle by pi/2 and calculate the coordinates
+    # using the original vector length
+    return Coord(
+        coord.length()*math.cos(coord.angle()+math.pi/2),
+        coord.length()*math.sin(coord.angle()+math.pi/2)
+        )
+ 
+ 
+# 點類別
+class Point(object):
+    # 起始方法
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+ 
+    # 加入 Eq 方法
+    def Eq(self, pt):
+        self.x = pt.x
+        self.y = pt.y
+ 
+    # 加入 setPoint 方法
+    def setPoint(self, px, py):
+        self.x = px
+        self.y = py
+ 
+    # 加上 distance(pt) 方法, 計算點到 pt 的距離
+    def distance(self, pt):
+        self.pt = pt
+        x = self.x - self.pt.x
+        y = self.y - self.pt.y
+        return math.sqrt(x * x + y * y)
+ 
+ 
+# Line 類別物件
+class Line(object):
+ 
+    # 起始方法
+    def __init__(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+        # 直線的第一點, 設為線尾
+        self.Tail = self.p1
+        # 直線組成的第二點, 設為線頭
+        self.Head = self.p2
+        # 直線的長度屬性
+        self.length = math.sqrt(math.pow(self.p2.x-self.p1.x, 2)+math.pow(self.p2.y-self.p1.y,2))
+ 
+    # setPP 以指定頭尾座標點來定義直線
+    def setPP(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+        self.Tail = self.p1
+        self.Head = self.p2
+        self.length = math.sqrt(math.pow(self.p2.x-self.p1.x, 2)+math.pow(self.p2.y-self.p1.y,2))
+ 
+    # setRT 方法 for Line, 應該已經確定 Tail 點, 然後以 r, t 作為設定 Head 的參考
+    def setRT(self, r, t):
+        self.r = r
+        self.t = t
+        x = self.r * math.cos(self.t)
+        y = self.r * math.sin(self.t)
+        self.Tail.Eq(self.p1)
+        self.Head.setPoint(self.Tail.x + x,self.Tail.y + y)
+ 
+    # getR 方法 for Line
+    def getR(self):
+        # x 分量與 y 分量
+        x = self.p1.x - self.p2.x
+        y = self.p1.y - self.p2.y
+        return math.sqrt(x * x + y * y)
+ 
+    # 根據定義 atan2(y,x), 表示 (x,y) 與 正 x 軸之間的夾角, 介於 pi 與 -pi 間
+    def getT(self):
+        x = self.p2.x - self.p1.x
+        y = self.p2.y - self.p1.y
+        if (math.fabs(x) &lt; math.pow(10,-100)):
+            if(y &lt; 0.0):
+                return (-math.pi/2)
+            else:
+                return (math.pi/2)
+        else:
+            return math.atan2(y, x)
+ 
+    # setTail 方法 for Line
+    def setTail(self, pt):
+        self.pt = pt
+        self.Tail.Eq(pt)
+        self.Head.setPoint(self.pt.x + self.x, self.pt.y + self.y)
+ 
+    # getHead 方法 for Line
+    def getHead(self):
+        return self.Head
+ 
+    def getTail(self):
+        return self.Tail
+ 
+ 
+class Link(Line):
+    def __init__(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+        self.length = math.sqrt(math.pow((self.p2.x - self.p1.x), 2) + math.pow((self.p2.y - self.p1.y), 2))
+ 
+ 
+class Triangle(object):
+    def __init__(self, p1, p2, p3):
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
+ 
+    def getLenp3(self):
+        p1 = self.p1
+        ret = p1.distance(self.p2)
+        return ret
+ 
+    def getLenp1(self):
+        p2 = self.p2
+        ret = p2.distance(self.p3)
+        return ret
+ 
+    def getLenp2(self):
+        p1 = self.p1
+        ret = p1.distance(self.p3)
+        return ret
+ 
+    # 角度
+    def getAp1(self):
+        ret = math.acos(((self.getLenp2() * self.getLenp2() + self.getLenp3() * self.getLenp3()) - self.getLenp1() * self.getLenp1()) / (2* self.getLenp2() * self.getLenp3()))
+        return ret
+ 
+    def getAp2(self):
+        ret =math.acos(((self.getLenp1() * self.getLenp1() + self.getLenp3() * self.getLenp3()) - self.getLenp2() * self.getLenp2()) / (2* self.getLenp1() * self.getLenp3()))
+        return ret
+ 
+    def getAp3(self):
+        ret = math.acos(((self.getLenp1() * self.getLenp1() + self.getLenp2() * self.getLenp2()) - self.getLenp3() * self.getLenp3()) / (2* self.getLenp1() * self.getLenp2()))
+        return ret
+ 
+    # ends Triangle def
+    # 透過三個邊長定義三角形
+    def setSSS(self, lenp3, lenp1, lenp2):
+        self.lenp3 = lenp3
+        self.lenp1 = lenp1
+        self.lenp2 = lenp2
+        self.ap1 = math.acos(((self.lenp2 * self.lenp2 + self.lenp3 * self.lenp3) - self.lenp1 * self.lenp1) / (2* self.lenp2 * self.lenp3))
+        self.ap2 = math.acos(((self.lenp1 * self.lenp1 + self.lenp3 * self.lenp3) - self.lenp2 * self.lenp2) / (2* self.lenp1 * self.lenp3))
+        self.ap3 = math.acos(((self.lenp1 * self.lenp1 + self.lenp2 * self.lenp2) - self.lenp3 * self.lenp3) / (2* self.lenp1 * self.lenp2))
+ 
+    # 透過兩個邊長與夾角定義三角形
+    def setSAS(self, lenp3, ap2, lenp1):
+        self.lenp3 = lenp3
+        self.ap2 = ap2
+        self.lenp1 = lenp1
+        self.lenp2 = math.sqrt((self.lenp3 * self.lenp3 + self.lenp1 * self.lenp1) - 2* self.lenp3 * self.lenp1 * math.cos(self.ap2))
+        #等於 SSS(AB, BC, CA)
+ 
+    def setSaSS(self, lenp2, lenp3, lenp1):
+        self.lenp2 = lenp2
+        self.lenp3 = lenp3
+        self.lenp1 = lenp1
+        if(self.lenp1 &gt; (self.lenp2 + self.lenp3)):
+        #CAB 夾角為 180 度, 三點共線且 A 介於 BC 之間
+            ret = math.pi
+        else :
+            # CAB 夾角為 0, 三點共線且 A 不在 BC 之間
+            if((self.lenp1 &lt; (self.lenp2 - self.lenp3)) or (self.lenp1 &lt; (self.lenp3 - self.lenp2))):
+                ret = 0.0
+            else :
+            # 透過餘絃定理求出夾角 CAB 
+                ret = math.acos(((self.lenp2 * self.lenp2 + self.lenp3 * self.lenp3) - self.lenp1 * self.lenp1) / (2 * self.lenp2 * self.lenp3))
+        return ret
+ 
+    # 取得三角形的三個邊長值
+    def getSSS(self):
+        temp = []
+        temp.append( self.getLenp1() )
+        temp.append( self.getLenp2() )
+        temp.append( self.getLenp3() )
+        return temp
+ 
+    # 取得三角形的三個角度值
+    def getAAA(self):
+        temp = []
+        temp.append( self.getAp1() )
+        temp.append( self.getAp2() )
+        temp.append( self.getAp3() )
+        return temp
+ 
+    # 取得三角形的三個角度與三個邊長
+    def getASASAS(self):
+        temp = []
+        temp.append(self.getAp1())
+        temp.append(self.getLenp1())
+        temp.append(self.getAp2())
+        temp.append(self.getLenp2())
+        temp.append(self.getAp3())
+        temp.append(self.getLenp3())
+        return temp
+ 
+    #2P 2L return mid P
+    def setPPSS(self, p1, p3, lenp1, lenp3):
+        temp = []
+        self.p1 = p1
+        self.p3 = p3
+        self.lenp1 = lenp1
+        self.lenp3 = lenp3
+ 
+        #bp3 is the angle beside p3 point, cp3 is the angle for line23, p2 is the output
+        line31 = Line(p3, p1)
+        self.lenp2 = line31.getR()
+        #self.lenp2 = self.p3.distance(self.p1)
+        #這裡是求角3
+        ap3 = math.acos(((self.lenp1 * self.lenp1 + self.lenp2 * self.lenp2) - self.lenp3 * self.lenp3) / (2 * self.lenp1 * self.lenp2))
+        #ap3 = math.acos(((self.lenp1 * self.lenp1 + self.lenp3 * self.lenp3) - self.lenp2 * self.lenp2) / (2 * self.lenp1 * self.lenp3))
+        bp3 = line31.getT()
+        cp3 = bp3 - ap3
+        temp.append(p3.x + self.lenp1*math.cos(cp3))#p2.x
+        temp.append(p3.y + self.lenp1*math.sin(cp3))#p2.y
+        return temp
+ 
+# 以上為相關函式物件的定義區
+# 全域變數
+midpt = Point(0, 0)
+tippt = Point(0, 0)
+contour = []
+ 
+# 幾何位置輸入變數
+x=10
+y=10
+r=10
+ 
+# 其他輸入變數
+theta = 0
+degree = math.pi/180.0
+dx = 2
+dy = 4
+ 
+#set p1.p2.p3.p4 position
+p1 =  Point(150,100)
+p2 =  Point(150,200)
+p3 =  Point(300,300)
+p4 =  Point(350,100)
+ 
+#create links
+line1 =  Link(p1,p2)
+line2 =  Link(p2,p3)
+line3 =  Link(p3,p4)
+line4 =  Link(p1,p4)
+line5 =  Link(p2,p4)
+ 
+link2_len = p2.distance(p3)
+link3_len = p3.distance(p4)
+ 
+triangle1 =  Triangle(p1,p2,p4)
+triangle2 =  Triangle(p2,p3,p4)
+ 
+def simulate():
+    global theta, midpt, oldpt
+    theta += dx
+    p2.x = p1.x + line1.length*math.cos(theta*degree)
+    p2.y = p1.y - line1.length*math.sin(theta*degree)
+    p3.x, p3.y = triangle2.setPPSS(p2,p4,link2_len,link3_len)
+    # 計算垂直單位向量
+    a = Coord(p3.x, p3.y)
+    b = Coord(p2.x, p2.y)
+    normal = perpendicular(normalize(a-b))
+    midpt.x = (p2.x + p3.x)/2
+    midpt.y = (p2.y + p3.y)/2
+    tippt.x = midpt.x + 150*normal.x
+    tippt.y = midpt.y + 150*normal.y
+    # 印出座標點
+    #print(round(tippt.x, 2), round(tippt.y, 2))
+    if theta &lt; 360:
+        contour.append((round(tippt.x, 2), round(tippt.y, 2)))
+ 
+for i in range(180):
+    simulate()
+# 印出 contour 
+#print(contour)
+ 
+x_list = [x for (x, y) in contour]
+y_list = [y for (x, y) in contour]
+ 
+plt.xlabel('x coordinate')
+plt.ylabel('y coordinate')
+ 
+plt.plot(x_list, y_list)
+plt.show()</pre>
+<p></p><h2>Onshape</h2>
 <p><a href="https://www.onshape.com/">https://www.onshape.com/</a>&nbsp;</p>
 <h2>V-rep</h2>
+<p>參考資料:</p>
 <p><a href="http://lab.kmol.info/2017fall/blog/kmol-2017-fall-event-driven-programming-design.html">http://lab.kmol.info/2017fall/blog/kmol-2017-fall-event-driven-programming-design.html</a>&nbsp;</p>
-<h2>Git</h2>
+<p><a href="http://mde.tw/2017springcd/blog/vrep-introduction.html">http://mde.tw/2017springcd/blog/vrep-introduction.html</a>&nbsp;</p>
+<p>One-link Robot Velocity Control</p>
+<p>One-link manipulator Python3 remote API program:</p>
+<p>Joint Properties -</p>
+<p>Torque/Force Mode.</p>
+<p>Moter enabled with Maximum torque setup and zero target velocity.</p>
+<p>Joint ObjectName: Revolute_joint</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import vrep
+import sys
+# child threaded script: 
+# 內建使用 port 19997 若要加入其他 port, 在  serve 端程式納入
+#simExtRemoteApiStart(19999)
+ 
+vrep.simxFinish(-1)
+ 
+clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
+ 
+if clientID!= -1:
+    print("Connected to remote server")
+else:
+    print('Connection not successful')
+    sys.exit('Could not connect')
+ 
+errorCode,Revolute_joint_handle=vrep.simxGetObjectHandle(clientID,'Revolute_joint',vrep.simx_opmode_oneshot_wait)
+ 
+if errorCode == -1:
+    print('Can not find left or right motor')
+    sys.exit()
+ 
+errorCode=vrep.simxSetJointTargetVelocity(clientID,Revolute_joint_handle,2, vrep.simx_opmode_oneshot_wait)
+ 
+while True:
+    choice = input("(e to exit, p to pause and enter to exec)&gt;")
+    if choice == "e":
+        print("exiting")
+        vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot_wait)
+        break
+    elif choice == "p":
+        vrep.simxPauseSimulation(clientID, vrep.simx_opmode_oneshot_wait)
+    else:
+        vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot_wait)</pre>
+<p>One-link Robot Position Control</p>
+<p>One-link manipulator Python3 remote API program:</p>
+<p>Joint Properties -</p>
+<p>Torque/Force Mode.</p>
+<p>Moter enabled with Maximum torque setup and zero target velocity.</p>
+<p>Joint ObjectName: Revolute_joint</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import vrep
+import sys, math
+# child threaded script: 
+# 內建使用 port 19997 若要加入其他 port, 在  serve 端程式納入
+#simExtRemoteApiStart(19999)
+ 
+vrep.simxFinish(-1)
+ 
+clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
+ 
+if clientID!= -1:
+    print("Connected to remote server")
+else:
+    print('Connection not successful')
+    sys.exit('Could not connect')
+ 
+errorCode,Revolute_joint_handle=vrep.simxGetObjectHandle(clientID,'Revolute_joint',vrep.simx_opmode_oneshot_wait)
+ 
+if errorCode == -1:
+    print('Can not find left or right motor')
+    sys.exit()
+ 
+deg = math.pi/180
+ 
+#errorCode=vrep.simxSetJointTargetVelocity(clientID,Revolute_joint_handle,2, vrep.simx_opmode_oneshot_wait)
+ 
+def setJointPosition(incAngle, steps):
+    for i  in range(steps):
+        errorCode=vrep.simxSetJointPosition(clientID, Revolute_joint_handle, i*incAngle*deg, vrep.simx_opmode_oneshot_wait)
+ 
+# 每步 10 度, 轉兩圈
+setJointPosition(10, 72)
+# 每步 1 度, 轉兩圈
+#setJointPosition(1, 720)
+# 每步 0.1  度, 轉720 步
+#setJointPosition(0.1, 720)
+ 
+'''
+三軸同動時
+simxPauseCommunication(clientID,1);
+simxSetJointPosition(clientID,joint1Handle,joint1Value,simx_opmode_oneshot);
+simxSetJointPosition(clientID,joint2Handle,joint2Value,simx_opmode_oneshot);
+simxSetJointPosition(clientID,joint3Handle,joint3Value,simx_opmode_oneshot);
+simxPauseCommunication(clientID,0);</pre>
+<p>Fourbar Linkage Velocity Control</p>
+<p>the First Joint properties -</p>
+<p>Torque/Force mode with motor enabled and target velocity 120 deg/s and maximum torque 50 N*m.</p>
+<p>Joint ObjectName: Revolute_joint</p>
+<p>All other joints with Torque/Force mode without motor enabled.</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import vrep
+import sys
+# child threaded script: 
+# 內建使用 port 19997 若要加入其他 port, 在  serve 端程式納入
+#simExtRemoteApiStart(19999)
+ 
+vrep.simxFinish(-1)
+ 
+clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
+ 
+if clientID!= -1:
+    print("Connected to remote server")
+else:
+    print('Connection not successful')
+    sys.exit('Could not connect')
+ 
+errorCode,Revolute_joint_handle=vrep.simxGetObjectHandle(clientID,'Revolute_joint',vrep.simx_opmode_oneshot_wait)
+ 
+if errorCode == -1:
+    print('Can not find left or right motor')
+    sys.exit()
+ 
+errorCode=vrep.simxSetJointTargetVelocity(clientID,Revolute_joint_handle,2, vrep.simx_opmode_oneshot_wait)
+ 
+while True:
+    choice = input("(e to exit, p to pause and enter to exec)&gt;")
+    if choice == "e":
+        print("exiting")
+        vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot_wait)
+        break
+    elif choice == "p":
+        vrep.simxPauseSimulation(clientID, vrep.simx_opmode_oneshot_wait)
+    else:
+        vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot_wait)</pre>
+<p>Fourbar Linkage Position Control</p>
+<p>V-rep Fourbar linkage remote API program:</p>
+<p>the First Joint properties -</p>
+<p>Passive mode with Hybrid operation.</p>
+<p>Position control (PID) with proportional parameter 0.1 without I and D controls.</p>
+<p>Joint ObjectName: Revolute_joint</p>
+<p>All other joints properties -</p>
+<p>Inverse kinematics mode with Hybrid operation.</p>
+<p>Position control (PID) with proportional parameter 0.1 without I and D controls.</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import vrep, math
+import sys
+# child threaded script: 
+#simExtRemoteApiStart(19999)
+ 
+vrep.simxFinish(-1)
+ 
+clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
+ 
+if clientID!= -1:
+    print("Connected to remote server")
+else:
+    print('Connection not successful')
+    sys.exit('Could not connect')
+ 
+errorCode,Revolute_joint_handle=vrep.simxGetObjectHandle(clientID,'Revolute_joint',vrep.simx_opmode_oneshot_wait)
+ 
+deg = math.pi/180
+ 
+if errorCode == -1:
+    print('Can not find left or right motor')
+    sys.exit()
+ 
+#errorCode=vrep.simxSetJointTargetVelocity(clientID,Revolute_joint_handle,2, vrep.simx_opmode_oneshot_wait)
+ 
+def setJointPosition(incAngle, steps):
+    for i  in range(steps):
+        errorCode=vrep.simxSetJointPosition(clientID, Revolute_joint_handle, i*incAngle*deg, vrep.simx_opmode_oneshot_wait)
+ 
+# 每步 10 度, 轉兩圈
+setJointPosition(10,72)</pre>
+<p><span>與上述四連桿位置控制流程相同, 但是由 Python3 remote API 程式負責控制 V-rep 的模擬啟動與模擬終止.</span></p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import vrep, math
+import sys
+# child threaded script: 
+#simExtRemoteApiStart(19999)
+ 
+vrep.simxFinish(-1)
+ 
+clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
+#啟動模擬
+vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
+ 
+if clientID!= -1:
+    print("Connected to remote server")
+else:
+    print('Connection not successful')
+    sys.exit('Could not connect')
+ 
+errorCode,Revolute_joint_handle=vrep.simxGetObjectHandle(clientID,'Revolute_joint',vrep.simx_opmode_oneshot_wait)
+ 
+deg = math.pi/180
+ 
+if errorCode == -1:
+    print('Can not find left or right motor')
+    sys.exit()
+ 
+#errorCode=vrep.simxSetJointTargetVelocity(clientID,Revolute_joint_handle,2, vrep.simx_opmode_oneshot_wait)
+ 
+def setJointPosition(incAngle, steps):
+    for i  in range(steps):
+        errorCode=vrep.simxSetJointPosition(clientID, Revolute_joint_handle, i*incAngle*deg, vrep.simx_opmode_oneshot_wait)
+    #終止模擬
+    vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot_wait)
+ 
+# 每步 10 度, 轉兩圈
+setJointPosition(10, 72)</pre>
+<p><span>兩軸同動資料傳送:</span></p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import vrep
+import sys, math
+# child threaded script: 
+# 內建使用 port 19997 若要加入其他 port, 在  serve 端程式納入
+#simExtRemoteApiStart(19999)
+ 
+vrep.simxFinish(-1)
+ 
+clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
+ 
+if clientID!= -1:
+    print("Connected to remote server")
+else:
+    print('Connection not successful')
+    sys.exit('Could not connect')
+ 
+errorCode,Revolute_joint_handle=vrep.simxGetObjectHandle(clientID,'Revolute_joint',vrep.simx_opmode_oneshot_wait)
+ 
+errorCode0,Revolute_joint_handle0=vrep.simxGetObjectHandle(clientID,'Revolute_joint0',vrep.simx_opmode_oneshot_wait)
+ 
+if errorCode == -1:
+    print('Can not find left or right motor')
+    sys.exit()
+ 
+deg = math.pi/180
+ 
+#vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
+ 
+for i in range(36):
+    vrep.simxSynchronous(clientID,True)
+    vrep.simxPauseCommunication(clientID,True)
+    vrep.simxSetJointPosition(clientID, Revolute_joint_handle, 10*deg, vrep.simx_opmode_oneshot)
+    vrep.simxSetJointPosition(clientID, Revolute_joint_handle0, 10*deg, vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+    vrep.simxSynchronous(clientID, False)
+ 
+    vrep.simxSynchronous(clientID,True)
+    vrep.simxPauseCommunication(clientID,True)
+    vrep.simxSetJointPosition(clientID, Revolute_joint_handle, -10*deg, vrep.simx_opmode_oneshot)
+    vrep.simxSetJointPosition(clientID, Revolute_joint_handle0, -10*deg, vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+    vrep.simxSynchronous(clientID, False)</pre>
+<p></p><h2>Git</h2>
 <p><a href="https://git-scm.com/">https://git-scm.com/</a>&nbsp;</p>
 <p><a href="https://git-scm.com/book/zh-tw/v2">https://git-scm.com/book/zh-tw/v2</a>&nbsp;</p>
 <p><a href="https://github.com/">https://github.com/</a>&nbsp;</p>
@@ -668,17 +1242,44 @@ for i in range(len(result)):
 <p>分組專題人員: 六人</p>
 <p><a href="https://cad.onshape.com/documents/5857da172c6401109cd59c40/w/3c12983596f0b655e19c8242/e/acc3c9a33b806c014834c490">Delta 3D 印表機</a> (<a href="https://www.onshape.com/">Onshape</a> 連結)</p>
 <p><img src="/images/delta3dPrinter.jpg" width="384" height="752" alt=""></p><h2>行走機構</h2>
+<p>主動式行走機構 - Active Walker - 以馬達驅動行走</p>
 <p>分組專題人員: 六人</p>
 <p><span>設計模擬: 三人</span></p>
 <p>組立製作: 三人</p>
 <p><a href="https://cad.onshape.com/documents/96be21438ae9f607a1911459/w/9587e92def580a31ac504bce/e/c02e184cc4dede90f6842cda">Jansen_walker</a> in <a href="https://www.onshape.com/">Onshape</a></p>
 <p><img src="/images/Jansen_walker.jpg" width="600" height="449" alt=""></p>
-<p></p><h2>鋼球運動系統</h2>
+<p>被動式行走機構 - Passive Walker - 以重力在斜坡或移動平台上行走</p>
+<p>分組專題人員: 六人&nbsp;</p>
+<p><a href="https://www.onshape.com/">Onshape</a> 設計, <a href="http://www.coppeliarobotics.com/">V-rep</a> 模擬</p>
+<p><a href="https://www.cs.cmu.edu/~hgeyer/Teaching/R16-899B/Papers/McGeer90IJRR.pdf">Passive dynamic walking</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Passive_dynamics">Passive dynamics</a></p>
+<p><a href="https://ieeexplore.ieee.org/abstract/document/945523/"><span ng-bind-html="vm.displayDocTitle" mathjax-bind="" class="ng-binding">Biped walking robot control with passive walker model by new VSC servo</span></a></p>
+<p><a href="https://www.eucognition.org/index.php?page=passive-dynamic-walkers"><span ng-bind-html="vm.displayDocTitle" mathjax-bind="" class="ng-binding">Passive dynamic walker</span></a></p>
+<p><a href="http://www-personal.umich.edu/~artkuo/Passive_Walk/passive_walking.html"><span ng-bind-html="vm.displayDocTitle" mathjax-bind="" class="ng-binding">Passive walking</span></a></p>
+<p><a href="http://groups.csail.mit.edu/robotics-center/public_papers/Tedrake04.pdf"><span ng-bind-html="vm.displayDocTitle" mathjax-bind="" class="ng-binding">Actuating a Simple 3D Passive Dynamic Walker</span></a></p>
+<p><a href="http://biomechanical.asmedigitalcollection.asme.org/article.aspx?articleid=1401236"><span id="scm6MainContent_lblArticleTitle">The Simplest Walking Model: Stability, Complexity, and Scaling</span></a></p>
+<p><span>專題目的: <a href="https://ir.nctu.edu.tw/bitstream/11536/44666/1/450801.pdf">創新步行輔助機構之設計與應用</a></span></p><h2>鋼球運動系統</h2>
 <p>分組專題人員: 六人</p>
 <p><span>設計模擬: 三人</span></p>
 <p>組立製作: 三人</p>
-<p><iframe width="560" height="315" src="https://www.youtube.com/embed/lQvcoOzmLqs" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>虛實手足球</h2><p>分組專題人員: 六人</p><p><span>設計模擬: 三人</span></p><p>組立製作: 三人</p><p><a href="https://en.wikipedia.org/wiki/Table_football">Table Football Machine</a></p><ol><li>利用 <a href="https://www.onshape.com/">Onshape</a> 或 <a href="http://solvespace.com">Solvespace</a> 設計所需零組件</li><li>將模型輸入 V-rep 後, 以 Lua 控制各零組件運動, 進行初步測試</li><li>利用 Python 程式, 透過網路, 由競賽雙方以 Rempte API 型式, 操控足球員動作</li><li>虛擬系統完成後, 設計外部實體電子控制系統, 操控虛擬足球員, 或反向運作</li></ol><p><iframe width="560" height="315" src="https://www.youtube.com/embed/0qE_a0wFRa0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>機械計時器</h2>
+<p><iframe width="560" height="315" src="https://www.youtube.com/embed/lQvcoOzmLqs" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>虛實手足球</h2>
+<p>分組專題人員: 六人</p>
+<p><span>設計模擬: 三人</span></p>
+<p>組立製作: 三人</p>
+<p><a href="https://en.wikipedia.org/wiki/Table_football">Table Football Machine</a></p>
+<ol>
+<li>利用 <a href="https://www.onshape.com/">Onshape</a> 或 <a href="http://solvespace.com">Solvespace</a> 設計所需零組件</li>
+<li>將模型輸入 V-rep 後, 以 Lua 控制各零組件運動, 進行初步測試</li>
+<li>利用 Python 程式, 透過網路, 由競賽雙方以 Rempte API 型式, 操控足球員動作</li>
+<li>虛擬系統完成後, 設計外部實體電子控制系統, 操控虛擬足球員, 或反向運作</li>
+</ol>
+<p><iframe width="560" height="315" src="https://www.youtube.com/embed/0qE_a0wFRa0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>機械計時器</h2>
 <p><span>分組專題人員: 六人</span></p>
 <p><span>設計模擬: 三人</span></p>
 <p>列印製作: 三人</p>
 <p><iframe width="560" height="315" src="https://www.youtube.com/embed/ir6KkKH0LJw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p>
+<h2>摺疊自行車</h2>
+<p>1/18 Scale folding bike 摺疊自行車模型設計製作</p>
+<p><span>分組專題人員: 六人</span></p>
+<p><iframe width="560" height="315" src="https://www.youtube.com/embed/mNPXl2QQNCk" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p>
+<h2>方程式賽車</h2><p>1/18 Scale Forumla Student Racing Car</p><p><span>分組專題人員: 六人</span></p><p><a href="https://www.formulastudent.de/uploads/media/FS-Rules_2018_V1.1.pdf">Forumla Student Rules 2018</a></p><p><iframe width="640px" height="480px" src="http://caesor.github.io/racing-game/"></iframe></p><p>參考資料:</p><p><a href="https://uwformula.com/">https://uwformula.com/</a>&nbsp;</p><p><a href="http://learnmech.com/">http://learnmech.com/</a>&nbsp;</p><p><a href="https://github.com/Caesor/racing-game">https://github.com/Caesor/racing-game</a>&nbsp;</p><p><a href="https://www.kingautos.net/212575">https://www.kingautos.net/212575</a>&nbsp;</p><p><a href="https://news.tvbs.com.tw/fun/670993">https://news.tvbs.com.tw/fun/670993</a>&nbsp;</p><p><a href="http://www.pme.nthu.edu.tw/files/14-1265-124394,r4641-1.php?Lang=zh-tw">http://www.pme.nthu.edu.tw/files/14-1265-124394,r4641-1.php?Lang=zh-tw</a>&nbsp;</p><p><a href="https://insight.udndata.com/ndapp/udntag/finance/Article?origid=9058520">https://insight.udndata.com/ndapp/udntag/finance/Article?origid=9058520</a>&nbsp;</p>
