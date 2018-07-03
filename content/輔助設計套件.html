@@ -1,0 +1,99 @@
+<!doctype html>
+<html><head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<title>CMSimply - Simple Cloud CMS in Python 3</title> <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
+
+<script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"></script>
+<link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+
+<!-- for LaTeX equations -->
+<script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
+<script type="text/javascript">
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+</script>
+<script src="./../static/fengari-web.js"></script>
+<script type="text/javascript" src="./../static/Cango-13v08-min.js"></script>
+<script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"></script>
+<script type="text/javascript" src="./../static/gearUtils-05.js"></script>
+<!-- for Brython -->
+<script src="https://scrum-3.github.io/web/brython/brython.js"></script>
+<script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
+
+<script src="./../static/jquery.js"></script>
+<script type="text/javascript">
+$(function(){
+    $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
+    $("ul.topmenu > li ul li:has(ul) > a").append('<div class="arrow-right"></div>');
+});
+</script>
+
+</head><header><h1>2018 電腦輔助設計實習教學手冊</h1> <confmenu>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="sitemap.html">Site Map</a></li>
+
+</ul>
+</confmenu></header>
+<div class='container'><nav><ul id='css3menu1' class='topmenu'><li><a href='簡介.html'>簡介</a><li><a href='工具.html'>工具</a><ul><li><a href='Solvespace.html'>Solvespace</a><li><a href='Onshape.html'>Onshape</a><li><a href='V-rep.html'>V-rep</a><li><a href='Git.html'>Git</a><li><a href='Leo Editor.html'>Leo Editor</a><li><a href='SCiTE.html'>SCiTE</a><li><a href='TinyCC.html'>TinyCC</a><li><a href='CMSimfly.html'>CMSimfly</a></li></ul><li><a href='應用範例.html'>應用範例</a><ul><li><a href='Tinkercad.html'>Tinkercad</a><li><a href='解讀網頁內容.html'>解讀網頁內容</a><li><a href='輔助設計套件.html'>輔助設計套件</a></li></ul><li><a href='分組專題.html'>分組專題</a><ul><li><a href='3D 列印機.html'>3D 列印機</a><li><a href='行走機構.html'>行走機構</a><li><a href='鋼球運動系統.html'>鋼球運動系統</a><li><a href='虛實手足球.html'>虛實手足球</a></li></ul></nav><section>解讀網頁內容 << <a href='解讀網頁內容.html'>Previous</a> <a href='分組專題.html'>Next</a> >> 分組專題<br /><h1>輔助設計套件</h1>
+<p>MCAD 套件</p>
+<p><a href="http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html">http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html</a>&nbsp;</p>
+<p>一般常見的機械電腦輔助設計套件包括法國<span>&nbsp;</span><a href="https://www.3ds.com/">Dassault</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.3ds.com/products-services/solidworks/">SolidWorks</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.3ds.com/products-services/catia/">Catia</a>, 美國<span>&nbsp;</span><a href="https://www.autodesk.com.tw/">AutoDesk</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.autodesk.com.tw/products/autocad/">AutoCAD</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Inventor</a>, 德國<span>&nbsp;</span><a href="https://www.siemens.com/tw/zh/home.html">Siemens</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/en/products/solid-edge/">Solid Edge</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/zh/products/nx/index.shtml">NX</a>, 美國<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/">PTC</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad">Creo</a>, 以及 2015 年推出的<span>&nbsp;</span><a href="https://www.onshape.com/">Onshape</a></p>
+<p>其他 MCAD: 俄羅斯的<span>&nbsp;</span><a href="http://www.tflex.com/resources/tflexcadst/download/">T-Flex</a></p>
+<p>如何進行電腦輔助機械設計專題</p>
+<p>1. 文獻回顧 (Literature Review) 階段 - 了解現存既有的研究成果, 確立專題定位與目標</p>
+<p>利用關鍵字搜尋相關文獻, 針對文獻回顧與探討, 初步定位專案性質以及從事專案的目標.</p>
+<p>例如, 關鍵字:<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=marble+machine+construction+set">marble machine construction set</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=linkage+synthesis">linkage synthesis</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+mechatronics">arduino mechatronics</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+servo+control">arduino servo control</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=lifter+linkage">lifter linkage</a>,<span>&nbsp;</span><a href="https://mde1a1.kmol.info/2017fall/raw/doing+a+literature+review.pdf?name=566d6dab70c1a7e7458a2c10c667416fea048170">Doing a Literature Review</a></p>
+<p>2. 整理可用工具, 擬想何謂機械?何謂設計?何謂電腦輔助?擬想所要解決的問題, 準備開始進行電腦輔助機械設計專題</p>
+<p>機械是一種功能明確的器物, 內容包含固體、流體與軟體元件, 彼此精巧配置結合, 可展現特定功能</p>
+<p>設計是一種表達, 而且是可以讓人依循, 逐步按照指示, 完成設計者預想的結果, 且表達方法包含文字、口語、2D、3D、數學與實體方法.</p>
+<p>文字結合 2D、3D、數學表達方法 - 設計專題報告</p>
+<p>利用口語簡報設計專題內容 - 設計專題報告影片</p>
+<p>電腦輔助 - 利用電腦的功能協助設計進行</p>
+<p>電腦功能 - 設計組態管理、運算、模擬、網路資訊傳輸、展示、協同</p>
+<p>例如:</p>
+<p>零組件繪圖工具:<span>&nbsp;</span><a href="http://solvespace.com/">Solvespace</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad/creo">PTC Creo Parametric</a><span>&nbsp;</span>(可從區網下載可攜網路認證版本) ,<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Autodesk Inventor</a><span>&nbsp;</span>(可自行申請免費學生版本或安裝系上提供之網路認證版本),<span>&nbsp;</span><a href="http://www.solidworks.com.cn/">Dassault Solidworks</a><span>&nbsp;</span>(可安裝學校提供之網路認證版本).</p>
+<p>協同工具:<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="https://a360.autodesk.com/">A360</a><span>&nbsp;</span>(自行申請帳號)</p>
+<p>模擬工具:<span>&nbsp;</span><a href="http://www.coppeliarobotics.com/">V-rep</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.blender.org/">Blender</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.tinkercad.com/">Tinkercad</a><span>&nbsp;</span>(自行申請帳號)</p>
+<p>控制與致動工具:<span>&nbsp;</span><a href="https://www.arduino.cc/">Arduino</a><span>&nbsp;</span>(包含在工具箱中),<span>&nbsp;</span><a href="http://www.instructables.com/id/Arduino-Servo-Motors/">Servo Motor</a><span>&nbsp;</span>(包含在工具箱中)</p>
+<p>3D 列印工具:<span>&nbsp;</span><a href="http://atom3dp.com/">Delta Printer</a><span>&nbsp;</span>(由系上實習設備提供)</p>
+<p>3. 根據專題定位與目標, 確定所要解決的問題項目, 逐一採模組式, 以協同流程, 透過自學、執行與檢討想像, 由簡入繁, 持續改進各模組的內容與功能, 在可用時間內, 解決各種問題, 終至完成專題, 達成目標.</p>
+<p>鋼球循環運動系統設計</p>
+<p>機構設計 - 軌道設計、鋼球提升與傳動系統設計、其他零組件設計</p>
+<p>致動與控制系統設計 - 電路設計、伺服馬達致動程式設計</p>
+<p>監控程式設計 - 以視窗程式啟動系統運作、傳回鋼球通過控制點訊息、計算運行距離與速度</p>
+<p>marble lift mechanism</p>
+<p>四連桿浮動桿通過三個位置的尺寸合成設計</p>
+<p>六連桿尺寸合成</p>
+<p>八連桿尺寸合成</p>
+<p><a href="http://www.eddiesmind.com/basic-lifting-mechanisms.html">http://www.eddiesmind.com/basic-lifting-mechanisms.html</a></p>
+<p>Linkage:<span>&nbsp;</span><a href="http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/">http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/</a><span>&nbsp;</span>(<a href="https://github.com/rectorsquid/Linkage">Source codes</a>)</p>
+<p>LinkageDesigner (an add-on package to Wolfram's Mathematica):<span>&nbsp;</span><a href="http://www.linkagedesigner.com/">http://www.linkagedesigner.com/</a>,<span>&nbsp;</span><a href="https://www.wolfram.com/products/applications/linkagedesigner/">https://www.wolfram.com/products/applications/linkagedesigner/</a></p>
+<p><a href="https://github.com/KmolYuan/Pyslvs-PyQt5">https://github.com/KmolYuan/Pyslvs-PyQt5</a></p>
+<br />解讀網頁內容 << <a href='解讀網頁內容.html'>Previous</a> <a href='分組專題.html'>Next</a> >> 分組專題</section></div></body></html>

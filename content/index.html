@@ -1,0 +1,165 @@
+<!doctype html>
+<html><head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<title>CMSimply - Simple Cloud CMS in Python 3</title> <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
+
+<script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"></script>
+<link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+
+<!-- for LaTeX equations -->
+<script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
+<script type="text/javascript">
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+</script>
+<script src="./../static/fengari-web.js"></script>
+<script type="text/javascript" src="./../static/Cango-13v08-min.js"></script>
+<script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"></script>
+<script type="text/javascript" src="./../static/gearUtils-05.js"></script>
+<!-- for Brython -->
+<script src="https://scrum-3.github.io/web/brython/brython.js"></script>
+<script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
+
+<script src="./../static/jquery.js"></script>
+<script type="text/javascript">
+$(function(){
+    $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
+    $("ul.topmenu > li ul li:has(ul) > a").append('<div class="arrow-right"></div>');
+});
+</script>
+
+</head><header><h1>2018 電腦輔助設計實習教學手冊</h1> <confmenu>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="sitemap.html">Site Map</a></li>
+
+</ul>
+</confmenu></header>
+<div class='container'><nav><ul id='css3menu1' class='topmenu'><li><a href='簡介.html'>簡介</a><li><a href='工具.html'>工具</a><ul><li><a href='Solvespace.html'>Solvespace</a><li><a href='Onshape.html'>Onshape</a><li><a href='V-rep.html'>V-rep</a><li><a href='Git.html'>Git</a><li><a href='Leo Editor.html'>Leo Editor</a><li><a href='SCiTE.html'>SCiTE</a><li><a href='TinyCC.html'>TinyCC</a><li><a href='CMSimfly.html'>CMSimfly</a></li></ul><li><a href='應用範例.html'>應用範例</a><ul><li><a href='Tinkercad.html'>Tinkercad</a><li><a href='解讀網頁內容.html'>解讀網頁內容</a><li><a href='輔助設計套件.html'>輔助設計套件</a></li></ul><li><a href='分組專題.html'>分組專題</a><ul><li><a href='3D 列印機.html'>3D 列印機</a><li><a href='行走機構.html'>行走機構</a><li><a href='鋼球運動系統.html'>鋼球運動系統</a><li><a href='虛實手足球.html'>虛實手足球</a></li></ul></nav><section> <a href='工具.html'>Next</a> >> 工具<br /><h1>簡介</h1>
+<p><a href="https://coggle.it/diagram/WzQ9tjCAbqepqWPI/t/%E9%9B%BB%E8%85%A6%E8%BC%94%E5%8A%A9%E8%A8%AD%E8%A8%88%E5%AF%A6%E7%BF%92/7ff3697b0db297209138e7f4ea4d3966eff611b8d3d228fc6aeda2fb112eaf50">2018 Fall 電腦輔助設計實習課程規劃心智圖</a>&nbsp;(under scrum1 At mde)</p>
+<p><canvas id="cango_gear" width="700" height="400"></canvas></p>
+<p>
+<script type="application/lua">
+js = require "js"
+window = js.global
+Array = js.global.Array
+canvas = window.document:getElementById("cango_gear")
+
+-- 將 lua table 轉為 new JavaScript Object 的方法
+-- e.g. Object{mykey="myvalue"}
+function Object(t)
+    local o = js.new(js.global.Object)
+    for k, v in pairs(t) do
+        assert(type(k) == "string" or js.typeof(k) == "symbol", "JavaScript only has string and symbol keys")
+        o[k] = v
+    end
+    return o
+end
+
+-- javascript constructor
+cgo = js.new(window.Cango, "cango_gear")
+--local path = js.new(window.Path)
+local shape = js.new(window.Shape)
+-- Javascript 變數
+shapedefs = window.shapeDefs
+-- 角度轉為徑度
+deg = math.pi/180
+
+function cangoGear(m, n, pa)
+    -- pr 為節圓半徑
+    pr = n*m/2 -- gear Pitch radius
+    data = js.new(window.createGearTooth, m, n, pa)
+    gearTooth = js.new(window.Path, data, Object{
+      fillColor= "#ddd0dd",
+      border= true,
+      strokeColor= "#606060" })
+    gearTooth:rotate(180/n) -- rotate gear 1/2 tooth to mesh
+    gear = gearTooth:dup()
+    for i = 1, n-1 do
+        newTooth = gearTooth:dup()
+        newTooth:rotate(360*i/n)
+        gear:appendPath(newTooth)
+    end
+
+    -- 建立軸孔
+    hr = 0.6*pr -- diameter of gear shaft
+    shaft = js.new(window.Path, shapedefs:circle(hr))
+    gear:appendPath(shaft)
+    return gear
+end
+
+n1 = 13
+n2 = 24
+n3 = 21
+reduced_ratio = 0.5
+-- 使用 80% 的畫布寬度
+m = 0.8*(canvas.width)/((n1+n2+n3)*reduced_ratio)
+cx = (canvas.width)/2
+cy = (canvas.height)/2
+-- 設定共同的壓力角
+pa = 25
+pr1 = n1*m/2
+pr2 = n2*m/2
+pr3 = n3*m/2
+-- 建立 gear
+gear1 = cangoGear(m, n1, pa)
+gear2 = cangoGear(m, n2, pa)
+gear3 = cangoGear(m, n3, pa)
+
+deg = math.pi/180
+rotate_speed = 12*deg
+
+function draw()
+    cgo:clearCanvas()
+
+    gear1.transform:translate(cx-(pr1+pr2)*reduced_ratio, cy)
+    gear1.transform:scale(reduced_ratio)
+    gear1.transform:rotate(0)
+    gear1:rotate(rotate_speed)
+    cgo:render(gear1)
+    
+    gear2.transform:translate(cx, cy)
+    gear2.transform:scale(reduced_ratio)
+    gear2.transform:rotate(180+(360/n2/2))
+    gear2:rotate(-(rotate_speed)*n1/n2)
+    cgo:render(gear2)
+    
+    gear3.transform:translate(cx+(pr2+pr3)*reduced_ratio, cy)
+    gear3.transform:scale(reduced_ratio)
+    gear3.transform:rotate(180+(360/n3/2)+(180+(360/n2/2))*n2/n3)
+    gear3:rotate((rotate_speed*n1/n2)*(n2/n3))
+    cgo:render(gear3)
+    print(gear1:toString())
+end
+
+--draw()
+window:setInterval(draw, 2)
+</script>
+</p>
+<br /> <a href='工具.html'>Next</a> >> 工具</section></div></body></html>

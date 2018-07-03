@@ -1,0 +1,117 @@
+<!doctype html>
+<html><head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<title>CMSimply - Simple Cloud CMS in Python 3</title> <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
+
+<script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"></script>
+<link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+
+<!-- for LaTeX equations -->
+<script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
+<script type="text/javascript">
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+</script>
+<script src="./../static/fengari-web.js"></script>
+<script type="text/javascript" src="./../static/Cango-13v08-min.js"></script>
+<script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"></script>
+<script type="text/javascript" src="./../static/gearUtils-05.js"></script>
+<!-- for Brython -->
+<script src="https://scrum-3.github.io/web/brython/brython.js"></script>
+<script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
+
+<script src="./../static/jquery.js"></script>
+<script type="text/javascript">
+$(function(){
+    $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
+    $("ul.topmenu > li ul li:has(ul) > a").append('<div class="arrow-right"></div>');
+});
+</script>
+
+</head><header><h1>2018 電腦輔助設計實習教學手冊</h1> <confmenu>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="sitemap.html">Site Map</a></li>
+
+</ul>
+</confmenu></header>
+<div class='container'><nav><ul id='css3menu1' class='topmenu'><li><a href='簡介.html'>簡介</a><li><a href='工具.html'>工具</a><ul><li><a href='Solvespace.html'>Solvespace</a><li><a href='Onshape.html'>Onshape</a><li><a href='V-rep.html'>V-rep</a><li><a href='Git.html'>Git</a><li><a href='Leo Editor.html'>Leo Editor</a><li><a href='SCiTE.html'>SCiTE</a><li><a href='TinyCC.html'>TinyCC</a><li><a href='CMSimfly.html'>CMSimfly</a></li></ul><li><a href='應用範例.html'>應用範例</a><ul><li><a href='Tinkercad.html'>Tinkercad</a><li><a href='解讀網頁內容.html'>解讀網頁內容</a><li><a href='輔助設計套件.html'>輔助設計套件</a></li></ul><li><a href='分組專題.html'>分組專題</a><ul><li><a href='3D 列印機.html'>3D 列印機</a><li><a href='行走機構.html'>行走機構</a><li><a href='鋼球運動系統.html'>鋼球運動系統</a><li><a href='虛實手足球.html'>虛實手足球</a></li></ul></nav><section>應用範例 << <a href='應用範例.html'>Previous</a> <a href='解讀網頁內容.html'>Next</a> >> 解讀網頁內容<br /><h1>Tinkercad</h1>
+<p>註冊 AutoDesk TinkerCAD 帳號</p>
+<p>為了在實體 Arduino Uno 控制板連線操作之前, 可以利用網際 Auduino 控制板與電子元件系統進行模擬, 請各學員至<span>&nbsp;</span><a href="https://www.tinkercad.com/">https://www.tinkercad.com</a><span>&nbsp;</span>登記帳號, 登入後選擇左上角的 TinkerCAD 標誌連結後, 選擇 Circuits 進入電路設計與模擬, 操作畫面如下圖所示:</p>
+<p><img src="./../images/circuits_on_tinkercad.png" width="700" height="373" alt=""></p>
+<p><span>接著選擇 Arudino Uno 控制板與 Servo Motor, 然後接上電源與地線, 並將控制訊號接到 Auduino Uno 控制板的 PWM pin 9, 利用 Code Editor 納入下列 Arduino 程式, 再利用 upload and run 將程式編譯後上傳到虛擬的 Arduino Uno 控制板上執行, 就可以模擬 Servo Motor 持續左右各旋轉 180 度. 操作畫面如下圖所示:&nbsp;</span></p>
+<p><span><img src="./../images/arduino_uno_servo_on_tinkercad.png" width="700" height="373" alt=""></span></p>
+<p>實體 Arduino Servo Motor Control</p>
+<p>完成上述以 TinkerCAD 模擬伺服馬達的接線與程式執行之後, 接著操作實體 Arduino 控制板與 Servo Motor 的控制, 首先利用電腦驅動 Arduino 控制板, 然後再利用板子上的脈衝寬度調變 (PWM, Pulse Width Modulation) 訊號控制伺服馬達, 之後再利用傳動機構與資訊控制介面, 製作所需的機電資整合系統. 電子電機系統除了可以方便感測各種物理化學量外, 還能夠快速傳遞感測與命令訊號, 而機械系統則透過機構元件的組合, 扮演傳遞功率致動或抵抗外力撞擊與疲勞破壞的角色, 至於資訊系統則用來整合各種資訊, 用更友善的人機介面, 讓使用者更有效能地運用機電資系統產品.</p>
+<p><a href="https://mde1a1.kmol.info/2017fall/raw/arduino-1.8.5-windows.zip?name=4aee6f20d04156a10d1739e40f54cda7ef1b0e0e">arduino-1.8.4-windows.zip</a><span>&nbsp;</span>下載 (或直至<span>&nbsp;</span><a href="https://www.arduino.cc/en/Main/Software">https://www.arduino.cc/en/Main/Software</a><span>&nbsp;</span>下載)</p>
+<p>控制台 - 硬體與音效 - 裝置管理員 利用解開的 arduino driver 程式驅動 Arduino Uno 控制板, 並取得 COM 對應號碼, 例如: COM7, 之後的 Arduino 編譯後可以透過此 COM 埠號將程式上傳到控制板上執行.</p>
+<p>MG996R 伺服馬達</p>
+<p>棕色線 GND</p>
+<p>紅色線 V+5V</p>
+<p>橘色線 PWM</p>
+<p>控制程式:</p>
+<pre class="brush:cpp;auto-links:false;toolbar:false" contenteditable="false">#include &lt;Servo.h&gt;
+Servo myservo;  // 建立一個 servo 物件，最多可建立 12個 servo
+
+int pos = 0;    // 設定 Servo 位置的變數
+
+void setup() {
+  myservo.attach(9);  // 將 servo 物件連接到 pin 9
+}
+
+void loop() {
+  // 正轉 180度
+  for (pos = 0; pos &lt;= 180; pos += 1) // 從 0 度旋轉到 180 度，每次 1 度 
+  {     
+    myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置
+    delay(15);                        // 等待 15ms 讓 servo 走到指定位置
+  }
+
+// 反轉 180度
+  for (pos = 180; pos &gt;= 0; pos -= 1) // 從 180 度旋轉到 0 度，每次 1 度 
+  { 
+    myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置
+
+delay(15);                        // 等待 15ms 讓 servo 走到指定位置
+  }
+}</pre>
+<p>參考資料:</p>
+<p><a href="https://link.springer.com/book/10.1007/978-1-4302-3241-4">Beginning Arduino</a></p>
+<p><a href="https://link.springer.com/book/10.1007/978-1-4302-3778-5">Beginning Arduino Programming</a></p>
+<p><a href="http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html">http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html</a></p>
+<p><a href="http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf">http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf</a></p>
+<p><a href="http://atceiling.blogspot.tw/2017/03/arduino.html">http://atceiling.blogspot.tw/2017/03/arduino.html</a></p>
+<p>Python, Arduino and VPython:</p>
+<p><a href="http://www.toptechboy.com/arduino-lessons/">http://www.toptechboy.com/arduino-lessons/</a></p>
+<p><a href="https://create.arduino.cc/projecthub/chanhj/magnetic-levitation-8c3ad0">Arduino Magnetic Levitation System</a></p>
+<p><a href="http://www.instructables.com/id/Magnetic-Levitation/">http://www.instructables.com/id/Magnetic-Levitation/</a><span>&nbsp;</span>(<a href="https://www.amazon.com/Electromagnet-Solenoid-Electric-Mechanical-Experimental/dp/B008OENGU0/">電磁鐵1</a>,<span>&nbsp;</span><a href="http://goods.ruten.com.tw/item/show?21620739232041">電磁鐵2</a>)</p>
+<p><a href="http://embeddedlaboratory.blogspot.tw/2017/04/design-gui-in-python-using-pyqt5.html">Arduino and PyQt5</a></p>
+<p><a href="http://embeddedlaboratory.blogspot.tw/search/label/Arduino">http://embeddedlaboratory.blogspot.tw/search/label/Arduino</a></p>
+<p><a href="http://electronut.in/plotting-real-time-data-from-arduino-using-python/">Arduino and Matplotlib</a></p>
+<br />應用範例 << <a href='應用範例.html'>Previous</a> <a href='解讀網頁內容.html'>Next</a> >> 解讀網頁內容</section></div></body></html>

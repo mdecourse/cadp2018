@@ -1,0 +1,684 @@
+<h1>簡介</h1>
+<p><a href="https://coggle.it/diagram/WzQ9tjCAbqepqWPI/t/%E9%9B%BB%E8%85%A6%E8%BC%94%E5%8A%A9%E8%A8%AD%E8%A8%88%E5%AF%A6%E7%BF%92/7ff3697b0db297209138e7f4ea4d3966eff611b8d3d228fc6aeda2fb112eaf50">2018 Fall 電腦輔助設計實習課程規劃心智圖</a>&nbsp;(under scrum1 At mde)</p>
+<p><canvas id="cango_gear" width="700" height="400"></canvas></p>
+<p>
+<script type="application/lua">
+js = require "js"
+window = js.global
+Array = js.global.Array
+canvas = window.document:getElementById("cango_gear")
+
+-- 將 lua table 轉為 new JavaScript Object 的方法
+-- e.g. Object{mykey="myvalue"}
+function Object(t)
+    local o = js.new(js.global.Object)
+    for k, v in pairs(t) do
+        assert(type(k) == "string" or js.typeof(k) == "symbol", "JavaScript only has string and symbol keys")
+        o[k] = v
+    end
+    return o
+end
+
+-- javascript constructor
+cgo = js.new(window.Cango, "cango_gear")
+--local path = js.new(window.Path)
+local shape = js.new(window.Shape)
+-- Javascript 變數
+shapedefs = window.shapeDefs
+-- 角度轉為徑度
+deg = math.pi/180
+
+function cangoGear(m, n, pa)
+    -- pr 為節圓半徑
+    pr = n*m/2 -- gear Pitch radius
+    data = js.new(window.createGearTooth, m, n, pa)
+    gearTooth = js.new(window.Path, data, Object{
+      fillColor= "#ddd0dd",
+      border= true,
+      strokeColor= "#606060" })
+    gearTooth:rotate(180/n) -- rotate gear 1/2 tooth to mesh
+    gear = gearTooth:dup()
+    for i = 1, n-1 do
+        newTooth = gearTooth:dup()
+        newTooth:rotate(360*i/n)
+        gear:appendPath(newTooth)
+    end
+
+    -- 建立軸孔
+    hr = 0.6*pr -- diameter of gear shaft
+    shaft = js.new(window.Path, shapedefs:circle(hr))
+    gear:appendPath(shaft)
+    return gear
+end
+
+n1 = 13
+n2 = 24
+n3 = 21
+reduced_ratio = 0.5
+-- 使用 80% 的畫布寬度
+m = 0.8*(canvas.width)/((n1+n2+n3)*reduced_ratio)
+cx = (canvas.width)/2
+cy = (canvas.height)/2
+-- 設定共同的壓力角
+pa = 25
+pr1 = n1*m/2
+pr2 = n2*m/2
+pr3 = n3*m/2
+-- 建立 gear
+gear1 = cangoGear(m, n1, pa)
+gear2 = cangoGear(m, n2, pa)
+gear3 = cangoGear(m, n3, pa)
+
+deg = math.pi/180
+rotate_speed = 12*deg
+
+function draw()
+    cgo:clearCanvas()
+
+    gear1.transform:translate(cx-(pr1+pr2)*reduced_ratio, cy)
+    gear1.transform:scale(reduced_ratio)
+    gear1.transform:rotate(0)
+    gear1:rotate(rotate_speed)
+    cgo:render(gear1)
+    
+    gear2.transform:translate(cx, cy)
+    gear2.transform:scale(reduced_ratio)
+    gear2.transform:rotate(180+(360/n2/2))
+    gear2:rotate(-(rotate_speed)*n1/n2)
+    cgo:render(gear2)
+    
+    gear3.transform:translate(cx+(pr2+pr3)*reduced_ratio, cy)
+    gear3.transform:scale(reduced_ratio)
+    gear3.transform:rotate(180+(360/n3/2)+(180+(360/n2/2))*n2/n3)
+    gear3:rotate((rotate_speed*n1/n2)*(n2/n3))
+    cgo:render(gear3)
+    print(gear1:toString())
+end
+
+--draw()
+window:setInterval(draw, 2)
+</script>
+</p>
+<h1>工具</h1>
+<h2>Solvespace</h2>
+<p><a href="http://solvespace.com">http://solvespace.com</a>&nbsp;</p>
+<h2>Onshape</h2>
+<p><a href="https://www.onshape.com/">https://www.onshape.com/</a>&nbsp;</p>
+<h2>V-rep</h2>
+<p><a href="http://lab.kmol.info/2017fall/blog/kmol-2017-fall-event-driven-programming-design.html">http://lab.kmol.info/2017fall/blog/kmol-2017-fall-event-driven-programming-design.html</a>&nbsp;</p>
+<h2>Git</h2>
+<p><a href="https://git-scm.com/">https://git-scm.com/</a>&nbsp;</p>
+<p><a href="https://git-scm.com/book/zh-tw/v2">https://git-scm.com/book/zh-tw/v2</a>&nbsp;</p>
+<p><a href="https://github.com/">https://github.com/</a>&nbsp;</p>
+<p><a href="http://www.globallegalchronicle.com/microsofts-7-5-billion-acquisition-of-github/">http://www.globallegalchronicle.com/microsofts-7-5-billion-acquisition-of-github/</a>&nbsp;</p>
+<p>git 常用指令</p>
+<p>git add .</p>
+<p>新增所有改版內容</p>
+<p>git commit -m "提交訊息, 用來辨識版本"</p>
+<p>在近端提交改版內容</p>
+<p>git push</p>
+<p>將近端改版內容推送到遠端</p>
+<p>git pull</p>
+<p>拉下遠端新版本內容, 在 fossil scm 使用 fossil update</p>
+<p>git log</p>
+<p>查驗 git 提交推送紀錄</p>
+<p>git status</p>
+<p>查驗狀態</p>
+<p>git 新增提交推送的身分綁定</p>
+<p>以 scrum1@mde.tw 註冊帳號為 scrum-1 為例:</p>
+<p>git config --global user.name "scrum-1"</p>
+<p>git config --global user.email "scrum1@mde.tw"</p>
+<p>若網路直接連線過慢, 可以透過 proxy 執行 git</p>
+<p>git config --global http.proxy http://proxy.kmol.info:3128</p>
+<p>以上的 git config 會將設定存入 Y:/home/.gitconfig 檔案中</p>
+<p>接下來測試以協同模式共同編輯純文字檔, 以第一組為例:</p>
+<p>bg1.txt 內容先由組長建立, 並加入自己的學號後, 新增提交推送到遠端倉儲,</p>
+<p>之後其他組員以 git clone 各組倉儲後, 開始在近端同時編輯 bg1.txt, 然後加入自己的 學號後, 從近端進行新增提交與推送, 將改版資料傳到遠端, 此時只有第一位組員可以直接 提交推送, 其他組員則必須先 git pull 後處理衝突, 合併資料後, 再提交推送.</p>
+<h2>Leo Editor</h2>
+<p><a href="http://www.leoeditor.com/">http://www.leoeditor.com/</a>&nbsp;</p>
+<h2>SCiTE</h2>
+<p><a href="https://www.scintilla.org/SciTE.html">https://www.scintilla.org/SciTE.html</a>&nbsp;</p>
+<h2>TinyCC</h2>
+<p><a href="https://bellard.org/tcc/">https://bellard.org/tcc/</a>&nbsp;</p>
+<h2>CMSimfly</h2>
+<p><a href="https://github.com/chiamingyen/cmsimfly">https://github.com/chiamingyen/cmsimfly</a></p>
+<h1>應用範例</h1>
+<p>學習電腦輔助設計實習的目的在利用數位科技技術解決問題, 所謂數位科技技術包括程式套件、網路與資料庫等元件的組合.</p>
+<p>基本流程為:</p>
+<ol>
+<li>如何取得、傳輸並處理資料?</li>
+<li>如何儲存資料?</li>
+<li>如何呈現資料?</li>
+</ol>
+<p>處理資料的過程依賴數學模型、演算法與資料結構</p>
+<p>取得與傳輸資料則依賴網路</p>
+<p>至於資料的呈現則涵蓋 2D/3D 動態與靜態格式處理</p>
+<ol>
+<li>Tinkercad Circuit - Arduino 控制卡與電子致動與感測元件線路的模擬</li>
+<li>網頁資料解讀與任務派送 - 計算機程式對特定格式資料的分析後, 依照循環與亂數流程進行分配</li>
+<li>V-rep - 利用各種程式介面與延伸程式的設計, 讓使用者設計、控制並模擬各種機器人模型</li>
+<li>輔助設計套件 - 利用計算機圖學與視窗介面, 讓使用者完成設想中的機械零組件設計, 並進行功能模擬</li>
+</ol>
+<h2>Tinkercad</h2>
+<p>註冊 AutoDesk TinkerCAD 帳號</p>
+<p>為了在實體 Arduino Uno 控制板連線操作之前, 可以利用網際 Auduino 控制板與電子元件系統進行模擬, 請各學員至<span>&nbsp;</span><a href="https://www.tinkercad.com/">https://www.tinkercad.com</a><span>&nbsp;</span>登記帳號, 登入後選擇左上角的 TinkerCAD 標誌連結後, 選擇 Circuits 進入電路設計與模擬, 操作畫面如下圖所示:</p>
+<p><img src="/images/circuits_on_tinkercad.png" width="700" height="373" alt=""></p>
+<p><span>接著選擇 Arudino Uno 控制板與 Servo Motor, 然後接上電源與地線, 並將控制訊號接到 Auduino Uno 控制板的 PWM pin 9, 利用 Code Editor 納入下列 Arduino 程式, 再利用 upload and run 將程式編譯後上傳到虛擬的 Arduino Uno 控制板上執行, 就可以模擬 Servo Motor 持續左右各旋轉 180 度. 操作畫面如下圖所示:&nbsp;</span></p>
+<p><span><img src="/images/arduino_uno_servo_on_tinkercad.png" width="700" height="373" alt=""></span></p>
+<p>實體 Arduino Servo Motor Control</p>
+<p>完成上述以 TinkerCAD 模擬伺服馬達的接線與程式執行之後, 接著操作實體 Arduino 控制板與 Servo Motor 的控制, 首先利用電腦驅動 Arduino 控制板, 然後再利用板子上的脈衝寬度調變 (PWM, Pulse Width Modulation) 訊號控制伺服馬達, 之後再利用傳動機構與資訊控制介面, 製作所需的機電資整合系統. 電子電機系統除了可以方便感測各種物理化學量外, 還能夠快速傳遞感測與命令訊號, 而機械系統則透過機構元件的組合, 扮演傳遞功率致動或抵抗外力撞擊與疲勞破壞的角色, 至於資訊系統則用來整合各種資訊, 用更友善的人機介面, 讓使用者更有效能地運用機電資系統產品.</p>
+<p><a href="https://mde1a1.kmol.info/2017fall/raw/arduino-1.8.5-windows.zip?name=4aee6f20d04156a10d1739e40f54cda7ef1b0e0e">arduino-1.8.4-windows.zip</a><span>&nbsp;</span>下載 (或直至<span>&nbsp;</span><a href="https://www.arduino.cc/en/Main/Software">https://www.arduino.cc/en/Main/Software</a><span>&nbsp;</span>下載)</p>
+<p>控制台 - 硬體與音效 - 裝置管理員 利用解開的 arduino driver 程式驅動 Arduino Uno 控制板, 並取得 COM 對應號碼, 例如: COM7, 之後的 Arduino 編譯後可以透過此 COM 埠號將程式上傳到控制板上執行.</p>
+<p>MG996R 伺服馬達</p>
+<p>棕色線 GND</p>
+<p>紅色線 V+5V</p>
+<p>橘色線 PWM</p>
+<p>控制程式:</p>
+<pre class="brush:cpp;auto-links:false;toolbar:false" contenteditable="false">#include &lt;Servo.h&gt;
+Servo myservo;  // 建立一個 servo 物件，最多可建立 12個 servo
+
+int pos = 0;    // 設定 Servo 位置的變數
+
+void setup() {
+  myservo.attach(9);  // 將 servo 物件連接到 pin 9
+}
+
+void loop() {
+  // 正轉 180度
+  for (pos = 0; pos &lt;= 180; pos += 1) // 從 0 度旋轉到 180 度，每次 1 度 
+  {     
+    myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置
+    delay(15);                        // 等待 15ms 讓 servo 走到指定位置
+  }
+
+// 反轉 180度
+  for (pos = 180; pos &gt;= 0; pos -= 1) // 從 180 度旋轉到 0 度，每次 1 度 
+  { 
+    myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置
+
+delay(15);                        // 等待 15ms 讓 servo 走到指定位置
+  }
+}</pre>
+<p>參考資料:</p>
+<p><a href="https://link.springer.com/book/10.1007/978-1-4302-3241-4">Beginning Arduino</a></p>
+<p><a href="https://link.springer.com/book/10.1007/978-1-4302-3778-5">Beginning Arduino Programming</a></p>
+<p><a href="http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html">http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html</a></p>
+<p><a href="http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf">http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf</a></p>
+<p><a href="http://atceiling.blogspot.tw/2017/03/arduino.html">http://atceiling.blogspot.tw/2017/03/arduino.html</a></p>
+<p>Python, Arduino and VPython:</p>
+<p><a href="http://www.toptechboy.com/arduino-lessons/">http://www.toptechboy.com/arduino-lessons/</a></p>
+<p><a href="https://create.arduino.cc/projecthub/chanhj/magnetic-levitation-8c3ad0">Arduino Magnetic Levitation System</a></p>
+<p><a href="http://www.instructables.com/id/Magnetic-Levitation/">http://www.instructables.com/id/Magnetic-Levitation/</a><span>&nbsp;</span>(<a href="https://www.amazon.com/Electromagnet-Solenoid-Electric-Mechanical-Experimental/dp/B008OENGU0/">電磁鐵1</a>,<span>&nbsp;</span><a href="http://goods.ruten.com.tw/item/show?21620739232041">電磁鐵2</a>)</p>
+<p><a href="http://embeddedlaboratory.blogspot.tw/2017/04/design-gui-in-python-using-pyqt5.html">Arduino and PyQt5</a></p>
+<p><a href="http://embeddedlaboratory.blogspot.tw/search/label/Arduino">http://embeddedlaboratory.blogspot.tw/search/label/Arduino</a></p>
+<p><a href="http://electronut.in/plotting-real-time-data-from-arduino-using-python/">Arduino and Matplotlib</a></p>
+<h2>解讀網頁內容</h2>
+<p>Onshape 教學影片</p>
+<p><a href="https://www.onshape.com/video">https://www.onshape.com/video</a><span>&nbsp;</span>為 Onshpae 官方網站所提供的教學影片區, 請各班以每人兩個影片的方式進行分配, 分別以中文說明影片內容操作過程, 並上傳到個人的 Vimeo 與 Youtube 影片區.</p>
+<p>預計分配的影片:</p>
+<p><a href="https://www.onshape.com/videos/topic/tech-tips">https://www.onshape.com/videos/topic/tech-tips</a></p>
+<p><a href="https://www.onshape.com/videos/topic/intro-to-cad">https://www.onshape.com/videos/topic/intro-to-cad</a></p>
+<p><a href="https://www.onshape.com/videos/topic/tutorials">https://www.onshape.com/videos/topic/tutorials</a></p>
+<p><a href="https://www.onshape.com/videos/topic/essential-training">https://www.onshape.com/videos/topic/essential-training</a></p>
+<p><a href="https://www.onshape.com/videos/topic/drawings">https://www.onshape.com/videos/topic/drawings</a></p>
+<p>請各組討論:</p>
+<p>如何分配影片?如何集合管理各學員所上傳的教學操作影片?</p>
+<p>利用 Python3, urllib 與 bs4 解讀上述網頁內容, 取出各影片的連結, 然後放入數列中:</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">from urllib.request import urlopen
+from bs4 import BeautifulSoup
+
+file = urlopen("https://www.onshape.com/videos/topic/intro-to-cad")
+#print(file.read().decode())
+
+soup = BeautifulSoup(file, 'html.parser')
+
+links = []
+for link in soup.find_all('a', href=True):
+    if 'videos' in link['href']:
+        if 'https' in link['href']:
+            #print(link['href'])
+            links.append(link['href'])
+result = list(set(links))
+for i in range(len(result)):
+    print(i+1, result[i])</pre>
+<p><span>納入上述所有影片網頁連結, 利用程式取出各影片的連結字串:</span></p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false"># 從 urllib 模組中導入 urlopen
+from urllib.request import urlopen
+# 從 bs4 模組中導入 BeautirulSoup
+from bs4 import BeautifulSoup
+
+# 將要取出影片連結的網站 url,  放入數列中, 取名為 sources
+sources = ['https://www.onshape.com/videos/topic/tech-tips', 'https://www.onshape.com/videos/topic/intro-to-cad', 'https://www.onshape.com/videos/topic/tutorials', 'https://www.onshape.com/videos/topic/essential-training', 'https://www.onshape.com/videos/topic/drawings']
+
+#tech-tips (60)
+#intro-to-cad (26)
+#tutorials (14)
+#essential-training (6)
+#drawings (5)
+
+# 按照網頁中的影片數計算, 共有 111 部影片, 但分類中可能重複
+print(60+26+14+6+5)
+
+# 設 links 變數與空數列對應
+links = []
+# 利用 for 迴圈一一取出各網頁的 html 後, 進行解讀
+# 只取出有 videos 與 https 連結的資料, 但避開 all 與 topic 類別連結
+for url in sources:
+    file = urlopen(url)
+    # 因為 urlopen 出來的資料為二位元檔案, 若要讀出列印
+    # 必須要先 decode() 為字串
+    #print(file.read().decode())
+    # 使用 html 解讀各連結的網頁內容
+    soup = BeautifulSoup(file, 'html.parser')
+    # 利用 Beautifulsoup 物件中的 find_all 方法尋找 anchor
+    for link in soup.find_all('a', href=True):
+        # 從各 anchor 資料篩選所需的影片連結
+        if ('videos' or 'https') in link['href']:
+            if 'all' not in link['href']:
+                if 'topic' not in link['href']:
+                    links.append(link['href'])
+                    
+# 為避免列出重複資料, 將數列轉為集合後, 再轉回數列
+result = list(set(links))
+# 逐一列出所取得的影片連結
+for i in range(len(result)):
+    print(i+1, result[i])</pre>
+<p>以上述程式為基礎, 從取得的影片數列, 每位學員由亂數產生的影片順序, 前後各取一個影片作為分配, 結果如下:</p>
+<p>甲班 Onshape 影片分配名單:</p>
+<ul>
+<li>40223109</li>
+<li><a href="https://www.onshape.com/videos/first-look-at-onshape">https://www.onshape.com/videos/first-look-at-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-part-mobile">https://www.onshape.com/videos/lets-make-a-part-mobile</a></li>
+<li>40423160</li>
+<li><a href="https://www.onshape.com/videos/lets-make-an-assembly">https://www.onshape.com/videos/lets-make-an-assembly</a></li>
+<li><a href="https://www.onshape.com/videos/lets-import-a-drawing">https://www.onshape.com/videos/lets-import-a-drawing</a></li>
+<li>40423219</li>
+<li><a href="https://www.onshape.com/videos/lets-collaborate">https://www.onshape.com/videos/lets-collaborate</a></li>
+<li><a href="https://www.onshape.com/videos/split-face">https://www.onshape.com/videos/split-face</a></li>
+<li>40423246</li>
+<li><a href="https://www.onshape.com/videos/creating-custom-features-06-15-17">https://www.onshape.com/videos/creating-custom-features-06-15-17</a></li>
+<li><a href="https://www.onshape.com/videos/getting-started-with-openbom-in-onshape">https://www.onshape.com/videos/getting-started-with-openbom-in-onshape</a></li>
+<li>40523101</li>
+<li><a href="https://www.onshape.com/videos/furniture-industry">https://www.onshape.com/videos/furniture-industry</a></li>
+<li><a href="https://www.onshape.com/videos/assembly-mates">https://www.onshape.com/videos/assembly-mates</a></li>
+<li>40523102</li>
+<li><a href="https://www.onshape.com/videos/collaboration-simultaneous-editing">https://www.onshape.com/videos/collaboration-simultaneous-editing</a></li>
+<li><a href="https://www.onshape.com/videos/understanding-full-cloud-cad-and-onshape">https://www.onshape.com/videos/understanding-full-cloud-cad-and-onshape</a></li>
+<li>40523104</li>
+<li><a href="https://www.onshape.com/videos/intro-assemblies-and-subassemblies">https://www.onshape.com/videos/intro-assemblies-and-subassemblies</a></li>
+<li><a href="https://www.onshape.com/videos/assembly-design-case-study">https://www.onshape.com/videos/assembly-design-case-study</a></li>
+<li>40523105</li>
+<li><a href="https://www.onshape.com/videos/working-with-existing-cad-files">https://www.onshape.com/videos/working-with-existing-cad-files</a></li>
+<li><a href="https://www.onshape.com/videos/using-mate-connectors">https://www.onshape.com/videos/using-mate-connectors</a></li>
+<li>40523106</li>
+<li><a href="https://www.onshape.com/videos/essentials-multipart">https://www.onshape.com/videos/essentials-multipart</a></li>
+<li><a href="https://www.onshape.com/videos/3-ways-collaborate">https://www.onshape.com/videos/3-ways-collaborate</a></li>
+<li>40523107</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-part">https://www.onshape.com/videos/lets-make-a-part</a></li>
+<li><a href="https://www.onshape.com/videos/assemble-an-arbor-press">https://www.onshape.com/videos/assemble-an-arbor-press</a></li>
+<li>40523108</li>
+<li><a href="https://www.onshape.com/videos/direct-editing-with-variables">https://www.onshape.com/videos/direct-editing-with-variables</a></li>
+<li><a href="https://www.onshape.com/videos/machine-part-design-case-study">https://www.onshape.com/videos/machine-part-design-case-study</a></li>
+<li>40523109</li>
+<li><a href="https://www.onshape.com/videos/edit-history-and-versioning">https://www.onshape.com/videos/edit-history-and-versioning</a></li>
+<li><a href="https://www.onshape.com/videos/advanced-assembly-motion-06-22-17">https://www.onshape.com/videos/advanced-assembly-motion-06-22-17</a></li>
+<li>40523111</li>
+<li><a href="https://www.onshape.com/videos/sketching-basics-onshape">https://www.onshape.com/videos/sketching-basics-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/advanced-modeling-tools-and-workflows">https://www.onshape.com/videos/advanced-modeling-tools-and-workflows</a></li>
+<li>40523112</li>
+<li><a href="https://www.onshape.com/videos/merging-branches">https://www.onshape.com/videos/merging-branches</a></li>
+<li><a href="https://www.onshape.com/videos/drawings">https://www.onshape.com/videos/drawings</a></li>
+<li>40523113</li>
+<li><a href="https://www.onshape.com/videos/creating-versions">https://www.onshape.com/videos/creating-versions</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-direct-editing-04-17-15">https://www.onshape.com/videos/onshape-direct-editing-04-17-15</a></li>
+<li>40523114</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-sprocket">https://www.onshape.com/videos/lets-make-a-sprocket</a></li>
+<li><a href="https://www.onshape.com/videos/managing-custom-properties-06-27-17">https://www.onshape.com/videos/managing-custom-properties-06-27-17</a></li>
+<li>40523115</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-pipe-flange">https://www.onshape.com/videos/lets-make-a-pipe-flange</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-teams">https://www.onshape.com/videos/onshape-teams</a></li>
+<li>40523116</li>
+<li><a href="https://www.onshape.com/videos/fillet-and-chamfer">https://www.onshape.com/videos/fillet-and-chamfer</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-documents-ui">https://www.onshape.com/videos/essentials-documents-ui</a></li>
+<li>40523117</li>
+<li><a href="https://www.onshape.com/videos/mixing-units-and-fractions">https://www.onshape.com/videos/mixing-units-and-fractions</a></li>
+<li><a href="https://www.onshape.com/videos/designing-fixtures">https://www.onshape.com/videos/designing-fixtures</a></li>
+<li>40523118</li>
+<li><a href="https://www.onshape.com/videos/lofting-in-onshape">https://www.onshape.com/videos/lofting-in-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/multipart-design">https://www.onshape.com/videos/multipart-design</a></li>
+<li>40523119</li>
+<li><a href="https://www.onshape.com/videos/creating-weldments">https://www.onshape.com/videos/creating-weldments</a></li>
+<li><a href="https://www.onshape.com/videos/3-examples-of-using-the-onshape-app">https://www.onshape.com/videos/3-examples-of-using-the-onshape-app</a></li>
+<li>40523120</li>
+<li><a href="https://www.onshape.com/videos/lets-import-an-assembly">https://www.onshape.com/videos/lets-import-an-assembly</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-mobile">https://www.onshape.com/videos/onshape-mobile</a></li>
+<li>40523121</li>
+<li><a href="https://www.onshape.com/videos/design-in-context">https://www.onshape.com/videos/design-in-context</a></li>
+<li><a href="https://www.onshape.com/videos/feedback-tool">https://www.onshape.com/videos/feedback-tool</a></li>
+<li>40523122</li>
+<li><a href="https://www.onshape.com/videos/software-overview-and-user-interface-tour">https://www.onshape.com/videos/software-overview-and-user-interface-tour</a></li>
+<li><a href="https://www.onshape.com/videos/revolve">https://www.onshape.com/videos/revolve</a></li>
+<li>40523123</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-nut">https://www.onshape.com/videos/lets-make-a-nut</a></li>
+<li><a href="https://www.onshape.com/videos/using-supplier-models">https://www.onshape.com/videos/using-supplier-models</a></li>
+<li>40523124</li>
+<li><a href="https://www.onshape.com/videos/tips-and-tricks-for-the-loft-command-06-20-17">https://www.onshape.com/videos/tips-and-tricks-for-the-loft-command-06-20-17</a></li>
+<li><a href="https://www.onshape.com/videos/import-export">https://www.onshape.com/videos/import-export</a></li>
+<li>40523125</li>
+<li><a href="https://www.onshape.com/videos/measure-tool">https://www.onshape.com/videos/measure-tool</a></li>
+<li><a href="https://www.onshape.com/videos/shell-and-draft">https://www.onshape.com/videos/shell-and-draft</a></li>
+<li>40523126</li>
+<li><a href="https://www.onshape.com/videos/plastic-design-and-consumer-product-case-study">https://www.onshape.com/videos/plastic-design-and-consumer-product-case-study</a></li>
+<li><a href="https://www.onshape.com/videos/android">https://www.onshape.com/videos/android</a></li>
+<li>40523127</li>
+<li><a href="https://www.onshape.com/videos/medical-device-case-study">https://www.onshape.com/videos/medical-device-case-study</a></li>
+<li><a href="https://www.onshape.com/videos/assemble-gears">https://www.onshape.com/videos/assemble-gears</a></li>
+<li>40523128</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-drawing">https://www.onshape.com/videos/lets-make-a-drawing</a></li>
+<li><a href="https://www.onshape.com/videos/designing-linkages-in-context">https://www.onshape.com/videos/designing-linkages-in-context</a></li>
+<li>40523129</li>
+<li><a href="https://www.onshape.com/videos/documents-and-tabs">https://www.onshape.com/videos/documents-and-tabs</a></li>
+<li><a href="https://www.onshape.com/videos/lets-import-a-part">https://www.onshape.com/videos/lets-import-a-part</a></li>
+<li>40523130</li>
+<li><a href="https://www.onshape.com/videos/3-examples-of-using-onshape-to-collaborate">https://www.onshape.com/videos/3-examples-of-using-onshape-to-collaborate</a></li>
+<li><a href="https://www.onshape.com/videos/parametric-modeling-and-feature-based-modeling">https://www.onshape.com/videos/parametric-modeling-and-feature-based-modeling</a></li>
+<li>40523131</li>
+<li><a href="https://www.onshape.com/videos/essentials-assembly-basics">https://www.onshape.com/videos/essentials-assembly-basics</a></li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-frame-guide">https://www.onshape.com/videos/lets-make-a-frame-guide</a></li>
+<li>40523132</li>
+<li><a href="https://www.onshape.com/videos/sketch-constraints">https://www.onshape.com/videos/sketch-constraints</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-part-studios">https://www.onshape.com/videos/essentials-part-studios</a></li>
+<li>40523133</li>
+<li><a href="https://www.onshape.com/videos/design-intent">https://www.onshape.com/videos/design-intent</a></li>
+<li><a href="https://www.onshape.com/videos/secrets-of-the-shift-key">https://www.onshape.com/videos/secrets-of-the-shift-key</a></li>
+<li>40523134</li>
+<li><a href="https://www.onshape.com/videos/direct-editing-onshape">https://www.onshape.com/videos/direct-editing-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-creating-a-drawing">https://www.onshape.com/videos/onshape-cad-tutorial-creating-a-drawing</a></li>
+<li>40523135</li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly">https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly</a></li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-u-bolt">https://www.onshape.com/videos/lets-make-a-u-bolt</a></li>
+<li>40523136</li>
+<li><a href="https://www.onshape.com/videos/basic-part-design">https://www.onshape.com/videos/basic-part-design</a></li>
+<li><a href="https://www.onshape.com/videos/compare">https://www.onshape.com/videos/compare</a></li>
+<li>40523137</li>
+<li><a href="https://www.onshape.com/videos/onshape-documents">https://www.onshape.com/videos/onshape-documents</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-drawings-webinar">https://www.onshape.com/videos/onshape-drawings-webinar</a></li>
+<li>40523138</li>
+<li><a href="https://www.onshape.com/videos/starting-a-design">https://www.onshape.com/videos/starting-a-design</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-onshape-mobile">https://www.onshape.com/videos/essentials-onshape-mobile</a></li>
+<li>40523139</li>
+<li><a href="https://www.onshape.com/videos/loft">https://www.onshape.com/videos/loft</a></li>
+<li><a href="https://www.onshape.com/videos/split">https://www.onshape.com/videos/split</a></li>
+<li>40523140</li>
+<li><a href="https://www.onshape.com/videos/sweep">https://www.onshape.com/videos/sweep</a></li>
+<li><a href="https://www.onshape.com/videos/sheet-metal">https://www.onshape.com/videos/sheet-metal</a></li>
+<li>40523141</li>
+<li><a href="https://www.onshape.com/videos/extrude">https://www.onshape.com/videos/extrude</a></li>
+<li><a href="https://www.onshape.com/videos/dimensions-and-constraints">https://www.onshape.com/videos/dimensions-and-constraints</a></li>
+<li>40523142</li>
+<li><a href="https://www.onshape.com/videos/dimensions-and-constraints">https://www.onshape.com/videos/dimensions-and-constraints</a></li>
+<li><a href="https://www.onshape.com/videos/extrude">https://www.onshape.com/videos/extrude</a></li>
+<li>40523143</li>
+<li><a href="https://www.onshape.com/videos/sheet-metal">https://www.onshape.com/videos/sheet-metal</a></li>
+<li><a href="https://www.onshape.com/videos/sweep">https://www.onshape.com/videos/sweep</a></li>
+<li>40523144</li>
+<li><a href="https://www.onshape.com/videos/split">https://www.onshape.com/videos/split</a></li>
+<li><a href="https://www.onshape.com/videos/loft">https://www.onshape.com/videos/loft</a></li>
+<li>40523145</li>
+<li><a href="https://www.onshape.com/videos/essentials-onshape-mobile">https://www.onshape.com/videos/essentials-onshape-mobile</a></li>
+<li><a href="https://www.onshape.com/videos/starting-a-design">https://www.onshape.com/videos/starting-a-design</a></li>
+<li>40523146</li>
+<li><a href="https://www.onshape.com/videos/onshape-drawings-webinar">https://www.onshape.com/videos/onshape-drawings-webinar</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-documents">https://www.onshape.com/videos/onshape-documents</a></li>
+<li>40523147</li>
+<li><a href="https://www.onshape.com/videos/compare">https://www.onshape.com/videos/compare</a></li>
+<li><a href="https://www.onshape.com/videos/basic-part-design">https://www.onshape.com/videos/basic-part-design</a></li>
+<li>40523148</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-u-bolt">https://www.onshape.com/videos/lets-make-a-u-bolt</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly">https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly</a></li>
+</ul>
+<p>乙班 Onshape 影片分配名單:</p>
+<ul>
+<li>40023139</li>
+<li><a href="https://www.onshape.com/videos/first-look-at-onshape">https://www.onshape.com/videos/first-look-at-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-part-mobile">https://www.onshape.com/videos/lets-make-a-part-mobile</a></li>
+<li>40223208</li>
+<li><a href="https://www.onshape.com/videos/lets-make-an-assembly">https://www.onshape.com/videos/lets-make-an-assembly</a></li>
+<li><a href="https://www.onshape.com/videos/lets-import-a-drawing">https://www.onshape.com/videos/lets-import-a-drawing</a></li>
+<li>40371215</li>
+<li><a href="https://www.onshape.com/videos/lets-collaborate">https://www.onshape.com/videos/lets-collaborate</a></li>
+<li><a href="https://www.onshape.com/videos/split-face">https://www.onshape.com/videos/split-face</a></li>
+<li>40371235</li>
+<li><a href="https://www.onshape.com/videos/creating-custom-features-06-15-17">https://www.onshape.com/videos/creating-custom-features-06-15-17</a></li>
+<li><a href="https://www.onshape.com/videos/getting-started-with-openbom-in-onshape">https://www.onshape.com/videos/getting-started-with-openbom-in-onshape</a></li>
+<li>40423159</li>
+<li><a href="https://www.onshape.com/videos/furniture-industry">https://www.onshape.com/videos/furniture-industry</a></li>
+<li><a href="https://www.onshape.com/videos/assembly-mates">https://www.onshape.com/videos/assembly-mates</a></li>
+<li>40423204</li>
+<li><a href="https://www.onshape.com/videos/collaboration-simultaneous-editing">https://www.onshape.com/videos/collaboration-simultaneous-editing</a></li>
+<li><a href="https://www.onshape.com/videos/understanding-full-cloud-cad-and-onshape">https://www.onshape.com/videos/understanding-full-cloud-cad-and-onshape</a></li>
+<li>40423207</li>
+<li><a href="https://www.onshape.com/videos/intro-assemblies-and-subassemblies">https://www.onshape.com/videos/intro-assemblies-and-subassemblies</a></li>
+<li><a href="https://www.onshape.com/videos/assembly-design-case-study">https://www.onshape.com/videos/assembly-design-case-study</a></li>
+<li>40423213</li>
+<li><a href="https://www.onshape.com/videos/working-with-existing-cad-files">https://www.onshape.com/videos/working-with-existing-cad-files</a></li>
+<li><a href="https://www.onshape.com/videos/using-mate-connectors">https://www.onshape.com/videos/using-mate-connectors</a></li>
+<li>40423220</li>
+<li><a href="https://www.onshape.com/videos/essentials-multipart">https://www.onshape.com/videos/essentials-multipart</a></li>
+<li><a href="https://www.onshape.com/videos/3-ways-collaborate">https://www.onshape.com/videos/3-ways-collaborate</a></li>
+<li>40423224</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-part">https://www.onshape.com/videos/lets-make-a-part</a></li>
+<li><a href="https://www.onshape.com/videos/assemble-an-arbor-press">https://www.onshape.com/videos/assemble-an-arbor-press</a></li>
+<li>40423231</li>
+<li><a href="https://www.onshape.com/videos/direct-editing-with-variables">https://www.onshape.com/videos/direct-editing-with-variables</a></li>
+<li><a href="https://www.onshape.com/videos/machine-part-design-case-study">https://www.onshape.com/videos/machine-part-design-case-study</a></li>
+<li>40423233</li>
+<li><a href="https://www.onshape.com/videos/edit-history-and-versioning">https://www.onshape.com/videos/edit-history-and-versioning</a></li>
+<li><a href="https://www.onshape.com/videos/advanced-assembly-motion-06-22-17">https://www.onshape.com/videos/advanced-assembly-motion-06-22-17</a></li>
+<li>40423241</li>
+<li><a href="https://www.onshape.com/videos/sketching-basics-onshape">https://www.onshape.com/videos/sketching-basics-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/advanced-modeling-tools-and-workflows">https://www.onshape.com/videos/advanced-modeling-tools-and-workflows</a></li>
+<li>40423250</li>
+<li><a href="https://www.onshape.com/videos/merging-branches">https://www.onshape.com/videos/merging-branches</a></li>
+<li><a href="https://www.onshape.com/videos/drawings">https://www.onshape.com/videos/drawings</a></li>
+<li>40523201</li>
+<li><a href="https://www.onshape.com/videos/creating-versions">https://www.onshape.com/videos/creating-versions</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-direct-editing-04-17-15">https://www.onshape.com/videos/onshape-direct-editing-04-17-15</a></li>
+<li>40523203</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-sprocket">https://www.onshape.com/videos/lets-make-a-sprocket</a></li>
+<li><a href="https://www.onshape.com/videos/managing-custom-properties-06-27-17">https://www.onshape.com/videos/managing-custom-properties-06-27-17</a></li>
+<li>40523204</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-pipe-flange">https://www.onshape.com/videos/lets-make-a-pipe-flange</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-teams">https://www.onshape.com/videos/onshape-teams</a></li>
+<li>40523205</li>
+<li><a href="https://www.onshape.com/videos/fillet-and-chamfer">https://www.onshape.com/videos/fillet-and-chamfer</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-documents-ui">https://www.onshape.com/videos/essentials-documents-ui</a></li>
+<li>40523206</li>
+<li><a href="https://www.onshape.com/videos/mixing-units-and-fractions">https://www.onshape.com/videos/mixing-units-and-fractions</a></li>
+<li><a href="https://www.onshape.com/videos/designing-fixtures">https://www.onshape.com/videos/designing-fixtures</a></li>
+<li>40523207</li>
+<li><a href="https://www.onshape.com/videos/lofting-in-onshape">https://www.onshape.com/videos/lofting-in-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/multipart-design">https://www.onshape.com/videos/multipart-design</a></li>
+<li>40523209</li>
+<li><a href="https://www.onshape.com/videos/creating-weldments">https://www.onshape.com/videos/creating-weldments</a></li>
+<li><a href="https://www.onshape.com/videos/3-examples-of-using-the-onshape-app">https://www.onshape.com/videos/3-examples-of-using-the-onshape-app</a></li>
+<li>40523210</li>
+<li><a href="https://www.onshape.com/videos/lets-import-an-assembly">https://www.onshape.com/videos/lets-import-an-assembly</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-mobile">https://www.onshape.com/videos/onshape-mobile</a></li>
+<li>40523211</li>
+<li><a href="https://www.onshape.com/videos/design-in-context">https://www.onshape.com/videos/design-in-context</a></li>
+<li><a href="https://www.onshape.com/videos/feedback-tool">https://www.onshape.com/videos/feedback-tool</a></li>
+<li>40523212</li>
+<li><a href="https://www.onshape.com/videos/software-overview-and-user-interface-tour">https://www.onshape.com/videos/software-overview-and-user-interface-tour</a></li>
+<li><a href="https://www.onshape.com/videos/revolve">https://www.onshape.com/videos/revolve</a></li>
+<li>40523213</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-nut">https://www.onshape.com/videos/lets-make-a-nut</a></li>
+<li><a href="https://www.onshape.com/videos/using-supplier-models">https://www.onshape.com/videos/using-supplier-models</a></li>
+<li>40523214</li>
+<li><a href="https://www.onshape.com/videos/tips-and-tricks-for-the-loft-command-06-20-17">https://www.onshape.com/videos/tips-and-tricks-for-the-loft-command-06-20-17</a></li>
+<li><a href="https://www.onshape.com/videos/import-export">https://www.onshape.com/videos/import-export</a></li>
+<li>40523215</li>
+<li><a href="https://www.onshape.com/videos/measure-tool">https://www.onshape.com/videos/measure-tool</a></li>
+<li><a href="https://www.onshape.com/videos/shell-and-draft">https://www.onshape.com/videos/shell-and-draft</a></li>
+<li>40523216</li>
+<li><a href="https://www.onshape.com/videos/plastic-design-and-consumer-product-case-study">https://www.onshape.com/videos/plastic-design-and-consumer-product-case-study</a></li>
+<li><a href="https://www.onshape.com/videos/android">https://www.onshape.com/videos/android</a></li>
+<li>40523217</li>
+<li><a href="https://www.onshape.com/videos/medical-device-case-study">https://www.onshape.com/videos/medical-device-case-study</a></li>
+<li><a href="https://www.onshape.com/videos/assemble-gears">https://www.onshape.com/videos/assemble-gears</a></li>
+<li>40523218</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-drawing">https://www.onshape.com/videos/lets-make-a-drawing</a></li>
+<li><a href="https://www.onshape.com/videos/designing-linkages-in-context">https://www.onshape.com/videos/designing-linkages-in-context</a></li>
+<li>40523219</li>
+<li><a href="https://www.onshape.com/videos/documents-and-tabs">https://www.onshape.com/videos/documents-and-tabs</a></li>
+<li><a href="https://www.onshape.com/videos/lets-import-a-part">https://www.onshape.com/videos/lets-import-a-part</a></li>
+<li>40523220</li>
+<li><a href="https://www.onshape.com/videos/3-examples-of-using-onshape-to-collaborate">https://www.onshape.com/videos/3-examples-of-using-onshape-to-collaborate</a></li>
+<li><a href="https://www.onshape.com/videos/parametric-modeling-and-feature-based-modeling">https://www.onshape.com/videos/parametric-modeling-and-feature-based-modeling</a></li>
+<li>40523222</li>
+<li><a href="https://www.onshape.com/videos/essentials-assembly-basics">https://www.onshape.com/videos/essentials-assembly-basics</a></li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-frame-guide">https://www.onshape.com/videos/lets-make-a-frame-guide</a></li>
+<li>40523224</li>
+<li><a href="https://www.onshape.com/videos/sketch-constraints">https://www.onshape.com/videos/sketch-constraints</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-part-studios">https://www.onshape.com/videos/essentials-part-studios</a></li>
+<li>40523226</li>
+<li><a href="https://www.onshape.com/videos/design-intent">https://www.onshape.com/videos/design-intent</a></li>
+<li><a href="https://www.onshape.com/videos/secrets-of-the-shift-key">https://www.onshape.com/videos/secrets-of-the-shift-key</a></li>
+<li>40523227</li>
+<li><a href="https://www.onshape.com/videos/direct-editing-onshape">https://www.onshape.com/videos/direct-editing-onshape</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-creating-a-drawing">https://www.onshape.com/videos/onshape-cad-tutorial-creating-a-drawing</a></li>
+<li>40523229</li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly">https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly</a></li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-u-bolt">https://www.onshape.com/videos/lets-make-a-u-bolt</a></li>
+<li>40523230</li>
+<li><a href="https://www.onshape.com/videos/basic-part-design">https://www.onshape.com/videos/basic-part-design</a></li>
+<li><a href="https://www.onshape.com/videos/compare">https://www.onshape.com/videos/compare</a></li>
+<li>40523231</li>
+<li><a href="https://www.onshape.com/videos/onshape-documents">https://www.onshape.com/videos/onshape-documents</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-drawings-webinar">https://www.onshape.com/videos/onshape-drawings-webinar</a></li>
+<li>40523232</li>
+<li><a href="https://www.onshape.com/videos/starting-a-design">https://www.onshape.com/videos/starting-a-design</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-onshape-mobile">https://www.onshape.com/videos/essentials-onshape-mobile</a></li>
+<li>40523233</li>
+<li><a href="https://www.onshape.com/videos/loft">https://www.onshape.com/videos/loft</a></li>
+<li><a href="https://www.onshape.com/videos/split">https://www.onshape.com/videos/split</a></li>
+<li>40523234</li>
+<li><a href="https://www.onshape.com/videos/sweep">https://www.onshape.com/videos/sweep</a></li>
+<li><a href="https://www.onshape.com/videos/sheet-metal">https://www.onshape.com/videos/sheet-metal</a></li>
+<li>40523236</li>
+<li><a href="https://www.onshape.com/videos/extrude">https://www.onshape.com/videos/extrude</a></li>
+<li><a href="https://www.onshape.com/videos/dimensions-and-constraints">https://www.onshape.com/videos/dimensions-and-constraints</a></li>
+<li>40523237</li>
+<li><a href="https://www.onshape.com/videos/dimensions-and-constraints">https://www.onshape.com/videos/dimensions-and-constraints</a></li>
+<li><a href="https://www.onshape.com/videos/extrude">https://www.onshape.com/videos/extrude</a></li>
+<li>40523238</li>
+<li><a href="https://www.onshape.com/videos/sheet-metal">https://www.onshape.com/videos/sheet-metal</a></li>
+<li><a href="https://www.onshape.com/videos/sweep">https://www.onshape.com/videos/sweep</a></li>
+<li>40523239</li>
+<li><a href="https://www.onshape.com/videos/split">https://www.onshape.com/videos/split</a></li>
+<li><a href="https://www.onshape.com/videos/loft">https://www.onshape.com/videos/loft</a></li>
+<li>40523240</li>
+<li><a href="https://www.onshape.com/videos/essentials-onshape-mobile">https://www.onshape.com/videos/essentials-onshape-mobile</a></li>
+<li><a href="https://www.onshape.com/videos/starting-a-design">https://www.onshape.com/videos/starting-a-design</a></li>
+<li>40523241</li>
+<li><a href="https://www.onshape.com/videos/onshape-drawings-webinar">https://www.onshape.com/videos/onshape-drawings-webinar</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-documents">https://www.onshape.com/videos/onshape-documents</a></li>
+<li>40523242</li>
+<li><a href="https://www.onshape.com/videos/compare">https://www.onshape.com/videos/compare</a></li>
+<li><a href="https://www.onshape.com/videos/basic-part-design">https://www.onshape.com/videos/basic-part-design</a></li>
+<li>40523243</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-u-bolt">https://www.onshape.com/videos/lets-make-a-u-bolt</a></li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly">https://www.onshape.com/videos/onshape-cad-tutorial-build-your-first-assembly</a></li>
+<li>40523244</li>
+<li><a href="https://www.onshape.com/videos/onshape-cad-tutorial-creating-a-drawing">https://www.onshape.com/videos/onshape-cad-tutorial-creating-a-drawing</a></li>
+<li><a href="https://www.onshape.com/videos/direct-editing-onshape">https://www.onshape.com/videos/direct-editing-onshape</a></li>
+<li>40523245</li>
+<li><a href="https://www.onshape.com/videos/secrets-of-the-shift-key">https://www.onshape.com/videos/secrets-of-the-shift-key</a></li>
+<li><a href="https://www.onshape.com/videos/design-intent">https://www.onshape.com/videos/design-intent</a></li>
+<li>40523246</li>
+<li><a href="https://www.onshape.com/videos/essentials-part-studios">https://www.onshape.com/videos/essentials-part-studios</a></li>
+<li><a href="https://www.onshape.com/videos/sketch-constraints">https://www.onshape.com/videos/sketch-constraints</a></li>
+<li>40523248</li>
+<li><a href="https://www.onshape.com/videos/lets-make-a-frame-guide">https://www.onshape.com/videos/lets-make-a-frame-guide</a></li>
+<li><a href="https://www.onshape.com/videos/essentials-assembly-basics">https://www.onshape.com/videos/essentials-assembly-basics</a></li>
+<li>40523249</li>
+<li><a href="https://www.onshape.com/videos/parametric-modeling-and-feature-based-modeling">https://www.onshape.com/videos/parametric-modeling-and-feature-based-modeling</a></li>
+<li><a href="https://www.onshape.com/videos/3-examples-of-using-onshape-to-collaborate">https://www.onshape.com/videos/3-examples-of-using-onshape-to-collaborate</a></li>
+<li>40523250</li>
+<li><a href="https://www.onshape.com/videos/lets-import-a-part">https://www.onshape.com/videos/lets-import-a-part</a></li>
+<li><a href="https://www.onshape.com/videos/documents-and-tabs">https://www.onshape.com/videos/documents-and-tabs</a></li>
+</ul>
+<h2>輔助設計套件</h2>
+<p>MCAD 套件</p>
+<p><a href="http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html">http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html</a>&nbsp;</p>
+<p>一般常見的機械電腦輔助設計套件包括法國<span>&nbsp;</span><a href="https://www.3ds.com/">Dassault</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.3ds.com/products-services/solidworks/">SolidWorks</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.3ds.com/products-services/catia/">Catia</a>, 美國<span>&nbsp;</span><a href="https://www.autodesk.com.tw/">AutoDesk</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.autodesk.com.tw/products/autocad/">AutoCAD</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Inventor</a>, 德國<span>&nbsp;</span><a href="https://www.siemens.com/tw/zh/home.html">Siemens</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/en/products/solid-edge/">Solid Edge</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/zh/products/nx/index.shtml">NX</a>, 美國<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/">PTC</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad">Creo</a>, 以及 2015 年推出的<span>&nbsp;</span><a href="https://www.onshape.com/">Onshape</a></p>
+<p>其他 MCAD: 俄羅斯的<span>&nbsp;</span><a href="http://www.tflex.com/resources/tflexcadst/download/">T-Flex</a></p>
+<p>如何進行電腦輔助機械設計專題</p>
+<p>1. 文獻回顧 (Literature Review) 階段 - 了解現存既有的研究成果, 確立專題定位與目標</p>
+<p>利用關鍵字搜尋相關文獻, 針對文獻回顧與探討, 初步定位專案性質以及從事專案的目標.</p>
+<p>例如, 關鍵字:<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=marble+machine+construction+set">marble machine construction set</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=linkage+synthesis">linkage synthesis</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+mechatronics">arduino mechatronics</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+servo+control">arduino servo control</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=lifter+linkage">lifter linkage</a>,<span>&nbsp;</span><a href="https://mde1a1.kmol.info/2017fall/raw/doing+a+literature+review.pdf?name=566d6dab70c1a7e7458a2c10c667416fea048170">Doing a Literature Review</a></p>
+<p>2. 整理可用工具, 擬想何謂機械?何謂設計?何謂電腦輔助?擬想所要解決的問題, 準備開始進行電腦輔助機械設計專題</p>
+<p>機械是一種功能明確的器物, 內容包含固體、流體與軟體元件, 彼此精巧配置結合, 可展現特定功能</p>
+<p>設計是一種表達, 而且是可以讓人依循, 逐步按照指示, 完成設計者預想的結果, 且表達方法包含文字、口語、2D、3D、數學與實體方法.</p>
+<p>文字結合 2D、3D、數學表達方法 - 設計專題報告</p>
+<p>利用口語簡報設計專題內容 - 設計專題報告影片</p>
+<p>電腦輔助 - 利用電腦的功能協助設計進行</p>
+<p>電腦功能 - 設計組態管理、運算、模擬、網路資訊傳輸、展示、協同</p>
+<p>例如:</p>
+<p>零組件繪圖工具:<span>&nbsp;</span><a href="http://solvespace.com/">Solvespace</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad/creo">PTC Creo Parametric</a><span>&nbsp;</span>(可從區網下載可攜網路認證版本) ,<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Autodesk Inventor</a><span>&nbsp;</span>(可自行申請免費學生版本或安裝系上提供之網路認證版本),<span>&nbsp;</span><a href="http://www.solidworks.com.cn/">Dassault Solidworks</a><span>&nbsp;</span>(可安裝學校提供之網路認證版本).</p>
+<p>協同工具:<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="https://a360.autodesk.com/">A360</a><span>&nbsp;</span>(自行申請帳號)</p>
+<p>模擬工具:<span>&nbsp;</span><a href="http://www.coppeliarobotics.com/">V-rep</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.blender.org/">Blender</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.tinkercad.com/">Tinkercad</a><span>&nbsp;</span>(自行申請帳號)</p>
+<p>控制與致動工具:<span>&nbsp;</span><a href="https://www.arduino.cc/">Arduino</a><span>&nbsp;</span>(包含在工具箱中),<span>&nbsp;</span><a href="http://www.instructables.com/id/Arduino-Servo-Motors/">Servo Motor</a><span>&nbsp;</span>(包含在工具箱中)</p>
+<p>3D 列印工具:<span>&nbsp;</span><a href="http://atom3dp.com/">Delta Printer</a><span>&nbsp;</span>(由系上實習設備提供)</p>
+<p>3. 根據專題定位與目標, 確定所要解決的問題項目, 逐一採模組式, 以協同流程, 透過自學、執行與檢討想像, 由簡入繁, 持續改進各模組的內容與功能, 在可用時間內, 解決各種問題, 終至完成專題, 達成目標.</p>
+<p>鋼球循環運動系統設計</p>
+<p>機構設計 - 軌道設計、鋼球提升與傳動系統設計、其他零組件設計</p>
+<p>致動與控制系統設計 - 電路設計、伺服馬達致動程式設計</p>
+<p>監控程式設計 - 以視窗程式啟動系統運作、傳回鋼球通過控制點訊息、計算運行距離與速度</p>
+<p>marble lift mechanism</p>
+<p>四連桿浮動桿通過三個位置的尺寸合成設計</p>
+<p>六連桿尺寸合成</p>
+<p>八連桿尺寸合成</p>
+<p><a href="http://www.eddiesmind.com/basic-lifting-mechanisms.html">http://www.eddiesmind.com/basic-lifting-mechanisms.html</a></p>
+<p>Linkage:<span>&nbsp;</span><a href="http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/">http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/</a><span>&nbsp;</span>(<a href="https://github.com/rectorsquid/Linkage">Source codes</a>)</p>
+<p>LinkageDesigner (an add-on package to Wolfram's Mathematica):<span>&nbsp;</span><a href="http://www.linkagedesigner.com/">http://www.linkagedesigner.com/</a>,<span>&nbsp;</span><a href="https://www.wolfram.com/products/applications/linkagedesigner/">https://www.wolfram.com/products/applications/linkagedesigner/</a></p>
+<p><a href="https://github.com/KmolYuan/Pyslvs-PyQt5">https://github.com/KmolYuan/Pyslvs-PyQt5</a></p>
+<h1>分組專題</h1>
+<p>分組專題報告</p>
+<p>章節</p>
+<ul>
+<li>標題頁 - 含報告標題、作者、日期與所屬單位</li>
+<li>目錄 - 列出全文章節與所屬頁面連結</li>
+<li>摘要 - 解釋報告編寫動機、報告重點、結論、建議與關鍵字</li>
+<li>前言 - 簡要描述全文意旨與背景, 說明報告目標與報告內容組成架構</li>
+<li>內文 - 依照章節標題, 詳細說明報告內容, 包括方法、操作步驟與所得結果的詳細說明</li>
+<li>結論 - 條列所獲致的重要成果, 與摘要及導言中的目標互相呼應</li>
+<li>討論與建議 - 說明後續值得進行的方向、方法與可能遭遇問題的討論</li>
+<li>參考 - 詳列所引用的參考內容</li>
+<li>附錄 - 附加值得參考的詳細內容</li>
+</ul>
+<h2>3D 列印機</h2>
+<p>分組專題人員: 六人</p>
+<p><span>設計模擬: 三人</span></p>
+<p>組立製作: 三人</p>
+<p>XYZ 架構</p>
+<p><a href="https://github.com/mdecourse/kll3pp">https://github.com/mdecourse/kll3pp</a>&nbsp;</p>
+<p><img src="/images/kll3pp.jpg" width="600" height="800" alt=""></p>
+<p>Delta 架構</p>
+<p>分組專題人員: 六人</p>
+<p><a href="https://cad.onshape.com/documents/5857da172c6401109cd59c40/w/3c12983596f0b655e19c8242/e/acc3c9a33b806c014834c490">Delta 3D 印表機</a> (<a href="https://www.onshape.com/">Onshape</a> 連結)</p>
+<p><img src="/images/delta3dPrinter.jpg" width="384" height="752" alt=""></p><h2>行走機構</h2>
+<p>分組專題人員: 六人</p>
+<p><span>設計模擬: 三人</span></p>
+<p>組立製作: 三人</p>
+<p><a href="https://cad.onshape.com/documents/96be21438ae9f607a1911459/w/9587e92def580a31ac504bce/e/c02e184cc4dede90f6842cda">Jansen_walker</a> in <a href="https://www.onshape.com/">Onshape</a></p>
+<p><img src="/images/Jansen_walker.jpg" width="600" height="449" alt=""></p>
+<p></p><h2>鋼球運動系統</h2>
+<p>分組專題人員: 六人</p>
+<p><span>設計模擬: 三人</span></p>
+<p>組立製作: 三人</p>
+<p><iframe width="560" height="315" src="https://www.youtube.com/embed/lQvcoOzmLqs" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>虛實手足球</h2><p>分組專題人員: 六人</p><p><span>設計模擬: 三人</span></p><p>組立製作: 三人</p><p><a href="https://en.wikipedia.org/wiki/Table_football">Table Football Machine</a></p><ol><li>利用 <a href="https://www.onshape.com/">Onshape</a> 或 <a href="http://solvespace.com">Solvespace</a> 設計所需零組件</li><li>將模型輸入 V-rep 後, 以 Lua 控制各零組件運動, 進行初步測試</li><li>利用 Python 程式, 透過網路, 由競賽雙方以 Rempte API 型式, 操控足球員動作</li><li>虛擬系統完成後, 設計外部實體電子控制系統, 操控虛擬足球員, 或反向運作</li></ol><p><iframe width="560" height="315" src="https://www.youtube.com/embed/0qE_a0wFRa0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>機械計時器</h2>
+<p><span>分組專題人員: 六人</span></p>
+<p><span>設計模擬: 三人</span></p>
+<p>列印製作: 三人</p>
+<p><iframe width="560" height="315" src="https://www.youtube.com/embed/ir6KkKH0LJw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p>

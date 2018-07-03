@@ -1,0 +1,92 @@
+<!doctype html>
+<html><head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<title>CMSimply - Simple Cloud CMS in Python 3</title> <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
+
+<script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"></script>
+<link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+
+<!-- for LaTeX equations -->
+<script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
+<script type="text/javascript">
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+</script>
+<script src="./../static/fengari-web.js"></script>
+<script type="text/javascript" src="./../static/Cango-13v08-min.js"></script>
+<script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"></script>
+<script type="text/javascript" src="./../static/gearUtils-05.js"></script>
+<!-- for Brython -->
+<script src="https://scrum-3.github.io/web/brython/brython.js"></script>
+<script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
+
+<script src="./../static/jquery.js"></script>
+<script type="text/javascript">
+$(function(){
+    $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
+    $("ul.topmenu > li ul li:has(ul) > a").append('<div class="arrow-right"></div>');
+});
+</script>
+
+</head><header><h1>2018 電腦輔助設計實習教學手冊</h1> <confmenu>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="sitemap.html">Site Map</a></li>
+
+</ul>
+</confmenu></header>
+<div class='container'><nav><ul id='css3menu1' class='topmenu'><li><a href='簡介.html'>簡介</a><li><a href='工具.html'>工具</a><ul><li><a href='Solvespace.html'>Solvespace</a><li><a href='Onshape.html'>Onshape</a><li><a href='V-rep.html'>V-rep</a><li><a href='Git.html'>Git</a><li><a href='Leo Editor.html'>Leo Editor</a><li><a href='SCiTE.html'>SCiTE</a><li><a href='TinyCC.html'>TinyCC</a><li><a href='CMSimfly.html'>CMSimfly</a></li></ul><li><a href='應用範例.html'>應用範例</a><ul><li><a href='Tinkercad.html'>Tinkercad</a><li><a href='解讀網頁內容.html'>解讀網頁內容</a><li><a href='輔助設計套件.html'>輔助設計套件</a></li></ul><li><a href='分組專題.html'>分組專題</a><ul><li><a href='3D 列印機.html'>3D 列印機</a><li><a href='行走機構.html'>行走機構</a><li><a href='鋼球運動系統.html'>鋼球運動系統</a><li><a href='虛實手足球.html'>虛實手足球</a></li></ul></nav><section>V-rep << <a href='V-rep.html'>Previous</a> <a href='Leo Editor.html'>Next</a> >> Leo Editor<br /><h1>Git</h1>
+<p><a href="https://git-scm.com/">https://git-scm.com/</a>&nbsp;</p>
+<p><a href="https://git-scm.com/book/zh-tw/v2">https://git-scm.com/book/zh-tw/v2</a>&nbsp;</p>
+<p><a href="https://github.com/">https://github.com/</a>&nbsp;</p>
+<p><a href="http://www.globallegalchronicle.com/microsofts-7-5-billion-acquisition-of-github/">http://www.globallegalchronicle.com/microsofts-7-5-billion-acquisition-of-github/</a>&nbsp;</p>
+<p>git 常用指令</p>
+<p>git add .</p>
+<p>新增所有改版內容</p>
+<p>git commit -m "提交訊息, 用來辨識版本"</p>
+<p>在近端提交改版內容</p>
+<p>git push</p>
+<p>將近端改版內容推送到遠端</p>
+<p>git pull</p>
+<p>拉下遠端新版本內容, 在 fossil scm 使用 fossil update</p>
+<p>git log</p>
+<p>查驗 git 提交推送紀錄</p>
+<p>git status</p>
+<p>查驗狀態</p>
+<p>git 新增提交推送的身分綁定</p>
+<p>以 scrum1@mde.tw 註冊帳號為 scrum-1 為例:</p>
+<p>git config --global user.name "scrum-1"</p>
+<p>git config --global user.email "scrum1@mde.tw"</p>
+<p>若網路直接連線過慢, 可以透過 proxy 執行 git</p>
+<p>git config --global http.proxy http://proxy.kmol.info:3128</p>
+<p>以上的 git config 會將設定存入 Y:/home/.gitconfig 檔案中</p>
+<p>接下來測試以協同模式共同編輯純文字檔, 以第一組為例:</p>
+<p>bg1.txt 內容先由組長建立, 並加入自己的學號後, 新增提交推送到遠端倉儲,</p>
+<p>之後其他組員以 git clone 各組倉儲後, 開始在近端同時編輯 bg1.txt, 然後加入自己的 學號後, 從近端進行新增提交與推送, 將改版資料傳到遠端, 此時只有第一位組員可以直接 提交推送, 其他組員則必須先 git pull 後處理衝突, 合併資料後, 再提交推送.</p>
+<br />V-rep << <a href='V-rep.html'>Previous</a> <a href='Leo Editor.html'>Next</a> >> Leo Editor</section></div></body></html>
