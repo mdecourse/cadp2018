@@ -813,7 +813,7 @@ def set_admin_css():
 '''+syntaxhighlight()
 
     outstring += '''
-&lt;script src="static/jquery.js"&gt;&lt;/script&gt;
+&lt;script src="/static/jquery.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript"&gt;
 $(function(){
     $("ul.topmenu&gt; li:has(ul) &gt; a").append('&lt;div class="arrow-right"&gt;&lt;/div&gt;');

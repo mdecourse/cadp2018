@@ -1464,7 +1464,7 @@ def set_admin_css():
 '''+syntaxhighlight()
 
     outstring += '''
-<script src="static/jquery.js"></script>
+<script src="/static/jquery.js"></script>
 <script type="text/javascript">
 $(function(){
     $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
