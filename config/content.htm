@@ -1,106 +1,8 @@
-<h1>簡介</h1>
-<p><a href="https://coggle.it/diagram/WzQ9tjCAbqepqWPI/t/%E9%9B%BB%E8%85%A6%E8%BC%94%E5%8A%A9%E8%A8%AD%E8%A8%88%E5%AF%A6%E7%BF%92/7ff3697b0db297209138e7f4ea4d3966eff611b8d3d228fc6aeda2fb112eaf50">2018 Fall 電腦輔助設計實習課程規劃心智圖</a>&nbsp;(under scrum1 At mde)</p>
-<p><canvas id="cango_gear" width="700" height="400"></canvas></p>
-<p>
-<script type="application/lua">
-js = require "js"
-window = js.global
-Array = js.global.Array
-canvas = window.document:getElementById("cango_gear")
-
--- 將 lua table 轉為 new JavaScript Object 的方法
--- e.g. Object{mykey="myvalue"}
-function Object(t)
-    local o = js.new(js.global.Object)
-    for k, v in pairs(t) do
-        assert(type(k) == "string" or js.typeof(k) == "symbol", "JavaScript only has string and symbol keys")
-        o[k] = v
-    end
-    return o
-end
-
--- javascript constructor
-cgo = js.new(window.Cango, "cango_gear")
---local path = js.new(window.Path)
-local shape = js.new(window.Shape)
--- Javascript 變數
-shapedefs = window.shapeDefs
--- 角度轉為徑度
-deg = math.pi/180
-
-function cangoGear(m, n, pa)
-    -- pr 為節圓半徑
-    pr = n*m/2 -- gear Pitch radius
-    data = js.new(window.createGearTooth, m, n, pa)
-    gearTooth = js.new(window.Path, data, Object{
-      fillColor= "#ddd0dd",
-      border= true,
-      strokeColor= "#606060" })
-    gearTooth:rotate(180/n) -- rotate gear 1/2 tooth to mesh
-    gear = gearTooth:dup()
-    for i = 1, n-1 do
-        newTooth = gearTooth:dup()
-        newTooth:rotate(360*i/n)
-        gear:appendPath(newTooth)
-    end
-
-    -- 建立軸孔
-    hr = 0.6*pr -- diameter of gear shaft
-    shaft = js.new(window.Path, shapedefs:circle(hr))
-    gear:appendPath(shaft)
-    return gear
-end
-
-n1 = 13
-n2 = 24
-n3 = 21
-reduced_ratio = 0.5
--- 使用 80% 的畫布寬度
-m = 0.8*(canvas.width)/((n1+n2+n3)*reduced_ratio)
-cx = (canvas.width)/2
-cy = (canvas.height)/2
--- 設定共同的壓力角
-pa = 25
-pr1 = n1*m/2
-pr2 = n2*m/2
-pr3 = n3*m/2
--- 建立 gear
-gear1 = cangoGear(m, n1, pa)
-gear2 = cangoGear(m, n2, pa)
-gear3 = cangoGear(m, n3, pa)
-
-deg = math.pi/180
-rotate_speed = 12*deg
-
-function draw()
-    cgo:clearCanvas()
-
-    gear1.transform:translate(cx-(pr1+pr2)*reduced_ratio, cy)
-    gear1.transform:scale(reduced_ratio)
-    gear1.transform:rotate(0)
-    gear1:rotate(rotate_speed)
-    cgo:render(gear1)
-    
-    gear2.transform:translate(cx, cy)
-    gear2.transform:scale(reduced_ratio)
-    gear2.transform:rotate(180+(360/n2/2))
-    gear2:rotate(-(rotate_speed)*n1/n2)
-    cgo:render(gear2)
-    
-    gear3.transform:translate(cx+(pr2+pr3)*reduced_ratio, cy)
-    gear3.transform:scale(reduced_ratio)
-    gear3.transform:rotate(180+(360/n3/2)+(180+(360/n2/2))*n2/n3)
-    gear3:rotate((rotate_speed*n1/n2)*(n2/n3))
-    cgo:render(gear3)
-    print(gear1:toString())
-end
-
---draw()
-window:setInterval(draw, 2)
-</script>
-</p>
-<h1>工具</h1>
-<h2>Solvespace</h2>
+<h1>簡介</h1><p><a href="https://coggle.it/diagram/WzQ9tjCAbqepqWPI/t/%E9%9B%BB%E8%85%A6%E8%BC%94%E5%8A%A9%E8%A8%AD%E8%A8%88%E5%AF%A6%E7%BF%92/7ff3697b0db297209138e7f4ea4d3966eff611b8d3d228fc6aeda2fb112eaf50">2018 Fall 電腦輔助設計實習課程規劃心智圖</a>&nbsp;(under scrum1 At mde)</p><p><span>二十一世紀的電腦輔助機械設計, 已經不再只是利用 MCAD (Mechanical Computer Aided Design) 套件畫畫圖而已. 從參與設計團隊的成員開始使用電腦建立第一個文件開始, 就應該自問, 要將檔案存在那裡? 如何與其他成員有效進行協同設計, 如何即時並永續保存資料, 是否也該思考, 在產品的有效生命週期中, 這些檔案文件在歷經多人不同時間的修改之後, 是否能夠完整地呈現產品設計履歷資料.</span></p><p>機器人定義</p><p>Word robot was coined by a Czech novelist Karel Capek in a 1920 play titled Rassum's Universal Robots (RUR), Robot in Czech is a word for worker or servant</p><p>Definition of robot (可程式化之多功能機械稱為機器人):</p><p>1) Any machine made by by one of our members: Robot Institute of America</p><p>2) A robot is a reprogrammable, multifunctional manipulator designed to move material, parts, tools or specialized devices through variable programmed motions for the performance of a variety of tasks: Robot Institute of America, 1979</p><p>機電資整合課程教育目標</p><p>Infomechatronics Course Objectives</p><ul><li>To produce an engineering graduate with broad knowledge and skills across the three engineering disciplines of Information Technology, Electrical &amp; Electronic and Mechanical &amp; Manufacturing Engineering who meet the needs of industry with respect to the design, fabrication and service of computer controlled industrial machinery and consumer products.</li><li>To provide a broad-based academic training program aimed at producing future industry managers who can be effective in research and technology whilst leading industry in an innovative, efficient and socially responsible way.</li><li>To provide, prior to entry to the work force, a course of study in engineering science and technology with adequate awareness of the importance of a multi-disciplinary approach to the optimal design and fabrication of computer controlled machinery.</li><li>To develop good communication, leadership, managerial, and life long learning skills.</li><li>To develop in graduates a high degree of competence and confidence within their chosen areas of study that will facilitate their ready acceptance into work force in commerce, industry &amp; government.</li><li>To develop in graduates a sound knowledge and understanding of the fundamentals of their discipline so that they can adapt to scientific, technological and social changes.</li><li>To develop the capability for critical thinking and analysis to apply the knowledge gained from their course of study to the solution of real life problems</li><li>To instill a sensitivity to and understanding of culture and gender related issues as they relate to professional and ethical practices</li></ul><p><canvas id="cango_gear" width="700" height="400"></canvas></p><p><script type="application/lua">js = require "js"window = js.globalArray = js.global.Arraycanvas = window.document:getElementById("cango_gear")-- 將 lua table 轉為 new JavaScript Object 的方法-- e.g. Object{mykey="myvalue"}function Object(t)    local o = js.new(js.global.Object)    for k, v in pairs(t) do        assert(type(k) == "string" or js.typeof(k) == "symbol", "JavaScript only has string and symbol keys")        o[k] = v    end    return oend-- javascript constructorcgo = js.new(window.Cango, "cango_gear")--local path = js.new(window.Path)local shape = js.new(window.Shape)-- Javascript 變數shapedefs = window.shapeDefs-- 角度轉為徑度deg = math.pi/180function cangoGear(m, n, pa)    -- pr 為節圓半徑    pr = n*m/2 -- gear Pitch radius    data = js.new(window.createGearTooth, m, n, pa)    gearTooth = js.new(window.Path, data, Object{      fillColor= "#ddd0dd",      border= true,      strokeColor= "#606060" })    gearTooth:rotate(180/n) -- rotate gear 1/2 tooth to mesh    gear = gearTooth:dup()    for i = 1, n-1 do        newTooth = gearTooth:dup()        newTooth:rotate(360*i/n)        gear:appendPath(newTooth)    end    -- 建立軸孔    hr = 0.6*pr -- diameter of gear shaft    shaft = js.new(window.Path, shapedefs:circle(hr))    gear:appendPath(shaft)    return gearendn1 = 13n2 = 24n3 = 21reduced_ratio = 0.5-- 使用 80% 的畫布寬度m = 0.8*(canvas.width)/((n1+n2+n3)*reduced_ratio)cx = (canvas.width)/2cy = (canvas.height)/2-- 設定共同的壓力角pa = 25pr1 = n1*m/2pr2 = n2*m/2pr3 = n3*m/2-- 建立 geargear1 = cangoGear(m, n1, pa)gear2 = cangoGear(m, n2, pa)gear3 = cangoGear(m, n3, pa)deg = math.pi/180rotate_speed = 12*degfunction draw()    cgo:clearCanvas()    gear1.transform:translate(cx-(pr1+pr2)*reduced_ratio, cy)    gear1.transform:scale(reduced_ratio)    gear1.transform:rotate(0)    gear1:rotate(rotate_speed)    cgo:render(gear1)        gear2.transform:translate(cx, cy)    gear2.transform:scale(reduced_ratio)    gear2.transform:rotate(180+(360/n2/2))    gear2:rotate(-(rotate_speed)*n1/n2)    cgo:render(gear2)        gear3.transform:translate(cx+(pr2+pr3)*reduced_ratio, cy)    gear3.transform:scale(reduced_ratio)    gear3.transform:rotate(180+(360/n3/2)+(180+(360/n2/2))*n2/n3)    gear3:rotate((rotate_speed*n1/n2)*(n2/n3))    cgo:render(gear3)    print(gear1:toString())end--draw()window:setInterval(draw, 2)</script></p><h1>工具</h1>
+<p>Geometirc Modeling Kernel</p>
+<p><a href="https://en.wikipedia.org/wiki/Parasolid">Parasolid</a><span>&nbsp;</span>- 由<span>&nbsp;</span><a href="https://en.wikipedia.org/wiki/Shape_Data_Limited">https://en.wikipedia.org/wiki/Shape_Data_Limited</a><span>&nbsp;</span>開發, 目前在<span>&nbsp;</span><a href="https://en.wikipedia.org/wiki/Siemens">Siemens</a><span>&nbsp;</span>旗下.</p>
+<p><a href="https://en.wikipedia.org/wiki/ACIS">ACIS</a><span>&nbsp;</span>- 由<span>&nbsp;</span><a href="https://en.wikipedia.org/wiki/Spatial_Corp">https://en.wikipedia.org/wiki/Spatial_Corp</a><span>&nbsp;</span>開發, 源自<span>&nbsp;</span><a href="https://en.wikipedia.org/wiki/Romulus_(modelling_kernel)">https://en.wikipedia.org/wiki/Romulus_(modelling_kernel)</a>, 目前在<span>&nbsp;</span><a href="https://en.wikipedia.org/wiki/Dassault_Syst%C3%A8mes">Dassault</a><span>&nbsp;</span>旗下.</p>
+<p><a href="https://en.wikipedia.org/wiki/ShapeManager">ShapeManager</a><span>&nbsp;</span>- 2001 年從<span>&nbsp;</span><a href="https://en.wikipedia.org/wiki/ACIS">ACIS</a><span>&nbsp;</span>分出, 由 AutoDesk 公司開發, 用於 Inventor.</p><h2>Solvespace</h2>
 <p><a href="http://solvespace.com">http://solvespace.com</a>&nbsp;</p>
 <p>參考資料:</p>
 <p><a href="http://mde.tw/2017springcd/blog/midterm-collaboration-evaluation.html">http://mde.tw/2017springcd/blog/midterm-collaboration-evaluation.html</a>&nbsp;</p>
@@ -712,7 +614,85 @@ for i in range(36):
 <p><a href="http://www.leoeditor.com/">http://www.leoeditor.com/</a>&nbsp;</p>
 <h2>SCiTE</h2>
 <p><a href="https://www.scintilla.org/SciTE.html">https://www.scintilla.org/SciTE.html</a>&nbsp;</p>
-<h2>TinyCC</h2>
+<p>利用 SciTE 執行 Pelican 網誌 Markdown 轉為 html:</p>
+<p>SciTEUser.properties 設定</p>
+<p>以下的設定, 是將近端與遠端<span>&nbsp;</span><a href="https://github.com/getpelican/pelican">Pelican</a><span>&nbsp;</span>轉檔指令, 設為 Pelican-blog 與 Github-blog 下拉式功能表, 位於 Tools-Go 下方, 唯一的限制是, 當執行這兩個指令時,<span>&nbsp;</span><a href="http://www.scintilla.org/SciTE.html">SciTE</a><span>&nbsp;</span>必須處於開啟 content 目錄之外的 local_publishconf.py 檔案, 因為<span>&nbsp;</span><a href="http://www.scintilla.org/SciTE.html">SciTE</a><span>&nbsp;</span>會以開啟檔案所在目錄, 執行所設定的<span>&nbsp;</span><a href="https://github.com/getpelican/pelican">Pelican</a><span>&nbsp;</span>指令.</p>
+<pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">import Properties\python
+import _platform
+import _config
+ 
+#~ #  1142  Pelican-blog
+command.name.42.*=Pelican-blog
+command.42.*="pelican content -o blog -s local_publishconf.py"
+#command.subsystem.42.*=2
+#command.quiet.42.*=1
+command.shortcut.42.*=Ctrl+Shift+P
+ 
+#~ #  1143 Github-blog
+command.name.43.*=Github-blog
+command.43.*="pelican content -o blog -s publishconf.py"
+#command.subsystem.42.*=2
+#command.quiet.42.*=1
+command.shortcut.43.*=Ctrl+Shift+G</pre>
+<div></div>
+<div>啟動 IPv4 或 IPv6 www 伺服器
+<p>當<span>&nbsp;</span><a href="https://github.com/getpelican/pelican">Pelican</a><span>&nbsp;</span>轉檔指令執行結束後,<span>&nbsp;</span><a href="http://www.scintilla.org/SciTE.html">SciTE</a><span>&nbsp;</span>會在輸出區列出執行結束訊息, 若轉檔過程發生錯誤, 也會一併顯示. 之後為了檢視轉換完成的近端簡報或網誌檔案, 必須將原先位於<span>&nbsp;</span><a href="http://leoeditor.com/">Leo Editor</a><span>&nbsp;</span>button 區的按鈕 Python3 程式移出, 分別存為 .py 檔案.</p>
+<p>由於原先的<span>&nbsp;</span><a href="http://leoeditor.com/">Leo Editor</a><span>&nbsp;</span>button 位於 users 目錄中執行, 因此轉出的 .py 檔案也存入 users 目錄中, 程式內容如下:</p>
+<p>users/ipv4_www_server.py 程式檔</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">#ipv4_www_server.py 存入 users 目錄
+import os
+import subprocess
+import threading
+import http.server, ssl
+ 
+def domake():
+    # build directory
+    os.chdir("./../")
+    server_address = ('localhost', 5443)
+    httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
+    httpd.socket = ssl.wrap_socket(httpd.socket,
+                                   server_side=True,
+                                   certfile='localhost.crt',
+                                   keyfile='localhost.key',
+                                   ssl_version=ssl.PROTOCOL_TLSv1)
+    print(os.getcwd())
+    print("5443 https server started")
+    httpd.serve_forever()
+ 
+# 利用執行緒執行 https 伺服器
+make = threading.Thread(target=domake)
+make.start()</pre>
+<p><span>users/ipv6_www_server.py 程式檔</span></p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">#ipv6_www_server.py 存入 users 目錄
+import os
+import subprocess
+import threading
+import socket
+import http.server, ssl
+ 
+class HTTPServerV6(http.server.HTTPServer):
+    address_family = socket.AF_INET6
+ 
+def domake():
+    # build directory
+    os.chdir("./../")
+    ipv6_address = '::1'
+    server_address = (ipv6_address, 6443)
+    #httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
+    httpd = HTTPServerV6(server_address, http.server.SimpleHTTPRequestHandler)
+    httpd.socket = ssl.wrap_socket(httpd.socket,
+                                   server_side=True,
+                                   certfile='localhost.crt',
+                                   keyfile='localhost.key',
+                                   ssl_version=ssl.PROTOCOL_TLSv1)
+    print("6443 https server started")
+    httpd.serve_forever()
+ 
+# 利用執行緒執行 https 伺服器
+make = threading.Thread(target=domake)
+make.start()</pre>
+<p></p>
+</div><h2>TinyCC</h2>
 <p><a href="https://bellard.org/tcc/">https://bellard.org/tcc/</a>&nbsp;</p>
 <h2>CMSimfly</h2>
 <p><a href="https://github.com/chiamingyen/cmsimfly">https://github.com/chiamingyen/cmsimfly</a></p>
@@ -1282,4 +1262,16 @@ for i in range(len(result)):
 <p>1/18 Scale folding bike 摺疊自行車模型設計製作</p>
 <p><span>分組專題人員: 六人</span></p>
 <p><iframe width="560" height="315" src="https://www.youtube.com/embed/mNPXl2QQNCk" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p>
-<h2>方程式賽車</h2><p>1/18 Scale Forumla Student Racing Car</p><p><span>分組專題人員: 六人</span></p><p><a href="https://www.formulastudent.de/uploads/media/FS-Rules_2018_V1.1.pdf">Forumla Student Rules 2018</a></p><p><iframe width="640px" height="480px" src="http://caesor.github.io/racing-game/"></iframe></p><p>參考資料:</p><p><a href="https://uwformula.com/">https://uwformula.com/</a>&nbsp;</p><p><a href="http://learnmech.com/">http://learnmech.com/</a>&nbsp;</p><p><a href="https://github.com/Caesor/racing-game">https://github.com/Caesor/racing-game</a>&nbsp;</p><p><a href="https://www.kingautos.net/212575">https://www.kingautos.net/212575</a>&nbsp;</p><p><a href="https://news.tvbs.com.tw/fun/670993">https://news.tvbs.com.tw/fun/670993</a>&nbsp;</p><p><a href="http://www.pme.nthu.edu.tw/files/14-1265-124394,r4641-1.php?Lang=zh-tw">http://www.pme.nthu.edu.tw/files/14-1265-124394,r4641-1.php?Lang=zh-tw</a>&nbsp;</p><p><a href="https://insight.udndata.com/ndapp/udntag/finance/Article?origid=9058520">https://insight.udndata.com/ndapp/udntag/finance/Article?origid=9058520</a>&nbsp;</p>
+<h2>方程式賽車</h2>
+<p>1/18 Scale Forumla Student Racing Car</p>
+<p><span>分組專題人員: 六人</span></p>
+<p><a href="https://www.formulastudent.de/uploads/media/FS-Rules_2018_V1.1.pdf">Forumla Student Rules 2018</a></p>
+<p><iframe width="640px" height="480px" src="http://caesor.github.io/racing-game/"></iframe></p>
+<p>參考資料:</p>
+<p><a href="https://uwformula.com/">https://uwformula.com/</a>&nbsp;</p>
+<p><a href="http://learnmech.com/">http://learnmech.com/</a>&nbsp;</p>
+<p><a href="https://github.com/Caesor/racing-game">https://github.com/Caesor/racing-game</a>&nbsp;</p>
+<p><a href="https://www.kingautos.net/212575">https://www.kingautos.net/212575</a>&nbsp;</p>
+<p><a href="https://news.tvbs.com.tw/fun/670993">https://news.tvbs.com.tw/fun/670993</a>&nbsp;</p>
+<p><a href="http://www.pme.nthu.edu.tw/files/14-1265-124394,r4641-1.php?Lang=zh-tw">http://www.pme.nthu.edu.tw/files/14-1265-124394,r4641-1.php?Lang=zh-tw</a>&nbsp;</p>
+<p><a href="https://insight.udndata.com/ndapp/udntag/finance/Article?origid=9058520">https://insight.udndata.com/ndapp/udntag/finance/Article?origid=9058520</a>&nbsp;</p>
