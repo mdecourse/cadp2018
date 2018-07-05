@@ -1507,7 +1507,7 @@ def set_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>CMSimply - Simple Cloud CMS in Python 3</title> \
+<title>2018 電腦輔助設計實習教學手冊</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 '''+syntaxhighlight()
 
@@ -1561,7 +1561,7 @@ def set_css2():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>CMSimply - Simple Cloud CMS in Python 3</title> \
+<title>2018 電腦輔助設計實習教學手冊</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
 '''+syntaxhighlight2()
 

@@ -1013,7 +1013,7 @@ a.xhfbfile:hover{
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;CMSimply - Simple Cloud CMS in Python 3&lt;/title&gt; \
+&lt;title&gt;2018 電腦輔助設計實習教學手冊&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="/static/cmsimply.css"&gt;
 '''+syntaxhighlight()
 
@@ -2187,7 +2187,7 @@ def get_page2(heading, edit):
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;CMSimply - Simple Cloud CMS in Python 3&lt;/title&gt; \
+&lt;title&gt;2018 電腦輔助設計實習教學手冊&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="./../static/cmsimply.css"&gt;
 '''+syntaxhighlight2()
 
