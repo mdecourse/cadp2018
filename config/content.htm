@@ -877,60 +877,7 @@ make.start()</pre>
 <li>V-rep - 利用各種程式介面與延伸程式的設計, 讓使用者設計、控制並模擬各種機器人模型</li>
 <li>輔助設計套件 - 利用計算機圖學與視窗介面, 讓使用者完成設想中的機械零組件設計, 並進行功能模擬</li>
 </ol>
-<h2>Tinkercad</h2>
-<p>註冊 AutoDesk TinkerCAD 帳號</p>
-<p>為了在實體 Arduino Uno 控制板連線操作之前, 可以利用網際 Auduino 控制板與電子元件系統進行模擬, 請各學員至<span>&nbsp;</span><a href="https://www.tinkercad.com/">https://www.tinkercad.com</a><span>&nbsp;</span>登記帳號, 登入後選擇左上角的 TinkerCAD 標誌連結後, 選擇 Circuits 進入電路設計與模擬, 操作畫面如下圖所示:</p>
-<p><img src="/images/circuits_on_tinkercad.png" width="700" height="373" alt=""></p>
-<p><span>接著選擇 Arudino Uno 控制板與 Servo Motor, 然後接上電源與地線, 並將控制訊號接到 Auduino Uno 控制板的 PWM pin 9, 利用 Code Editor 納入下列 Arduino 程式, 再利用 upload and run 將程式編譯後上傳到虛擬的 Arduino Uno 控制板上執行, 就可以模擬 Servo Motor 持續左右各旋轉 180 度. 操作畫面如下圖所示:&nbsp;</span></p>
-<p><span><img src="/images/arduino_uno_servo_on_tinkercad.png" width="700" height="373" alt=""></span></p>
-<p>實體 Arduino Servo Motor Control</p>
-<p>完成上述以 TinkerCAD 模擬伺服馬達的接線與程式執行之後, 接著操作實體 Arduino 控制板與 Servo Motor 的控制, 首先利用電腦驅動 Arduino 控制板, 然後再利用板子上的脈衝寬度調變 (PWM, Pulse Width Modulation) 訊號控制伺服馬達, 之後再利用傳動機構與資訊控制介面, 製作所需的機電資整合系統. 電子電機系統除了可以方便感測各種物理化學量外, 還能夠快速傳遞感測與命令訊號, 而機械系統則透過機構元件的組合, 扮演傳遞功率致動或抵抗外力撞擊與疲勞破壞的角色, 至於資訊系統則用來整合各種資訊, 用更友善的人機介面, 讓使用者更有效能地運用機電資系統產品.</p>
-<p><a href="https://mde1a1.kmol.info/2017fall/raw/arduino-1.8.5-windows.zip?name=4aee6f20d04156a10d1739e40f54cda7ef1b0e0e">arduino-1.8.4-windows.zip</a><span>&nbsp;</span>下載 (或直至<span>&nbsp;</span><a href="https://www.arduino.cc/en/Main/Software">https://www.arduino.cc/en/Main/Software</a><span>&nbsp;</span>下載)</p>
-<p>控制台 - 硬體與音效 - 裝置管理員 利用解開的 arduino driver 程式驅動 Arduino Uno 控制板, 並取得 COM 對應號碼, 例如: COM7, 之後的 Arduino 編譯後可以透過此 COM 埠號將程式上傳到控制板上執行.</p>
-<p>MG996R 伺服馬達</p>
-<p>棕色線 GND</p>
-<p>紅色線 V+5V</p>
-<p>橘色線 PWM</p>
-<p>控制程式:</p>
-<pre class="brush:cpp;auto-links:false;toolbar:false" contenteditable="false">#include &lt;Servo.h&gt;
-Servo myservo;  // 建立一個 servo 物件，最多可建立 12個 servo
-
-int pos = 0;    // 設定 Servo 位置的變數
-
-void setup() {
-  myservo.attach(9);  // 將 servo 物件連接到 pin 9
-}
-
-void loop() {
-  // 正轉 180度
-  for (pos = 0; pos &lt;= 180; pos += 1) // 從 0 度旋轉到 180 度，每次 1 度 
-  {     
-    myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置
-    delay(15);                        // 等待 15ms 讓 servo 走到指定位置
-  }
-
-// 反轉 180度
-  for (pos = 180; pos &gt;= 0; pos -= 1) // 從 180 度旋轉到 0 度，每次 1 度 
-  { 
-    myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置
-
-delay(15);                        // 等待 15ms 讓 servo 走到指定位置
-  }
-}</pre>
-<p>參考資料:</p>
-<p><a href="https://link.springer.com/book/10.1007/978-1-4302-3241-4">Beginning Arduino</a></p>
-<p><a href="https://link.springer.com/book/10.1007/978-1-4302-3778-5">Beginning Arduino Programming</a></p>
-<p><a href="http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html">http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html</a></p>
-<p><a href="http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf">http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf</a></p>
-<p><a href="http://atceiling.blogspot.tw/2017/03/arduino.html">http://atceiling.blogspot.tw/2017/03/arduino.html</a></p>
-<p>Python, Arduino and VPython:</p>
-<p><a href="http://www.toptechboy.com/arduino-lessons/">http://www.toptechboy.com/arduino-lessons/</a></p>
-<p><a href="https://create.arduino.cc/projecthub/chanhj/magnetic-levitation-8c3ad0">Arduino Magnetic Levitation System</a></p>
-<p><a href="http://www.instructables.com/id/Magnetic-Levitation/">http://www.instructables.com/id/Magnetic-Levitation/</a><span>&nbsp;</span>(<a href="https://www.amazon.com/Electromagnet-Solenoid-Electric-Mechanical-Experimental/dp/B008OENGU0/">電磁鐵1</a>,<span>&nbsp;</span><a href="http://goods.ruten.com.tw/item/show?21620739232041">電磁鐵2</a>)</p>
-<p><a href="http://embeddedlaboratory.blogspot.tw/2017/04/design-gui-in-python-using-pyqt5.html">Arduino and PyQt5</a></p>
-<p><a href="http://embeddedlaboratory.blogspot.tw/search/label/Arduino">http://embeddedlaboratory.blogspot.tw/search/label/Arduino</a></p>
-<p><a href="http://electronut.in/plotting-real-time-data-from-arduino-using-python/">Arduino and Matplotlib</a></p>
-<h2>解讀網頁內容</h2>
+<h2>Tinkercad</h2><p>註冊 AutoDesk TinkerCAD 帳號</p><p>為了在實體 Arduino Uno 控制板連線操作之前, 可以利用網際 Auduino 控制板與電子元件系統進行模擬, 請各學員至<span>&nbsp;</span><a href="https://www.tinkercad.com/">https://www.tinkercad.com</a><span>&nbsp;</span>登記帳號, 登入後選擇左上角的 TinkerCAD 標誌連結後, 選擇 Circuits 進入電路設計與模擬, 操作畫面如下圖所示:</p><p><img src="/images/circuits_on_tinkercad.png" width="700" height="373" alt=""></p><p><span>接著選擇 Arudino Uno 控制板與 Servo Motor, 然後接上電源與地線, 並將控制訊號接到 Auduino Uno 控制板的 PWM pin 9, 利用 Code Editor 納入下列 Arduino 程式, 再利用 upload and run 將程式編譯後上傳到虛擬的 Arduino Uno 控制板上執行, 就可以模擬 Servo Motor 持續左右各旋轉 180 度. 操作畫面如下圖所示:&nbsp;</span></p><p><span><img src="/images/arduino_uno_servo_on_tinkercad.png" width="700" height="373" alt=""></span></p><p>實體 Arduino Servo Motor Control</p><p>完成上述以 TinkerCAD 模擬伺服馬達的接線與程式執行之後, 接著操作實體 Arduino 控制板與 Servo Motor 的控制, 首先利用電腦驅動 Arduino 控制板, 然後再利用板子上的脈衝寬度調變 (PWM, Pulse Width Modulation) 訊號控制伺服馬達, 之後再利用傳動機構與資訊控制介面, 製作所需的機電資整合系統. 電子電機系統除了可以方便感測各種物理化學量外, 還能夠快速傳遞感測與命令訊號, 而機械系統則透過機構元件的組合, 扮演傳遞功率致動或抵抗外力撞擊與疲勞破壞的角色, 至於資訊系統則用來整合各種資訊, 用更友善的人機介面, 讓使用者更有效能地運用機電資系統產品.</p><p><a href="https://mde1a1.kmol.info/2017fall/raw/arduino-1.8.5-windows.zip?name=4aee6f20d04156a10d1739e40f54cda7ef1b0e0e">arduino-1.8.4-windows.zip</a><span>&nbsp;</span>下載 (或直至<span>&nbsp;</span><a href="https://www.arduino.cc/en/Main/Software">https://www.arduino.cc/en/Main/Software</a><span>&nbsp;</span>下載)</p><p>控制台 - 硬體與音效 - 裝置管理員 利用解開的 arduino driver 程式驅動 Arduino Uno 控制板, 並取得 COM 對應號碼, 例如: COM7, 之後的 Arduino 編譯後可以透過此 COM 埠號將程式上傳到控制板上執行.</p><p>MG996R 伺服馬達</p><p>棕色線 GND</p><p>紅色線 V+5V</p><p>橘色線 PWM</p><p>控制程式:</p><pre class="brush:cpp;auto-links:false;toolbar:false" contenteditable="false">#include &lt;Servo.h&gt;Servo myservo;  // 建立一個 servo 物件，最多可建立 12個 servoint pos = 0;    // 設定 Servo 位置的變數void setup() {  myservo.attach(9);  // 將 servo 物件連接到 pin 9}void loop() {  // 正轉 180度  for (pos = 0; pos &lt;= 180; pos += 1) // 從 0 度旋轉到 180 度，每次 1 度   {         myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置    delay(15);                        // 等待 15ms 讓 servo 走到指定位置  }// 反轉 180度  for (pos = 180; pos &gt;= 0; pos -= 1) // 從 180 度旋轉到 0 度，每次 1 度   {     myservo.write(pos);               // 告訴 servo 走到 'pos' 的位置delay(15);                        // 等待 15ms 讓 servo 走到指定位置  }}</pre><p>參考資料:</p><p><a href="https://link.springer.com/book/10.1007/978-1-4302-3241-4">Beginning Arduino</a></p><p><a href="https://link.springer.com/book/10.1007/978-1-4302-3778-5">Beginning Arduino Programming</a></p><p><a href="http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html">http://www.playrobot.com/20kgf-cm/1150-standard-servo-mg996r.html</a></p><p><a href="http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf">http://www.playrobot.com/freedownload/Arduino_Happy%20Learning_DEMO.pdf</a></p><p><a href="http://atceiling.blogspot.tw/2017/03/arduino.html">http://atceiling.blogspot.tw/2017/03/arduino.html</a></p><p>Python, Arduino and VPython:</p><p><a href="http://www.toptechboy.com/arduino-lessons/">http://www.toptechboy.com/arduino-lessons/</a></p><p><a href="https://create.arduino.cc/projecthub/chanhj/magnetic-levitation-8c3ad0">Arduino Magnetic Levitation System</a></p><p><a href="http://www.instructables.com/id/Magnetic-Levitation/">http://www.instructables.com/id/Magnetic-Levitation/</a><span>&nbsp;</span>(<a href="https://www.amazon.com/Electromagnet-Solenoid-Electric-Mechanical-Experimental/dp/B008OENGU0/">電磁鐵1</a>,<span>&nbsp;</span><a href="http://goods.ruten.com.tw/item/show?21620739232041">電磁鐵2</a>)</p><p><a href="http://embeddedlaboratory.blogspot.tw/2017/04/design-gui-in-python-using-pyqt5.html">Arduino and PyQt5</a></p><p><a href="http://embeddedlaboratory.blogspot.tw/search/label/Arduino">http://embeddedlaboratory.blogspot.tw/search/label/Arduino</a></p><p><a href="http://electronut.in/plotting-real-time-data-from-arduino-using-python/">Arduino and Matplotlib</a></p><p>無碳刷直流馬達運作原理:</p><p><iframe width="560" height="315" src="https://www.youtube.com/embed/bCEiOnuODac" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><p>步進馬達運作原理:</p><p><iframe width="560" height="315" src="https://www.youtube.com/embed/eyqwLiowZiU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><p>伺服馬達運作原理:</p><p><iframe width="560" height="315" src="https://www.youtube.com/embed/hg3TIFIxWCo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><p>伺服馬達與步進馬達差異:</p><p><iframe width="560" height="315" src="https://www.youtube.com/embed/x48ggHZDFLY" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><p>開放迴路與封閉迴路控制步進馬達差異:</p><p><iframe width="560" height="315" src="https://www.youtube.com/embed/Y5YPtglO1yE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></p><h2>解讀網頁內容</h2>
 <p>Onshape 教學影片</p>
 <p><a href="https://www.onshape.com/video">https://www.onshape.com/video</a><span>&nbsp;</span>為 Onshpae 官方網站所提供的教學影片區, 請各班以每人兩個影片的方式進行分配, 分別以中文說明影片內容操作過程, 並上傳到個人的 Vimeo 與 Youtube 影片區.</p>
 <p>預計分配的影片:</p>
@@ -1375,7 +1322,19 @@ for i in range(len(result)):
 <li>參考 - 詳列所引用的參考內容</li>
 <li>附錄 - 附加值得參考的詳細內容</li>
 </ul>
-<h2>3D 列印機</h2><p>分組專題人員: 六人</p><p><span>設計模擬: 三人</span></p><p>組立製作: 三人</p><p>XYZ 架構</p><p><a href="https://github.com/mdecourse/kll3pp">https://github.com/mdecourse/kll3pp</a>&nbsp;</p><p><a href="https://cad.onshape.com/documents/d2e8a54fc59d1a20435d8dd2/w/8ff652a5f6c61e4648cb5a0b/e/cce13c0f443986af885c79ff">Onshape 零組件</a></p><p><img src="/images/kll3pp.jpg" width="600" height="800" alt=""></p><p><img src="/images/kll3pp.png" width="600" height="338" alt=""></p><p>Delta 架構</p><p>分組專題人員: 六人</p><p><a href="https://cad.onshape.com/documents/5857da172c6401109cd59c40/w/3c12983596f0b655e19c8242/e/acc3c9a33b806c014834c490">Delta 3D 印表機</a> (<a href="https://www.onshape.com/">Onshape</a> 連結)</p><p><img src="/images/delta3dPrinter.jpg" width="384" height="752" alt=""></p><h2>行走機構</h2>
+<h2>3D 列印機</h2>
+<p>分組專題人員: 六人</p>
+<p><span>設計模擬: 三人</span></p>
+<p>組立製作: 三人</p>
+<p>XYZ 架構</p>
+<p><a href="https://github.com/mdecourse/kll3pp">https://github.com/mdecourse/kll3pp</a>&nbsp;</p>
+<p><a href="https://cad.onshape.com/documents/d2e8a54fc59d1a20435d8dd2/w/8ff652a5f6c61e4648cb5a0b/e/cce13c0f443986af885c79ff">Onshape 零組件</a></p>
+<p><img src="/images/kll3pp.jpg" width="600" height="800" alt=""></p>
+<p><img src="/images/kll3pp.png" width="600" height="338" alt=""></p>
+<p>Delta 架構</p>
+<p>分組專題人員: 六人</p>
+<p><a href="https://cad.onshape.com/documents/5857da172c6401109cd59c40/w/3c12983596f0b655e19c8242/e/acc3c9a33b806c014834c490">Delta 3D 印表機</a> (<a href="https://www.onshape.com/">Onshape</a> 連結)</p>
+<p><img src="/images/delta3dPrinter.jpg" width="384" height="752" alt=""></p><h2>行走機構</h2>
 <p>主動式行走機構 - Active Walker - 以馬達驅動行走</p>
 <p>分組專題人員: 六人</p>
 <p><span>設計模擬: 三人</span></p>

@@ -1175,6 +1175,8 @@ def savePage():
     page_content = page_content.replace("\n","")
     file.write(page_content)
     file.close()
+    
+    generate_pages()
     '''
     # need to parse_content() to eliminate duplicate heading
     head, level, page = parse_content()
@@ -1205,6 +1207,8 @@ def ssavePage():
         else:
             file.write("&lt;h"+str(level[index])+"&gt;"+str(head[index])+"&lt;/h"+str(level[index])+"&gt;"+str(page[index]))
     file.close()
+    
+    generate_pages()
 
     # if head[int(page_order)] still existed and equal original_head_title, go back to origin edit status, otherwise go to "/"
     # here the content is modified, we need to parse the new page_content again
@@ -2059,7 +2063,7 @@ def generate_pages():
         file.close()
     # generate each page html under content directory
 
-    return "已經將網站轉為靜態網頁. &lt;a href='/'&gt;Home&lt;/a&gt;"
+    #return "已經將網站轉為靜態網頁. &lt;a href='/'&gt;Home&lt;/a&gt;"
 
 </t>
 <t tx="leo.20180630144325.1"># seperate page need heading and edit variables, if edit=1, system will enter edit mode
