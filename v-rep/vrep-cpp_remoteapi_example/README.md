@@ -1,0 +1,33 @@
+# RoboCIMulator
+This repository contains a simulator of the game of soccer Very Small Size in a simulation platform called VREP. To be able to use this software you must have installed the VREP Simulator software and also the CMake for build the application. This software contains a set of tests for testing and verify the functionality of the libs built to create the simulations. The libs are built to help you to build your own simulation are plenty documented in the .hpp files. If you want to copy paste an example and use it to build your own applications, copy the file in src/tests/test_robotagent.cpp, it will allow you to easy modify the software to insert your own agent functions.
+The used classes are found in src/libs and the tests in src/tests.
+
+## Running the tests:
+1. Open [V-REP](http://www.coppeliarobotics.com/downloads.html) software 
+2. Open the file 1x1.ttt
+3. Go to the folder vrep-example/
+4. Execute the command "[cmake](https://cmake.org/install/) CMakeLists.txt"
+5. Execute the command make
+6. Execute ./test_agent or ./test_sim
+7. Feel free to build your own software
+
+In this moment, for easy development use the src/tests/test_robotagent.cpp as a reference and insert your own agent software for the game.
+
+# KMOLab
+
+start kmol_twigs
+
+cd vrep-example
+
+use vrep-example.pro to compile src/robot_control.cpp or src/simulation_1x1.cpp
+
+qmake
+
+ming32-make -f Makefile.Release
+
+cd release
+
+use v-rep open 1x1.ttt
+
+simulation.exe
+
