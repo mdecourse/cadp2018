@@ -22,7 +22,7 @@
 <v t="leo.20180702145458.1"><vh>@button stop http.server</vh></v>
 </v>
 <v t="leo.20180703102027.1"><vh>@edit README.md</vh></v>
-<v t="amd.20160714225245.2"><vh>about cmsimfly</vh>
+<v t="amd.20160714225245.2" a="E"><vh>about cmsimfly</vh>
 <v t="amd.20160714225847.1"><vh>@edit README.md</vh></v>
 <v t="amd.20160714230137.1"><vh>@edit .gitignore</vh></v>
 <v t="amd.20160714230155.1"><vh>@edit LICENSE</vh></v>
@@ -36,7 +36,7 @@
 <v t="leo.20180630211407.1"><vh>必須修改頁面內容</vh></v>
 </v>
 </v>
-<v t="leo.20180701102916.1" a="E"><vh>2018Summer 改版</vh>
+<v t="leo.20180701102916.1"><vh>2018Summer 改版</vh>
 <v t="leo.20180702104314.1"><vh>整合設定檔案</vh></v>
 <v t="leo.20180701205822.1"><vh>editorhead 修改</vh></v>
 <v t="leo.20180701212101.1"><vh>有關 Cango library</vh></v>
@@ -60,7 +60,7 @@
 <v t="amd.20160714230058.1" a="E"><vh>@clean wsgi.py</vh>
 <v t="amd.20160714230122.1"><vh>wsgi declarations</vh></v>
 </v>
-<v t="amd.20160714230833.1" a="E"><vh>編輯 flaskapp.py</vh>
+<v t="amd.20160714230833.1"><vh>編輯 flaskapp.py</vh>
 <v t="amd.20160714230833.2" a="E"><vh>@clean flaskapp.py</vh>
 <v t="amd.20160714230833.3"><vh>&lt;&lt;declarations&gt;&gt;</vh></v>
 <v t="amd.20160714230833.4"><vh>&lt;&lt;registers&gt;&gt;</vh></v>
@@ -106,6 +106,7 @@
 <v t="amd.20160714231319.1"><vh>parse_content</vh></v>
 <v t="amd.20160714231359.1"><vh>render_menu</vh></v>
 <v t="leo.20180630203542.1"><vh>render_menu2</vh></v>
+<v t="leo.20180711105456.1"><vh>reveal</vh></v>
 <v t="amd.20160715161730.1"><vh>saveConfig</vh></v>
 <v t="amd.20160715154534.1"><vh>savePage</vh></v>
 <v t="amd.20160714231440.1"><vh>search_content</vh></v>
@@ -125,6 +126,38 @@
 <v t="leo.20180630233136.1"><vh>syntaxhighlight2</vh></v>
 <v t="amd.20160714231606.1"><vh>tinymce_editor (#4)</vh></v>
 <v t="amd.20160714232232.1"><vh>unique</vh></v>
+</v>
+</v>
+<v t="leo.20180716222734.1" a="E"><vh>編輯 reveal</vh>
+<v t="leo.20180716222734.2" a="E"><vh>@path reveal</vh>
+<v t="leo.20180716222734.3" a="E"><vh>@clean index.html</vh>
+<v t="leo.20180716222734.4" a="E"><vh>html</vh>
+<v t="leo.20180716222734.5"><vh>head</vh></v>
+<v t="leo.20180716222734.6" a="E"><vh>body</vh>
+<v t="leo.20180716222734.7" a="E"><vh>reveal div</vh>
+<v t="leo.20180716222734.8" a="E"><vh>slides div</vh>
+<v t="leo.20180716222734.9" a="E"><vh>封面投影片</vh>
+<v t="leo.20180716222734.10"><vh>封面投影片內容</vh></v>
+</v>
+<v t="leo.20180716222734.11" a="E"><vh>快捷鍵</vh>
+<v t="leo.20180716222734.12"><vh>投影片快捷鍵</vh></v>
+</v>
+<v t="leo.20180716222734.13"><vh>各式內容引用範例</vh>
+<v t="leo.20180716222734.14" a="E"><vh>導入數學符號與方程式</vh>
+<v t="leo.20180716222734.15"><vh>LaTeX 格式方程式</vh></v>
+</v>
+<v t="leo.20180716222734.16" a="E"><vh>導入縮排程式碼</vh>
+<v t="leo.20180716222734.17"><vh>引用程式碼</vh></v>
+</v>
+<v t="leo.20180716222734.18" a="E"><vh>導入影片</vh>
+<v t="leo.20180716222734.19"><vh>iframe 導入影片</vh></v>
+</v>
+</v>
+</v>
+</v>
+</v>
+</v>
+</v>
 </v>
 </v>
 </vnodes>
@@ -254,6 +287,7 @@ else:
 <t tx="amd.20160714230833.1"></t>
 <t tx="amd.20160714230833.16">@app.route('/download/', methods=['GET'])
 def download():
+    """Download file using URL."""
     filename = request.args.get('filename')
     type = request.args.get('type')
     if type == "files":
@@ -561,7 +595,8 @@ def search_content(head, page, search):
 <t tx="amd.20160714231555.1">def editorhead():
     return '''
     &lt;br /&gt;
-&lt;script src="//cdn.tinymce.com/4/tinymce.min.js"&gt;&lt;/script&gt;
+&lt;!--&lt;script src="//cdn.tinymce.com/4/tinymce.min.js"&gt;&lt;/script&gt;--&gt;
+&lt;script src="/static/tinymce4/tinymce/tinymce.min.js"&gt;&lt;/script&gt;
 &lt;script src="/static/tinymce4/tinymce/plugins/sh4tinymce/plugin.min.js"&gt;&lt;/script&gt;
 &lt;link rel = "stylesheet" href = "/static/tinymce4/tinymce/plugins/sh4tinymce/style/style.css"&gt;
 &lt;script&gt;
@@ -751,6 +786,7 @@ def file_lister(directory, type=None, page=1, item_per_page=10):
 
 </t>
 <t tx="amd.20160714231903.1">def downloadlist_access_list(files, starti, endi):
+    """List files function for download_list."""
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
     # files are all the data to list, from starti to endi
@@ -845,6 +881,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 &lt;li&gt;&lt;a href="/fileuploadform"&gt;File Upload&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="/download_list"&gt;File List&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="/logout"&gt;Logout&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/reveal/index.html"&gt;reveal&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/blog/index.html"&gt;blog&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="/generate_pages"&gt;generate_pages&lt;/a&gt;&lt;/li&gt;
 '''
     outstring += '''
@@ -886,6 +924,55 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 &lt;script type="text/javascript"&gt;SyntaxHighlighter.all();&lt;/script&gt;
 
 &lt;!-- for LaTeX equations 暫時不用
+    &lt;script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript"&gt;
+    init_mathjax = function() {
+        if (window.MathJax) {
+            // MathJax loaded
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\\\(","\\\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\\\[","\\\\]"] ]
+                },
+                displayAlign: 'left', // Change this to 'center' to center equations.
+                "HTML-CSS": {
+                    styles: {'.MathJax_Display': {"margin": 0}}
+                }
+            });
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+        }
+    }
+    init_mathjax();
+    &lt;/script&gt;
+ --&gt;
+ &lt;!-- 暫時不用
+&lt;script src="/static/fengari-web.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/static/Cango-13v08-min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/static/CangoAxes-4v01-min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/static/gearUtils-05.js"&gt;&lt;/script&gt;
+--&gt;
+&lt;!-- for Brython 暫時不用
+&lt;script src="https://scrum-3.github.io/web/brython/brython.js"&gt;&lt;/script&gt;
+&lt;script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"&gt;&lt;/script&gt;
+--&gt;
+'''
+def syntaxhighlight2():
+    return '''
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"&gt;&lt;/script&gt;
+&lt;link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/&gt;
+&lt;script type="text/javascript"&gt;SyntaxHighlighter.all();&lt;/script&gt;
+
+&lt;!-- for LaTeX equations 暫時不用
 &lt;script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"&gt;&lt;/script&gt;
 &lt;script type="text/javascript"&gt;
 init_mathjax = function() {
@@ -908,19 +995,10 @@ init_mathjax();
 &lt;/script&gt;
 --&gt;
 &lt;!-- 暫時不用
-&lt;script src="/static/fengari-web.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="/static/Cango-13v08-min.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="/static/CangoAxes-4v01-min.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="/static/gearUtils-05.js"&gt;&lt;/script&gt;
---&gt;
-&lt;!-- for Brython 暫時不用
-&lt;script src="https://scrum-3.github.io/web/brython/brython.js"&gt;&lt;/script&gt;
-&lt;script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"&gt;&lt;/script&gt;
---&gt;
-'''
 </t>
 <t tx="amd.20160714232140.1"># 與 file_selector 搭配的取檔程式
 def downloadselect_access_list(files, starti, endi):
+    """Accompanied with file_selector."""
     outstring = ""
     for index in range(int(starti)-1, int(endi)):
         fileName, fileExtension = os.path.splitext(files[index])
@@ -1013,7 +1091,7 @@ a.xhfbfile:hover{
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;2018 電腦輔助設計實習教學手冊&lt;/title&gt; \
+&lt;title&gt;2018 計算機程式教學手冊&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="/static/cmsimply.css"&gt;
 '''+syntaxhighlight()
 
@@ -1052,6 +1130,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 &lt;li&gt;&lt;a href="/fileuploadform"&gt;file upload&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="/download_list"&gt;file list&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="/logout"&gt;logout&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/reveal/index.html"&gt;reveal&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/blog/index.html"&gt;blog&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="/generate_pages"&gt;generate_pages&lt;/a&gt;&lt;/li&gt;
 '''
     else:
@@ -1085,6 +1165,7 @@ def login():
 </t>
 <t tx="amd.20160714233131.1">@app.route('/checkLogin', methods=['POST'])
 def checkLogin():
+    """Check user login process."""
     password = request.form["password"]
     site_title, saved_password = parse_config()
     hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
@@ -1098,6 +1179,7 @@ def checkLogin():
 @app.route('/edit_page', defaults={'edit': 1})
 @app.route('/edit_page/&lt;path:edit&gt;')
 def edit_page(edit):
+    """Page edit html form."""
     # check if administrator
     if not isAdmin():
         return redirect('/login')
@@ -1175,8 +1257,9 @@ def savePage():
     page_content = page_content.replace("\n","")
     file.write(page_content)
     file.close()
-    
-    generate_pages()
+
+    # if every savePage generate_pages needed
+    #generate_pages()
     '''
     # need to parse_content() to eliminate duplicate heading
     head, level, page = parse_content()
@@ -1207,8 +1290,8 @@ def ssavePage():
         else:
             file.write("&lt;h"+str(level[index])+"&gt;"+str(head[index])+"&lt;/h"+str(level[index])+"&gt;"+str(page[index]))
     file.close()
-    
-    generate_pages()
+    # if every ssavePage generate_pages needed
+    #generate_pages()
 
     # if head[int(page_order)] still existed and equal original_head_title, go back to origin edit status, otherwise go to "/"
     # here the content is modified, we need to parse the new page_content again
@@ -1380,6 +1463,7 @@ def file_selector():
 @app.route('/download_list', methods=['GET'])
 #def download_list(edit, item_per_page=5, page=1, keyword=None):
 def download_list():
+    """List files in downloads directory."""
     if not isAdmin():
         return redirect("/login")
     else:
@@ -1704,6 +1788,7 @@ def image_delete_file():
 </t>
 <t tx="amd.20160715161158.1">@app.route('/doDelete', methods=['POST'])
 def doDelete():
+    """Action to delete user uploaded files."""
     if not isAdmin():
         return redirect("/login")
     # delete files
@@ -1778,6 +1863,7 @@ def search_form(edit):
 </t>
 <t tx="amd.20160715161508.1">@app.route('/doSearch', methods=['POST'])
 def doSearch():
+    """Action to search content.htm using keyword"""
     if not isAdmin():
         return redirect("/login")
     else:
@@ -1798,6 +1884,7 @@ def doSearch():
 <t tx="amd.20160715161642.1">@app.route('/edit_config', defaults={'edit': 1})
 @app.route('/edit_config/&lt;path:edit&gt;')
 def edit_config(edit):
+    """Config edit html form."""
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     if not isAdmin():
@@ -1979,6 +2066,7 @@ def get_page(heading, edit):
 <t tx="amd.20160717222221.1"></t>
 <t tx="amd.20160717235504.1">@app.route('/delete_file', methods=['POST'])
 def delete_file():
+    """Delete user uploaded files."""
     if not isAdmin():
         return redirect("/login")
     head, level, page = parse_content()
@@ -2010,7 +2098,8 @@ http://stackoverflow.com/questions/12247681/tinymce-is-adding-nbsp-instead-of-th
 <t tx="amd.20160718212924.1"># downloads 方法主要將位於 downloads 目錄下的檔案送回瀏覽器
 @app.route('/downloads/&lt;path:path&gt;')
 def downloads(path):
-  return send_from_directory(_curdir+"/downloads/", path)
+    """Send files in downloads directory."""
+    return send_from_directory(_curdir+"/downloads/", path)
 
 </t>
 <t tx="leo.20180625155103.1">2018.06.25 啟動
@@ -2062,8 +2151,7 @@ def generate_pages():
         file.write(get_page2(head[i], 0))
         file.close()
     # generate each page html under content directory
-
-    #return "已經將網站轉為靜態網頁. &lt;a href='/'&gt;Home&lt;/a&gt;"
+    return "已經將網站轉為靜態網頁. &lt;a href='/'&gt;Home&lt;/a&gt;"
 
 </t>
 <t tx="leo.20180630144325.1"># seperate page need heading and edit variables, if edit=1, system will enter edit mode
@@ -2191,7 +2279,7 @@ def get_page2(heading, edit):
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;2018 電腦輔助設計實習教學手冊&lt;/title&gt; \
+&lt;title&gt;2018 計算機程式教學手冊&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="./../static/cmsimply.css"&gt;
 '''+syntaxhighlight2()
 
@@ -2218,6 +2306,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="sitemap.html"&gt;Site Map&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="./../reveal/index.html"&gt;reveal&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="./../blog/index.html"&gt;blog&lt;/a&gt;&lt;/li&gt;
 '''
     outstring += '''
 &lt;/ul&gt;
@@ -2230,44 +2320,7 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 整體依附在 OpenShift 的部分必須刪除?
 
 可能在 generate_pages  時針對 downloads 與 images 目錄中的引用,  將動態格式轉為靜態格式</t>
-<t tx="leo.20180630233136.1">def syntaxhighlight2():
-    return '''
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"&gt;&lt;/script&gt;
-&lt;link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/&gt;
-&lt;script type="text/javascript"&gt;SyntaxHighlighter.all();&lt;/script&gt;
-
-&lt;!-- for LaTeX equations 暫時不用
-&lt;script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"&gt;&lt;/script&gt;
-&lt;script type="text/javascript"&gt;
-init_mathjax = function() {
-    if (window.MathJax) {
-        // MathJax loaded
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [ ['$','$'], ["\\\\(","\\\\)"] ],
-                displayMath: [ ['$$','$$'], ["\\\\[","\\\\]"] ]
-            },
-            displayAlign: 'left', // Change this to 'center' to center equations.
-            "HTML-CSS": {
-                styles: {'.MathJax_Display': {"margin": 0}}
-            }
-        });
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    }
-}
-init_mathjax();
-&lt;/script&gt;
-&lt;script src="./../static/fengari-web.js"&gt;&lt;/script&gt;
+<t tx="leo.20180630233136.1">&lt;script src="./../static/fengari-web.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="./../static/Cango-13v08-min.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="./../static/gearUtils-05.js"&gt;&lt;/script&gt;
@@ -2456,5 +2509,218 @@ bpm.kill(kind="http")
 </t>
 <t tx="leo.20180702145534.1"></t>
 <t tx="leo.20180702145555.1"></t>
+<t tx="leo.20180711105456.1"># reveal 方法主要將位於 reveal 目錄下的檔案送回瀏覽器
+@app.route('/reveal/&lt;path:path&gt;')
+def reveal(path):
+  return send_from_directory(_curdir+"/reveal/", path)
+# blog 方法主要將位於 blog目錄下的檔案送回瀏覽器
+@app.route('/blog/&lt;path:path&gt;')
+def blog(path):
+  return send_from_directory(_curdir+"/blog/", path)
+
+</t>
+<t tx="leo.20180716222734.1"></t>
+<t tx="leo.20180716222734.10">## 2018Fall 電腦輔助設計實習
+
+### 虎科大機械設計工程系
+
+&lt;small&gt;
+Created by [KMOLab](http://lab.kmol.info/)
+&lt;/small&gt;
+
+[電腦輔助設計實習網誌](./../blog/index.html)
+
+
+</t>
+<t tx="leo.20180716222734.11">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
+<t tx="leo.20180716222734.12"># 投影片快捷鍵
+
+* 利用箭頭上下前後換頁
+* 按 f 鍵進入全螢幕模式 (full screen)
+* 按 s 鍵可以顯示投影片筆記 (show)
+* 按 o 鍵可以切換單張或全域檢視 (overview)
+* 按 b 或 . 鍵可以切換螢幕黑屏 (black)
+* 按 Esc 可以退出全螢幕或全域檢視 (Escape)
+
+</t>
+<t tx="leo.20180716222734.13">&lt;section&gt;
+@others
+&lt;/section&gt;
+
+</t>
+<t tx="leo.20180716222734.14">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+&lt;!-- 請注意, @others 不可以內縮 --&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+
+						
+</t>
+<t tx="leo.20180716222734.15"># 數學符號與方程式
+
+Inline math equations go in like so: $\omega = d\phi / dt$. Display
+math should get its own line and be put in in double-dollarsigns:
+
+$$I = \int \rho R^{2} dV$$
+</t>
+<t tx="leo.20180716222734.16">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+&lt;!-- 請注意, @others 不可以內縮 --&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+
+						
+</t>
+<t tx="leo.20180716222734.17">## 利用 Markdown 寫投影片
+以下利用 Markdown 格式展示 Python 程式碼:
+```
+@language python
+# use threading and subprocess to threading the make process
+import os
+import subprocess
+import threading
+
+def domake():
+    
+    path = "../exposed/api/exposed"
+    ubuntu = "../Ubuntu"
+    
+    # create obj path
+    
+    if not os.path.exists(path+"/../obj"):
+        os.makedirs(path+"/../obj")
+    
+    subprocess.call(["make", "clean"], cwd=path)
+    subprocess.call("make", cwd=path)
+    subprocess.call(["cp", "{libslvs.so, _slvs.so, slvs.py}", ubuntu], cwd=path)
+    subprocess.call(["python3", "circle_ex.py"], cwd=path+"/"+ubuntu)
+    
+make = threading.Thread(target=domake)
+make.start()
+```
+</t>
+<t tx="leo.20180716222734.18">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
+<t tx="leo.20180716222734.19">## 使用 iframe 導入影片
+
+### 導入影片 template
+
+&lt;iframe src="https://player.vimeo.com/video/183950627" width="640" height="492" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen&gt;&lt;/iframe&gt;
+</t>
+<t tx="leo.20180716222734.2"></t>
+<t tx="leo.20180716222734.3">@language xml
+@tabwidth -4
+@others
+
+</t>
+<t tx="leo.20180716222734.4">&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+@others
+&lt;/html&gt;
+</t>
+<t tx="leo.20180716222734.5">&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+&lt;title&gt;
+2018 Fall 機械設計工程系電腦輔助設計實習
+&lt;/title&gt;
+    &lt;meta name="description" content="A framework for easily creating beautiful presentations using HTML"&gt;
+    &lt;meta name="author" content="Hakim El Hattab"&gt;
+    
+    &lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;
+    &lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"&gt;
+    
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;
+    
+    &lt;link rel="stylesheet" href="css/reveal.css"&gt;
+    &lt;link rel="stylesheet" href="css/theme/black.css" id="theme"&gt;
+    
+    &lt;!-- Theme used for syntax highlighting of code --&gt;
+    &lt;link rel="stylesheet" href="lib/css/zenburn.css"&gt;
+
+    &lt;!-- Printing and PDF exports --&gt;
+    &lt;script&gt;
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    &lt;/script&gt;
+
+    &lt;!--[if lt IE 9]&gt;
+    &lt;script src="lib/js/html5shiv.js"&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;
+&lt;/head&gt;
+
+</t>
+<t tx="leo.20180716222734.6">&lt;body&gt;
+@others
+&lt;script src="lib/js/head.min.js"&gt;&lt;/script&gt;
+&lt;script src="js/reveal.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+        // More info https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            history: true,
+            center: true,
+
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+            // More info https://github.com/hakimel/reveal.js#dependencies
+            dependencies: [
+                { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                { src: 'plugin/zoom-js/zoom.js', async: true },
+                { src: 'plugin/notes/notes.js', async: true },
+                { src: 'plugin/math/math.js', async: true }
+            ]
+        });
+&lt;/script&gt;
+&lt;/body&gt;
+
+</t>
+<t tx="leo.20180716222734.7">&lt;div class="reveal"&gt;
+@others
+&lt;/div&gt;
+
+</t>
+<t tx="leo.20180716222734.8">&lt;!-- Any section element inside of this container is displayed as a slide --&gt;
+&lt;div class="slides"&gt;
+@others
+&lt;/div&gt;
+
+</t>
+<t tx="leo.20180716222734.9">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
 </tnodes>
 </leo_file>

@@ -70,6 +70,7 @@ app.secret_key = 'A0Zr9@8j/3yX R~XHH!jmN]LWX/,?R@T'
 
 @app.route('/checkLogin', methods=['POST'])
 def checkLogin():
+    """Check user login process."""
     password = request.form["password"]
     site_title, saved_password = parse_config()
     hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
@@ -80,6 +81,7 @@ def checkLogin():
     
 @app.route('/delete_file', methods=['POST'])
 def delete_file():
+    """Delete user uploaded files."""
     if not isAdmin():
         return redirect("/login")
     head, level, page = parse_content()
@@ -104,6 +106,7 @@ def delete_file():
         directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
 @app.route('/doDelete', methods=['POST'])
 def doDelete():
+    """Action to delete user uploaded files."""
     if not isAdmin():
         return redirect("/login")
     # delete files
@@ -133,6 +136,7 @@ def doDelete():
 
 @app.route('/doSearch', methods=['POST'])
 def doSearch():
+    """Action to search content.htm using keyword"""
     if not isAdmin():
         return redirect("/login")
     else:
@@ -151,6 +155,7 @@ def doSearch():
      </section></div></body></html>"
 @app.route('/download/', methods=['GET'])
 def download():
+    """Download file using URL."""
     filename = request.args.get('filename')
     type = request.args.get('type')
     if type == "files":
@@ -166,6 +171,7 @@ def download():
 @app.route('/download_list', methods=['GET'])
 #def download_list(edit, item_per_page=5, page=1, keyword=None):
 def download_list():
+    """List files in downloads directory."""
     if not isAdmin():
         return redirect("/login")
     else:
@@ -269,6 +275,7 @@ def download_list():
         directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
 
 def downloadlist_access_list(files, starti, endi):
+    """List files function for download_list."""
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
     # files are all the data to list, from starti to endi
@@ -298,10 +305,12 @@ def downloadlist_access_list(files, starti, endi):
 # downloads 方法主要將位於 downloads 目錄下的檔案送回瀏覽器
 @app.route('/downloads/<path:path>')
 def downloads(path):
-  return send_from_directory(_curdir+"/downloads/", path)
+    """Send files in downloads directory."""
+    return send_from_directory(_curdir+"/downloads/", path)
 
 # 與 file_selector 搭配的取檔程式
 def downloadselect_access_list(files, starti, endi):
+    """Accompanied with file_selector."""
     outstring = ""
     for index in range(int(starti)-1, int(endi)):
         fileName, fileExtension = os.path.splitext(files[index])
@@ -314,6 +323,7 @@ def downloadselect_access_list(files, starti, endi):
 @app.route('/edit_config', defaults={'edit': 1})
 @app.route('/edit_config/<path:edit>')
 def edit_config(edit):
+    """Config edit html form."""
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     if not isAdmin():
@@ -336,6 +346,7 @@ def edit_config(edit):
 @app.route('/edit_page', defaults={'edit': 1})
 @app.route('/edit_page/<path:edit>')
 def edit_page(edit):
+    """Page edit html form."""
     # check if administrator
     if not isAdmin():
         return redirect('/login')
@@ -351,7 +362,8 @@ def editorfoot():
 def editorhead():
     return '''
     <br />
-<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<!--<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>-->
+<script src="/static/tinymce4/tinymce/tinymce.min.js"></script>
 <script src="/static/tinymce4/tinymce/plugins/sh4tinymce/plugin.min.js"></script>
 <link rel = "stylesheet" href = "/static/tinymce4/tinymce/plugins/sh4tinymce/style/style.css">
 <script>
@@ -633,8 +645,7 @@ def generate_pages():
         file.write(get_page2(head[i], 0))
         file.close()
     # generate each page html under content directory
-
-    #return "已經將網站轉為靜態網頁. <a href='/'>Home</a>"
+    return "已經將網站轉為靜態網頁. <a href='/'>Home</a>"
 
 # seperate page need heading and edit variables, if edit=1, system will enter edit mode
 # single page edit will use ssavePage to save content, it means seperate save page
@@ -1341,6 +1352,15 @@ def render_menu2(head, level, page, sitemap=0):
         current_level = level[index]
     directory += "</li></ul>"
     return directory
+# reveal 方法主要將位於 reveal 目錄下的檔案送回瀏覽器
+@app.route('/reveal/<path:path>')
+def reveal(path):
+  return send_from_directory(_curdir+"/reveal/", path)
+# blog 方法主要將位於 blog目錄下的檔案送回瀏覽器
+@app.route('/blog/<path:path>')
+def blog(path):
+  return send_from_directory(_curdir+"/blog/", path)
+
 @app.route('/saveConfig', methods=['POST'])
 def saveConfig():
     if not isAdmin():
@@ -1380,8 +1400,9 @@ def savePage():
     page_content = page_content.replace("\n","")
     file.write(page_content)
     file.close()
-    
-    generate_pages()
+
+    # if every savePage generate_pages needed
+    #generate_pages()
     '''
     # need to parse_content() to eliminate duplicate heading
     head, level, page = parse_content()
@@ -1498,6 +1519,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <li><a href="/fileuploadform">File Upload</a></li>
 <li><a href="/download_list">File List</a></li>
 <li><a href="/logout">Logout</a></li>
+<li><a href="/reveal/index.html">reveal</a></li>
+<li><a href="/blog/index.html">blog</a></li>
 <li><a href="/generate_pages">generate_pages</a></li>
 '''
     outstring += '''
@@ -1509,7 +1532,7 @@ def set_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 電腦輔助設計實習教學手冊</title> \
+<title>2018 計算機程式教學手冊</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 '''+syntaxhighlight()
 
@@ -1548,6 +1571,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <li><a href="/fileuploadform">file upload</a></li>
 <li><a href="/download_list">file list</a></li>
 <li><a href="/logout">logout</a></li>
+<li><a href="/reveal/index.html">reveal</a></li>
+<li><a href="/blog/index.html">blog</a></li>
 <li><a href="/generate_pages">generate_pages</a></li>
 '''
     else:
@@ -1563,7 +1588,7 @@ def set_css2():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 電腦輔助設計實習教學手冊</title> \
+<title>2018 計算機程式教學手冊</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
 '''+syntaxhighlight2()
 
@@ -1590,6 +1615,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <ul>
 <li><a href="index.html">Home</a></li>
 <li><a href="sitemap.html">Site Map</a></li>
+<li><a href="./../reveal/index.html">reveal</a></li>
+<li><a href="./../blog/index.html">blog</a></li>
 '''
     outstring += '''
 </ul>
@@ -1647,8 +1674,8 @@ def ssavePage():
         else:
             file.write("<h"+str(level[index])+">"+str(head[index])+"</h"+str(level[index])+">"+str(page[index]))
     file.close()
-    
-    generate_pages()
+    # if every ssavePage generate_pages needed
+    #generate_pages()
 
     # if head[int(page_order)] still existed and equal original_head_title, go back to origin edit status, otherwise go to "/"
     # here the content is modified, we need to parse the new page_content again
@@ -1682,28 +1709,28 @@ def syntaxhighlight():
 <script type="text/javascript">SyntaxHighlighter.all();</script>
 
 <!-- for LaTeX equations 暫時不用
-<script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
-<script type="text/javascript">
-init_mathjax = function() {
-    if (window.MathJax) {
-        // MathJax loaded
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [ ['$','$'], ["\\\\(","\\\\)"] ],
-                displayMath: [ ['$$','$$'], ["\\\\[","\\\\]"] ]
-            },
-            displayAlign: 'left', // Change this to 'center' to center equations.
-            "HTML-CSS": {
-                styles: {'.MathJax_Display': {"margin": 0}}
-            }
-        });
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    <script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
+    <script type="text/javascript">
+    init_mathjax = function() {
+        if (window.MathJax) {
+            // MathJax loaded
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\\\(","\\\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\\\[","\\\\]"] ]
+                },
+                displayAlign: 'left', // Change this to 'center' to center equations.
+                "HTML-CSS": {
+                    styles: {'.MathJax_Display': {"margin": 0}}
+                }
+            });
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+        }
     }
-}
-init_mathjax();
-</script>
--->
-<!-- 暫時不用
+    init_mathjax();
+    </script>
+ -->
+ <!-- 暫時不用
 <script src="/static/fengari-web.js"></script>
 <script type="text/javascript" src="/static/Cango-13v08-min.js"></script>
 <script type="text/javascript" src="/static/CangoAxes-4v01-min.js"></script>
@@ -1751,6 +1778,8 @@ init_mathjax = function() {
 }
 init_mathjax();
 </script>
+-->
+<!-- 暫時不用
 <script src="./../static/fengari-web.js"></script>
 <script type="text/javascript" src="./../static/Cango-13v08-min.js"></script>
 <script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"></script>
