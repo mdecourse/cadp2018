@@ -26,7 +26,7 @@
 <v t="amd.20160714225847.1"><vh>@edit README.md</vh></v>
 <v t="amd.20160714230137.1"><vh>@edit .gitignore</vh></v>
 <v t="amd.20160714230155.1"><vh>@edit LICENSE</vh></v>
-<v t="amd.20160715000709.1"><vh>註解</vh>
+<v t="amd.20160715000709.1" a="E"><vh>註解</vh>
 <v t="amd.20160715211540.1"><vh>處理 url 與 edit</vh></v>
 <v t="amd.20160715213810.1"><vh>必須處理 downloads 與 images 目錄</vh></v>
 <v t="leo.20180625155103.1"><vh>改為 pybean based</vh>
@@ -60,7 +60,7 @@
 <v t="amd.20160714230058.1" a="E"><vh>@clean wsgi.py</vh>
 <v t="amd.20160714230122.1"><vh>wsgi declarations</vh></v>
 </v>
-<v t="amd.20160714230833.1"><vh>編輯 flaskapp.py</vh>
+<v t="amd.20160714230833.1" a="E"><vh>編輯 flaskapp.py</vh>
 <v t="amd.20160714230833.2" a="E"><vh>@clean flaskapp.py</vh>
 <v t="amd.20160714230833.3"><vh>&lt;&lt;declarations&gt;&gt;</vh></v>
 <v t="amd.20160714230833.4"><vh>&lt;&lt;registers&gt;&gt;</vh></v>
@@ -673,7 +673,7 @@ function cmsFilePicker(callback, value, meta) {
         # default password is admin
         password="admin"
         hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
-        file.write("siteTitle:CMSimply - Simple Cloud CMS in Python 3\npassword:"+hashed_password)
+        file.write("siteTitle:2018 電腦輔助設計實習\npassword:"+hashed_password)
         file.close()
     config = file_get_contents(config_dir+"config")
     config_data = config.split("\n")
@@ -844,7 +844,7 @@ def set_admin_css():
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;CMSimply - Simple Cloud CMS in Python 3&lt;/title&gt; \
+&lt;title&gt;2018 電腦輔助設計實習&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="/static/cmsimply.css"&gt;
 '''+syntaxhighlight()
 
@@ -1091,7 +1091,7 @@ a.xhfbfile:hover{
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;2018 計算機程式教學手冊&lt;/title&gt; \
+&lt;title&gt;2018 電腦輔助設計實習教學手冊&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="/static/cmsimply.css"&gt;
 '''+syntaxhighlight()
 
@@ -2279,7 +2279,7 @@ def get_page2(heading, edit):
     outstring = '''&lt;!doctype html&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
-&lt;title&gt;2018 計算機程式教學手冊&lt;/title&gt; \
+&lt;title&gt;2018 電腦輔助設計實習教學手冊&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="./../static/cmsimply.css"&gt;
 '''+syntaxhighlight2()
 
