@@ -36,10 +36,11 @@
 <v t="leo.20180630211407.1"><vh>必須修改頁面內容</vh></v>
 </v>
 </v>
-<v t="leo.20180701102916.1"><vh>2018Summer 改版</vh>
+<v t="leo.20180701102916.1" a="E"><vh>2018Summer 改版</vh>
 <v t="leo.20180702104314.1"><vh>整合設定檔案</vh></v>
 <v t="leo.20180701205822.1"><vh>editorhead 修改</vh></v>
 <v t="leo.20180701212101.1"><vh>有關 Cango library</vh></v>
+<v t="leo.20180726214358.1"><vh>存檔時移除所有 tag of title</vh></v>
 </v>
 <v t="amd.20160718002238.1"><vh>參考資料</vh></v>
 <v t="amd.20160717220157.1"><vh>Flask 開講</vh></v>
@@ -2722,5 +2723,10 @@ make.start()
 
 						
 </t>
+<t tx="leo.20180726214358.1">存檔時移除所有 tag of title
+
+這是一個 bug, 目前若 title 有 tag, 則無法透過 get_page 辨識, 因此必須在存檔前移除所有 tags
+
+bug 180726</t>
 </tnodes>
 </leo_file>

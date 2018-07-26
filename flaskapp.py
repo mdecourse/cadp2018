@@ -1217,7 +1217,7 @@ def parse_config():
         # default password is admin
         password="admin"
         hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
-        file.write("siteTitle:2018 電腦輔助設計實習\npassword:"+hashed_password)
+        file.write("siteTitle:2018 計算機程式\npassword:"+hashed_password)
         file.close()
     config = file_get_contents(config_dir+"config")
     config_data = config.split("\n")
@@ -1225,8 +1225,9 @@ def parse_config():
     password = config_data[1].split(":")[1]
     return site_title, password
 def parse_content():
-    from pybean import Store, SQLiteWriter
+    #from pybean import Store, SQLiteWriter
     # if no content.db, create database file with cms table
+    '''
     if not os.path.isfile(config_dir+"content.db"):
         library = Store(SQLiteWriter(config_dir+"content.db", frozen=False))
         cms = library.new("cms")
@@ -1236,6 +1237,7 @@ def parse_content():
         cms.memo = "first memo"
         library.save(cms)
         library.commit()
+    '''
     # if no content.htm, generate a head 1 and content 1 file
     if not os.path.isfile(config_dir+"content.htm"):
         # create content.htm if there is no content.htm
@@ -1268,6 +1270,8 @@ def parse_content():
         #page_data = re.sub('</h[1-'+str(head_level)+']>', content_sep, data[index])
         page_data = re.sub('</h', content_sep, data[index])
         head = page_data.split(content_sep)[0]
+        # remove all tags from head - bug 180726
+        head = re.sub("<.*?>", "", head)
         order += 1
         head_list.append(head)
         # put level data into level variable
@@ -1353,10 +1357,18 @@ def render_menu2(head, level, page, sitemap=0):
     directory += "</li></ul>"
     return directory
 # reveal 方法主要將位於 reveal 目錄下的檔案送回瀏覽器
+'''
+目前在 CMSimfly 管理模式下已經無需透過 Flask送回 reveal 與 Pelican blog 資料
+因為設計成使用者啟動隨身系統時, 除了 Flask 外還加上 http server 來檢視 reveal 與 Pelican blog 的資料
+'''
 @app.route('/reveal/<path:path>')
 def reveal(path):
   return send_from_directory(_curdir+"/reveal/", path)
 # blog 方法主要將位於 blog目錄下的檔案送回瀏覽器
+'''
+目前在 CMSimfly 管理模式下已經無需透過 Flask 送回 reveal 與 Pelican blog 資料
+因為設計成使用者啟動隨身系統時, 除了 Flask 外還加上 http server 來檢視 reveal 與 Pelican blog 的資料
+'''
 @app.route('/blog/<path:path>')
 def blog(path):
   return send_from_directory(_curdir+"/blog/", path)
@@ -1482,7 +1494,7 @@ def set_admin_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 電腦輔助設計實習</title> \
+<title>2018 計算機程式</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 '''+syntaxhighlight()
 
@@ -1519,8 +1531,6 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <li><a href="/fileuploadform">File Upload</a></li>
 <li><a href="/download_list">File List</a></li>
 <li><a href="/logout">Logout</a></li>
-<li><a href="/reveal/index.html">reveal</a></li>
-<li><a href="/blog/index.html">blog</a></li>
 <li><a href="/generate_pages">generate_pages</a></li>
 '''
     outstring += '''
@@ -1532,7 +1542,7 @@ def set_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 電腦輔助設計實習教學手冊</title> \
+<title>2018 計算機程式教學手冊</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 '''+syntaxhighlight()
 
@@ -1571,8 +1581,6 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <li><a href="/fileuploadform">file upload</a></li>
 <li><a href="/download_list">file list</a></li>
 <li><a href="/logout">logout</a></li>
-<li><a href="/reveal/index.html">reveal</a></li>
-<li><a href="/blog/index.html">blog</a></li>
 <li><a href="/generate_pages">generate_pages</a></li>
 '''
     else:
@@ -1588,7 +1596,7 @@ def set_css2():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 電腦輔助設計實習教學手冊</title> \
+<title>2018 計算機程式教學手冊</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
 '''+syntaxhighlight2()
 
