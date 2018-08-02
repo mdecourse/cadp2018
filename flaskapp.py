@@ -21,6 +21,9 @@ import cgi
 # get the current directory of the file
 _curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
 import sys
+# for new parse_content function
+from bs4 import BeautifulSoup
+
 sys.path.append(_curdir)
 
 # 由 init.py 中的 uwsgi = False 或 True 決定在 uwsgi 模式或近端模式執行
@@ -87,23 +90,29 @@ def delete_file():
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     filename = request.form['filename']
-    if filename == None:
+    if filename is None:
         outstring = "no file selected!"
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Delete Error</h1>"+outstring+"<br/><br /></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                   directory + "</nav><section><h1>Delete Error</h1>" + \
+                   outstring + "<br/><br /></body></html>"
     outstring = "delete all these files?<br /><br />"
     outstring += "<form method='post' action='doDelete'>"
     # only one file is selected
     if isinstance(filename, str):
-        outstring += filename+"<input type='hidden' name='filename' value='"+filename+"'><br />"
+        outstring += filename + "<input type='hidden' name='filename' value='" + \
+                            filename + "'><br />"
     else:
         # multiple files selected
         for index in range(len(filename)):
-            outstring += filename[index]+"<input type='hidden' name='filename' value='"+filename[index]+"'><br />"
+            outstring += filename[index] + "<input type='hidden' name='filename' value='" + \
+                                filename[index]+"'><br />"
     outstring += "<br /><input type='submit' value='delete'></form>"
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
+    return set_css() + "<div class='container'><nav>" + \
+               directory + "</nav><section><h1>Download List</h1>" + \
+               outstring + "<br/><br /></body></html>"
+
+
 @app.route('/doDelete', methods=['POST'])
 def doDelete():
     """Action to delete user uploaded files."""
@@ -115,24 +124,25 @@ def doDelete():
     # only select one file
     if isinstance(filename, str):
         try:
-            os.remove(download_dir+"/"+filename)
-            outstring += filename+" deleted!"
+            os.remove(download_dir + "/" + filename)
+            outstring += filename + " deleted!"
         except:
-            outstring += filename+"Error, can not delete files!<br />"
+            outstring += filename + "Error, can not delete files!<br />"
     else:
         # multiple files selected
         for index in range(len(filename)):
             try:
-                os.remove(download_dir+"/"+filename[index])
-                outstring += filename[index]+" deleted!<br />"
+                os.remove(download_dir + "/" + filename[index])
+                outstring += filename[index] + " deleted!<br />"
             except:
-                outstring += filename[index]+"Error, can not delete files!<br />"
+                outstring += filename[index] + "Error, can not delete files!<br />"
 
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
+    return set_css() + "<div class='container'><nav>" + \
+               directory + "</nav><section><h1>Download List</h1>" + \
+               outstring + "<br/><br /></body></html>"
 
 @app.route('/doSearch', methods=['POST'])
 def doSearch():
@@ -147,12 +157,14 @@ def doSearch():
         for index in range(len(head)):
             if (keyword != "" or None) and (keyword.lower() in page[index].lower() or \
             keyword.lower() in head[index].lower()): \
-                match += "<a href='/get_page/"+head[index]+"'>"+head[index]+"</a><br />"
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Search Result</h1>keyword: "+ \
-        keyword.lower()+"<br /><br />in the following pages:<br /><br />"+ \
-        match+" \
-     </section></div></body></html>"
+                match += "<a href='/get_page/" + head[index] + "'>" + \
+                                head[index] + "</a><br />"
+        return set_css() + "<div class='container'><nav>"+ \
+                   directory + "</nav><section><h1>Search Result</h1>keyword: " + \
+                   keyword.lower()+"<br /><br />in the following pages:<br /><br />" + \
+                   match + "</section></div></body></html>"
+
+
 @app.route('/download/', methods=['GET'])
 def download():
     """Download file using URL."""
@@ -205,64 +217,81 @@ def download_list():
             notlast = True
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "download_list?&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=1&amp;item_per_page=" + str(item_per_page) + \
+                                "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "download_list?&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=" + str(page_num) + "&amp;item_per_page=" + \
+                                str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Previous</a> "
+
         span = 10
+
         for index in range(int(page)-span, int(page)+span):
             if index>= 0 and index< totalpage:
                 page_now = index + 1 
                 if page_now == int(page):
-                    outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
+                    outstring += "<font size='+1' color='red'>" + str(page) + " </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "download_list?&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "download_list?&amp;page=" + str(page_now) + "&amp;item_per_page=" + \
+                                        str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
+                    outstring += "'>"+str(page_now) + "</a> "
 
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "download_list?&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=" + str(nextpage) + "&amp;item_per_page=" + \
+                                str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "download_list?&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=" + str(totalpage) + "&amp;item_per_page=" + \
+                                str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>>></a><br /><br />"
+
         if (int(page) * int(item_per_page)) < total_rows:
             notlast = True
-            outstring += downloadlist_access_list(files, starti, endi)+"<br />"
+            outstring += downloadlist_access_list(files, starti, endi) + "<br />"
         else:
             outstring += "<br /><br />"
-            outstring += downloadlist_access_list(files, starti, total_rows)+"<br />"
-        
+            outstring += downloadlist_access_list(files, starti, total_rows) + "<br />"
+
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "download_list?&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=1&amp;item_per_page=" + str(item_per_page) + \
+                                "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "download_list?&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=" + str(page_num) + "&amp;item_per_page=" + \
+                                str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Previous</a> "
+
         span = 10
+
         for index in range(int(page)-span, int(page)+span):
         #for ($j=$page-$range;$j<$page+$range;$j++)
             if index >=0 and index < totalpage:
                 page_now = index + 1
                 if page_now == int(page):
-                    outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
+                    outstring += "<font size='+1' color='red'>" + str(page)+" </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "download_list?&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "download_list?&amp;page=" + str(page_now) + \
+                                        "&amp;item_per_page=" + str(item_per_page) + \
+                                        "&amp;keyword=" + str(session.get('download_keyword'))
+                    outstring += "'>" + str(page_now)+"</a> "
+
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "download_list?&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=" + str(nextpage) + "&amp;item_per_page=" + \
+                                str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "download_list?&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "download_list?&amp;page=" + str(totalpage) + "&amp;item_per_page=" + \
+                                str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>>></a>"
     else:
         outstring += "no data!"
@@ -271,8 +300,9 @@ def download_list():
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
+    return set_css() + "<div class='container'><nav>" + \
+               directory + "</nav><section><h1>Download List</h1>" + outstring + "<br/><br /></body></html>"
+
 
 def downloadlist_access_list(files, starti, endi):
     """List files function for download_list."""
@@ -287,19 +317,26 @@ def downloadlist_access_list(files, starti, endi):
         fileSize = sizeof_fmt(os.path.getsize(download_dir+"/"+files[index]))
         # images files
         if fileExtension == ".png" or fileExtension == ".jpg" or fileExtension == ".gif":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/images/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
+            outstring += '<input type="checkbox" name="filename" value="' + \
+                              files[index] + '"><a href="javascript:;" onClick="window.open(\'/images/'+ \
+                              files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + \
+                              files[index] + '</a> (' + str(fileSize) + ')<br />'
         # stl files
         elif fileExtension == ".stl":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/static/viewstl.html?src=/downloads/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
+            outstring += '<input type="checkbox" name="filename" value="' + \
+                              files[index] + '"><a href="javascript:;" onClick="window.open(\'/static/viewstl.html?src=/downloads/' + \
+                              files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + \
+                              files[index] + '</a> (' + str(fileSize) + ')<br />'
         # flv files
         elif fileExtension == ".flv":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/flvplayer?filepath=/downloads/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
+            outstring += '<input type="checkbox" name="filename" value="' + \
+                              files[index] + '"><a href="javascript:;" onClick="window.open(\'/flvplayer?filepath=/downloads/' + \
+            files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + files[index] + '</a> (' + str(fileSize) + ')<br />'
         # direct download files
         else:
-            outstring += "<input type='checkbox' name='filename' value='"+files[index]+"'><a href='/downloads/"+files[index]+"'>"+files[index]+"</a> ("+str(fileSize)+")<br />"
+            outstring += "<input type='checkbox' name='filename' value='" + files[index] + \
+                              "'><a href='/downloads/" + files[index] + "'>" + files[index] + \
+                              "</a> (" + str(fileSize) + ")<br />"
     return outstring
 
 # downloads 方法主要將位於 downloads 目錄下的檔案送回瀏覽器
@@ -314,10 +351,11 @@ def downloadselect_access_list(files, starti, endi):
     outstring = ""
     for index in range(int(starti)-1, int(endi)):
         fileName, fileExtension = os.path.splitext(files[index])
-        fileSize = os.path.getsize(download_dir+"/"+files[index])
-        outstring += '''<input type="checkbox" name="filename" value="'''+files[index]+'''"><a href="#" onclick='window.setLink("/downloads/'''+ \
-        files[index]+'''",0); return false;'>'''+ \
-        files[index]+'''</a> ('''+str(sizeof_fmt(fileSize))+''')<br />'''
+        fileSize = os.path.getsize(download_dir + "/" + files[index])
+        outstring += '''<input type="checkbox" name="filename" value="''' + \
+                          files[index] + '''"><a href="#" onclick='window.setLink("/downloads/''' + \
+                          files[index] + '''",0); return false;'>''' + files[index] + \
+                          '''</a> (''' + str(sizeof_fmt(fileSize)) + ''')<br />'''
     return outstring
 
 @app.route('/edit_config', defaults={'edit': 1})
@@ -327,21 +365,21 @@ def edit_config(edit):
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     if not isAdmin():
-        return set_css()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>Login</h1><form method='post' action='checkLogin'> \
-    Password:<input type='password' name='password'> \
-    <input type='submit' value='login'></form> \
-    </section></div></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section><h1>Login</h1><form method='post' action='checkLogin'> \
+                 Password:<input type='password' name='password'> \
+                 <input type='submit' value='login'></form> \
+                 </section></div></body></html>"
     else:
         site_title, password = parse_config()
         # edit config file
-        return set_css()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>Edit Config</h1><form method='post' action='saveConfig'> \
-    Site Title:<input type='text' name='site_title' value='"+site_title+"' size='50'><br /> \
-    Password:<input type='text' name='password' value='"+password+"' size='50'><br /> \
- <input type='hidden' name='password2' value='"+password+"'> \
-    <input type='submit' value='send'></form> \
-    </section></div></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section><h1>Edit Config</h1><form method='post' action='saveConfig'> \
+                 Site Title:<input type='text' name='site_title' value='"+site_title+"' size='50'><br /> \
+                 Password:<input type='text' name='password' value='"+password+"' size='50'><br /> \
+                 <input type='hidden' name='password2' value='"+password+"'> \
+                 <input type='submit' value='send'></form> \
+                 </section></div></body></html>"
 # edit all page content
 @app.route('/edit_page', defaults={'edit': 1})
 @app.route('/edit_page/<path:edit>')
@@ -353,7 +391,7 @@ def edit_page(edit):
     else:
         head, level, page = parse_content()
         directory = render_menu(head, level, page)
-        pagedata =file_get_contents(config_dir+"content.htm")
+        pagedata =file_get_contents(config_dir + "content.htm")
         outstring = tinymce_editor(directory, cgi.escape(pagedata))
         return outstring
             
@@ -415,8 +453,8 @@ function cmsFilePicker(callback, value, meta) {
 def error_log(self, info="Error"):
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
-    return set_css()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>ERROR</h1>"+info+"</section></div></body></html>"
+    return set_css() + "<div class='container'><nav>" + \
+             directory + "</nav><section><h1>ERROR</h1>" + info + "</section></div></body></html>"
 def file_get_contents(filename):
     # open file in utf-8 and return file content
     with open(filename, encoding="utf-8") as file:
@@ -436,51 +474,70 @@ def file_lister(directory, type=None, page=1, item_per_page=10):
             notlast = True
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "file_selector?type="+type+"&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + \
+                              "&amp;page=1&amp;item_per_page=" + \
+                              str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "file_selector?type="+type+"&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + \
+                              "&amp;page=" + str(page_num) + \
+                              "&amp;item_per_page=" +str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Previous</a> "
         span = 10
         for index in range(int(page)-span, int(page)+span):
             if index>= 0 and index< totalpage:
                 page_now = index + 1 
                 if page_now == int(page):
-                    outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
+                    outstring += "<font size='+1' color='red'>" + str(page) + " </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "file_selector?type="+type+"&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "file_selector?type=" + type + "&amp;page=" + \
+                                      str(page_now) + "&amp;item_per_page=" + \
+                                      str(item_per_page) + "&amp;keyword=" + \
+                                      str(session.get('download_keyword'))
+                    outstring += "'>" + str(page_now)+"</a> "
 
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "file_selector?type="+type+"&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + "&amp;page=" + \
+                               str(nextpage) + "&amp;item_per_page=" + \
+                               str(item_per_page) + "&amp;keyword=" + \
+                               str(session.get('download_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "file_selector?type="+type+"&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + "&amp;page=" + \
+                               str(totalpage) + "&amp;item_per_page=" + \
+                               str(item_per_page) + "&amp;keyword=" + \
+                               str(session.get('download_keyword'))
             outstring += "'>>></a><br /><br />"
         if (int(page) * int(item_per_page)) < total_rows:
             notlast = True
             if type == "file":
-                outstring += downloadselect_access_list(files, starti, endi)+"<br />"
+                outstring += downloadselect_access_list(files, starti, endi) + "<br />"
             else:
-                outstring += imageselect_access_list(files, starti, endi)+"<br />"
+                outstring += imageselect_access_list(files, starti, endi) + "<br />"
         else:
             outstring += "<br /><br />"
             if type == "file":
-                outstring += downloadselect_access_list(files, starti, total_rows)+"<br />"
+                outstring += downloadselect_access_list(files, starti, total_rows) + "<br />"
             else:
-                outstring += imageselect_access_list(files, starti, total_rows)+"<br />"
+                outstring += imageselect_access_list(files, starti, total_rows) + "<br />"
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "file_selector?type="+type+"&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + \
+                              "&amp;page=1&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "file_selector?type="+type+"&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-            outstring += "'>Previous</a> "
+            outstring += "file_selector?type=" + type + "&amp;page=" + \
+                               str(page_num) + "&amp;item_per_page=" + \
+                               str(item_per_page) + "&amp;keyword=" + \
+                               str(session.get('download_keyword'))
+            outstring += "'>Previous</a>"
         span = 10
         for index in range(int(page)-span, int(page)+span):
             if index >=0 and index < totalpage:
@@ -489,15 +546,23 @@ def file_lister(directory, type=None, page=1, item_per_page=10):
                     outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "file_selector?type="+type+"&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "file_selector?type=" + type + "&amp;page=" + \
+                                       str(page_now) + "&amp;item_per_page=" + \
+                                       str(item_per_page) + "&amp;keyword=" + \
+                                       str(session.get('download_keyword'))
+                    outstring += "'>" + str(page_now) + "</a> "
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "file_selector?type="+type+"&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + "&amp;page=" + \
+                               str(nextpage) + "&amp;item_per_page=" + \
+                               str(item_per_page) + "&amp;keyword=" + \
+                               str(session.get('download_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "file_selector?type="+type+"&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "file_selector?type=" + type + "&amp;page=" + \
+                               str(totalpage) + "&amp;item_per_page=" + \
+                               str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>>></a>"
     else:
         outstring += "no data!"
@@ -560,9 +625,9 @@ def fileaxupload():
         filename = request.args.get("ax-file-name")
         flag = request.args.get("start")
         if flag == "0":
-            file = open(_curdir+"/downloads/"+filename, "wb")
+            file = open(_curdir + "/downloads/" + filename, "wb")
         else:
-            file = open(_curdir+"/downloads/"+filename, "ab")
+            file = open(_curdir + "/downloads/" + filename, "ab")
         file.write(request.stream.read())
         file.close()
         return "files uploaded!"
@@ -577,9 +642,9 @@ def fileuploadform(edit):
     if isAdmin():
         head, level, page = parse_content()
         directory = render_menu(head, level, page)
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>file upload</h1>"+'''
-<script src="/static/jquery.js" type="text/javascript"></script>
+        return set_css() + "<div class='container'><nav>"+ \
+                 directory + "</nav><section><h1>file upload</h1>" + \
+                 '''<script src="/static/jquery.js" type="text/javascript"></script>
 <script src="/static/axuploader.js" type="text/javascript"></script>
 <script>
 $(document).ready(function(){
@@ -609,7 +674,7 @@ def flvplayer(filepath=None):
 <object type="application/x-shockwave-flash" data="/static/player_flv_multi.swf" width="320" height="240">
      <param name="movie" value="player_flv_multi.swf" />
      <param name="allowFullScreen" value="true" />
-     <param name="FlashVars" value="flv='''+filepath+'''&amp;width=320&amp;height=240&amp;showstop=1&amp;showvolume=1&amp;showtime=1
+     <param name="FlashVars" value="flv=''' + filepath + '''&amp;width=320&amp;height=240&amp;showstop=1&amp;showvolume=1&amp;showtime=1
      &amp;startimage=/static/startimage_en.jpg&amp;showfullscreen=1&amp;bgcolor1=189ca8&amp;bgcolor2=085c68
      &amp;playercolor=085c68" />
 </object>
@@ -621,17 +686,17 @@ def generate_pages():
     # 確定程式檔案所在目錄, 在 Windows 有最後的反斜線
     _curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
     # 刪除 content 目錄中所有 html 檔案
-    filelist = [ f for f in os.listdir(_curdir+"\\content\\") if f.endswith(".html") ]
+    filelist = [ f for f in os.listdir(_curdir + "\\content\\") if f.endswith(".html") ]
     for f in filelist:
-        os.remove(os.path.join(_curdir+"\\content\\", f))
+        os.remove(os.path.join(_curdir + "\\content\\", f))
 
     # 這裡需要建立專門寫出 html 的 write_page
     # index.html
-    file = open(_curdir+"\\content\\index.html", "w", encoding="utf-8")
+    file = open(_curdir + "\\content\\index.html", "w", encoding="utf-8")
     file.write(get_page2(None, 0))
     file.close()
     # sitemap
-    file = open(_curdir+"\\content\\sitemap.html", "w", encoding="utf-8")
+    file = open(_curdir + "\\content\\sitemap.html", "w", encoding="utf-8")
     file.write(sitemap2())
     file.close()
     # 根據 content.htm 內容, 逐一產生各頁面檔案
@@ -641,7 +706,7 @@ def generate_pages():
         # 在此必須要將頁面中的 /images/ 字串換為 images/, /downloads/ 換為 downloads/
         # 因為 Flask 中靠 /images/ 取檔案, 但是一般 html 則採相對目錄取檔案
         # 此一字串置換在 get_page2 中進行
-        file = open(_curdir+"\\content\\"+head[i]+".html", "w", encoding="utf-8")
+        file = open(_curdir + "\\content\\" + head[i] + ".html", "w", encoding="utf-8")
         file.write(get_page2(head[i], 0))
         file.close()
     # generate each page html under content directory
@@ -671,27 +736,34 @@ def get_page(heading, edit):
         if page_order == 0:
             last_page = ""
         else:
-            last_page = head[page_order-1]+" << <a href='/get_page/"+head[page_order-1]+"'>Previous</a>"
+            last_page = head[page_order-1] + " << <a href='/get_page/" + \
+                             head[page_order-1] + "'>Previous</a>"
         if page_order == len(head) - 1:
             # no next page
             next_page = ""
         else:
-            next_page = "<a href='/get_page/"+head[page_order+1]+"'>Next</a> >> "+ head[page_order+1]
+            next_page = "<a href='/get_page/"+ head[page_order+1] + \
+                              "'>Next</a> >> " + head[page_order+1]
         if len(page_order_list) > 1:
-            return_content += last_page+" "+next_page+"<br /><h1>"+heading+"</h1>"+page_content_list[i]+"<br />"+last_page+" "+next_page+"<br /><hr>"
-            pagedata_duplicate = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+page_content_list[i]
-            outstring_list.append(last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata_duplicate), page_order))
+            return_content += last_page + " " + next_page + \
+                                      "<br /><h1>" + heading + "</h1>" + \
+                                      page_content_list[i] + "<br />"+ \
+                                      last_page + " " + next_page + "<br /><hr>"
+            pagedata_duplicate = "<h"+level[page_order] + ">" + heading + \
+                                          "</h"+level[page_order] + ">" + page_content_list[i]
+            outstring_list.append(last_page + " " + next_page + "<br />" + tinymce_editor(directory, cgi.escape(pagedata_duplicate), page_order))
         else:
-            return_content += last_page+" "+next_page+"<br /><h1>"+heading+"</h1>"+page_content_list[i]+"<br />"+last_page+" "+next_page
+            return_content += last_page + " " + next_page + "<br /><h1>" +\
+                                      heading + "</h1>" + page_content_list[i] + "<br />" + last_page + " " + next_page
             
-        pagedata += "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+page_content_list[i]
+        pagedata += "<h"+level[page_order] + ">" + heading + "</h" + level[page_order] + ">" + page_content_list[i]
         # 利用 cgi.escape() 將 specialchar 轉成只能顯示的格式
-        outstring += last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata), page_order)
+        outstring += last_page + " " + next_page + "<br />" + tinymce_editor(directory, cgi.escape(pagedata), page_order)
     
     # edit=0 for viewpage
     if edit == 0:
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section>"+return_content+"</section></div></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section>" + return_content + "</section></div></body></html>"
     # enter edit mode
     else:
         # check if administrator
@@ -702,7 +774,7 @@ def get_page(heading, edit):
                 # 若碰到重複頁面頁印, 且要求編輯, 則導向 edit_page
                 #return redirect("/edit_page")
                 for i in range(len(page_order_list)):
-                    outstring_duplicate += outstring_list[i]+"<br /><hr>"
+                    outstring_duplicate += outstring_list[i] + "<br /><hr>"
                 return outstring_duplicate
             else:
             #pagedata = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+search_content(head, page, heading)
@@ -740,28 +812,33 @@ def get_page2(heading, edit):
             last_page = ""
         else:
             #last_page = head[page_order-1]+" << <a href='/get_page/"+head[page_order-1]+"'>Previous</a>"
-            last_page = head[page_order-1]+" << <a href='"+head[page_order-1]+".html'>Previous</a>"
+            last_page = head[page_order-1] + " << <a href='"+head[page_order-1] + ".html'>Previous</a>"
         if page_order == len(head) - 1:
             # no next page
             next_page = ""
         else:
             #next_page = "<a href='/get_page/"+head[page_order+1]+"'>Next</a> >> "+ head[page_order+1]
-            next_page = "<a href='"+head[page_order+1]+".html'>Next</a> >> "+ head[page_order+1]
+            next_page = "<a href='" + head[page_order+1] + ".html'>Next</a> >> " + head[page_order+1]
         if len(page_order_list) > 1:
-            return_content += last_page+" "+next_page+"<br /><h1>"+heading+"</h1>"+page_content_list[i]+"<br />"+last_page+" "+next_page+"<br /><hr>"
-            pagedata_duplicate = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+page_content_list[i]
-            outstring_list.append(last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata_duplicate), page_order))
+            return_content += last_page + " " + next_page + "<br /><h1>" + \
+                                      heading + "</h1>" + page_content_list[i] + \
+                                      "<br />" + last_page + " "+ next_page + "<br /><hr>"
+            pagedata_duplicate = "<h"+level[page_order] + ">" + heading + "</h" + level[page_order]+">"+page_content_list[i]
+            outstring_list.append(last_page + " " + next_page + "<br />" + tinymce_editor(directory, cgi.escape(pagedata_duplicate), page_order))
         else:
-            return_content += last_page+" "+next_page+"<br /><h1>"+heading+"</h1>"+page_content_list[i]+"<br />"+last_page+" "+next_page
+            return_content += last_page + " " + next_page + "<br /><h1>" + \
+                                      heading + "</h1>" + page_content_list[i] + \
+                                      "<br />" + last_page + " " + next_page
             
-        pagedata += "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+page_content_list[i]
+        pagedata += "<h" + level[page_order] + ">" + heading + \
+                          "</h" + level[page_order] + ">" + page_content_list[i]
         # 利用 cgi.escape() 將 specialchar 轉成只能顯示的格式
-        outstring += last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata), page_order)
+        outstring += last_page + " " + next_page + "<br />" + tinymce_editor(directory, cgi.escape(pagedata), page_order)
     
     # edit=0 for viewpage
     if edit == 0:
-        return set_css2()+"<div class='container'><nav>"+ \
-        directory+"</nav><section>"+return_content+"</section></div></body></html>"
+        return set_css2() + "<div class='container'><nav>"+ \
+        directory + "</nav><section>" + return_content + "</section></div></body></html>"
     # enter edit mode
     else:
         # check if administrator
@@ -772,7 +849,7 @@ def get_page2(heading, edit):
                 # 若碰到重複頁面頁印, 且要求編輯, 則導向 edit_page
                 #return redirect("/edit_page")
                 for i in range(len(page_order_list)):
-                    outstring_duplicate += outstring_list[i]+"<br /><hr>"
+                    outstring_duplicate += outstring_list[i] + "<br /><hr>"
                 return outstring_duplicate
             else:
             #pagedata = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+search_content(head, page, heading)
@@ -787,21 +864,25 @@ def image_delete_file():
     directory = render_menu(head, level, page)
     if filename == None:
         outstring = "no file selected!"
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Delete Error</h1>"+outstring+"<br/><br /></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section><h1>Delete Error</h1>" + \
+                 outstring + "<br/><br /></body></html>"
     outstring = "delete all these files?<br /><br />"
     outstring += "<form method='post' action='image_doDelete'>"
     # only one file is selected
     if isinstance(filename, str):
-        outstring += filename+"<input type='hidden' name='filename' value='"+filename+"'><br />"
+        outstring += filename + "<input type='hidden' name='filename' value='" + \
+                          filename + "'><br />"
     else:
         # multiple files selected
         for index in range(len(filename)):
-            outstring += filename[index]+"<input type='hidden' name='filename' value='"+filename[index]+"'><br />"
+            outstring += filename[index] + "<input type='hidden' name='filename' value='" + \
+                              filename[index] + "'><br />"
     outstring += "<br /><input type='submit' value='delete'></form>"
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
+    return set_css() + "<div class='container'><nav>"+ \
+             directory + "</nav><section><h1>Download List</h1>" + \
+             outstring + "<br/><br /></body></html>"
 @app.route('/image_doDelete', methods=['POST'])
 def image_doDelete():
     if not isAdmin():
@@ -812,24 +893,25 @@ def image_doDelete():
     # only select one file
     if isinstance(filename, str):
         try:
-            os.remove(image_dir+"/"+filename)
-            outstring += filename+" deleted!"
+            os.remove(image_dir + "/" + filename)
+            outstring += filename + " deleted!"
         except:
-            outstring += filename+"Error, can not delete files!<br />"
+            outstring += filename + "Error, can not delete files!<br />"
     else:
         # multiple files selected
         for index in range(len(filename)):
             try:
-                os.remove(image_dir+"/"+filename[index])
-                outstring += filename[index]+" deleted!<br />"
+                os.remove(image_dir + "/" + filename[index])
+                outstring += filename[index] + " deleted!<br />"
             except:
-                outstring += filename[index]+"Error, can not delete files!<br />"
+                outstring += filename[index] + "Error, can not delete files!<br />"
 
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Image List</h1>"+outstring+"<br/><br /></body></html>"
+    return set_css() + "<div class='container'><nav>"+ \
+             directory + "</nav><section><h1>Image List</h1>" + \
+             outstring + "<br/><br /></body></html>"
 
 @app.route('/image_list', defaults={'edit':1})
 @app.route('/image_list/<path:edit>')
@@ -849,64 +931,81 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
             notlast = True
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "image_list?&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=1&amp;item_per_page=" + \
+                              str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "image_list?&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=" + str(page_num) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Previous</a> "
         span = 10
         for index in range(int(page)-span, int(page)+span):
-            if index>= 0 and index< totalpage:
+            if index >= 0 and index < totalpage:
                 page_now = index + 1 
                 if page_now == int(page):
-                    outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
+                    outstring += "<font size='+1' color='red'>" + str(page) + " </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "image_list?&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "image_list?&amp;page=" + str(page_now) + \
+                                      "&amp;item_per_page=" + str(item_per_page) + \
+                                      "&amp;keyword=" + str(session.get('download_keyword'))
+                    outstring += "'>" + str(page_now) + "</a> "
 
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "image_list?&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=" + str(nextpage) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "image_list?&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=" + str(totalpage) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>>></a><br /><br />"
         if (int(page) * int(item_per_page)) < total_rows:
             notlast = True
-            outstring += imagelist_access_list(files, starti, endi)+"<br />"
+            outstring += imagelist_access_list(files, starti, endi) + "<br />"
         else:
             outstring += "<br /><br />"
-            outstring += imagelist_access_list(files, starti, total_rows)+"<br />"
+            outstring += imagelist_access_list(files, starti, total_rows) + "<br />"
         
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "image_list?&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=1&amp;item_per_page=" + \
+                              str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "image_list?&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=" + str(page_num) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Previous</a> "
         span = 10
         for index in range(int(page)-span, int(page)+span):
-        #for ($j=$page-$range;$j<$page+$range;$j++)
             if index >=0 and index < totalpage:
                 page_now = index + 1
                 if page_now == int(page):
-                    outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
+                    outstring += "<font size='+1' color='red'>" + str(page) + " </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "image_list?&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "image_list?&amp;page=" + str(page_now) + \
+                                      "&amp;item_per_page=" + str(item_per_page) + \
+                                      "&amp;keyword=" + str(session.get('download_keyword'))
+                    outstring += "'>"+str(page_now) + "</a> "
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "image_list?&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=" + str(nextpage) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "image_list?&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('download_keyword'))
+            outstring += "image_list?&amp;page=" + str(totalpage) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('download_keyword'))
             outstring += "'>>></a>"
     else:
         outstring += "no data!"
@@ -915,8 +1014,9 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Image List</h1>"+outstring+"<br/><br /></body></html>"
+    return set_css() + "<div class='container'><nav>"+ \
+             directory + "</nav><section><h1>Image List</h1>" + \
+             outstring + "<br/><br /></body></html>"
 
 @app.route('/imageaxupload', methods=['POST'])
 # ajax jquery chunked file upload for flask
@@ -927,9 +1027,9 @@ def imageaxupload():
         filename = request.args.get("ax-file-name")
         flag = request.args.get("start")
         if flag == "0":
-            file = open(_curdir+"/images/"+filename, "wb")
+            file = open(_curdir + "/images/" + filename, "wb")
         else:
-            file = open(_curdir+"/images/"+filename, "ab")
+            file = open(_curdir + "/images/" + filename, "ab")
         file.write(request.stream.read())
         file.close()
         return "image files uploaded!"
@@ -947,12 +1047,13 @@ def imagelist_access_list(files, starti, endi):
     for index in range(int(starti)-1, int(endi)):
         fileName, fileExtension = os.path.splitext(files[index])
         fileExtension = fileExtension.lower()
-        fileSize = sizeof_fmt(os.path.getsize(image_dir+"/"+files[index]))
+        fileSize = sizeof_fmt(os.path.getsize(image_dir + "/" + files[index]))
         # images files
         if fileExtension == ".png" or fileExtension == ".jpg" or fileExtension == ".gif":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/images/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
-
+            outstring += '<input type="checkbox" name="filename" value="' + files[index] + \
+                              '"><a href="javascript:;" onClick="window.open(\'/images/' + \
+                              files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + \
+                              files[index] + '</a> (' + str(fileSize) + ')<br />'
     return outstring
 
 # 與 file_selector 搭配的取影像檔程式
@@ -982,20 +1083,21 @@ a.xhfbfile:hover{
         fileName, fileExtension = os.path.splitext(files[index])
         fileSize = os.path.getsize(image_dir+"/"+files[index])
         outstring += '''<a class="xhfbfile" href="#" onclick='window.setLink("/images/'''+ \
-        files[index]+'''",0); return false;'>'''+ \
-        files[index]+'''<span style="position: absolute; z-index: 4;"><br />
-        <img src="/images/'''+ \
-        files[index]+'''" width="150px"/></span></a> ('''+str(sizeof_fmt(fileSize))+''')<br />'''
+                          files[index] + '''",0); return false;'>''' + \
+                          files[index] + '''<span style="position: absolute; z-index: 4;"><br /> \
+                          <img src="/images/''' + files[index] + '''" width="150px"/></span></a> \
+                          (''' + str(sizeof_fmt(fileSize)) + ''')<br />'''
     return outstring
 
 @app.route('/imageuploadform', defaults={'edit': 1})
 @app.route('/imageuploadform/<path:edit>')
 def imageuploadform(edit):
+    """image files upload form"""
     if isAdmin():
         head, level, page = parse_content()
         directory = render_menu(head, level, page)
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>image files upload</h1>"+'''
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section><h1>image files upload</h1>" + '''
 <script src="/static/jquery.js" type="text/javascript"></script>
 <script src="/static/axuploader.js" type="text/javascript"></script>
 <script>
@@ -1023,7 +1125,7 @@ return 'images/';
 def index():
     head, level, page = parse_content()
     # fix first Chinese heading error
-    return redirect("/get_page/"+urllib.parse.quote_plus(head[0]))
+    return redirect("/get_page/" + urllib.parse.quote_plus(head[0]))
     # the following will never execute
     directory = render_menu(head, level, page)
     if heading == None:
@@ -1037,16 +1139,20 @@ def index():
         if page_order == 0:
             last_page = ""
         else:
-            last_page = head[page_order-1]+" << <a href='/get_page/"+head[page_order-1]+"'>Previous</a>"
+            last_page = head[page_order-1] + " << <a href='/get_page/" + \
+                             head[page_order-1] + "'>Previous</a>"
         if page_order == len(head) - 1:
             # no next page
             next_page = ""
         else:
-            next_page = "<a href='/get_page/"+head[page_order+1]+"'>Next</a> >> "+ head[page_order+1]
-        return_content += last_page+" "+next_page+"<br /><h1>"+heading+"</h1>"+page_content_list[page_order_list[i]]+"<br />"+last_page+" "+next_page
+            next_page = "<a href='/get_page/" + head[page_order+1] + \
+                              "'>Next</a> >> " + head[page_order+1]
+        return_content += last_page + " " + next_page + "<br /><h1>" + \
+                                  heading + "</h1>" + page_content_list[page_order_list[i]] + \
+                                  "<br />" + last_page + " " + next_page
 
-    return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section>"+return_content+"</section></div></body></html>"
+    return set_css() + "<div class='container'><nav>" + \
+             directory + "</nav><section>" + return_content + "</section></div></body></html>"
 
 
 def isAdmin():
@@ -1057,7 +1163,7 @@ def isAdmin():
 # use to check directory variable data
 @app.route('/listdir')
 def listdir():
-    return download_dir +","+config_dir
+    return download_dir + "," + config_dir
 
 @app.route('/load_list')
 def load_list(item_per_page=5, page=1, filedir=None, keyword=None):
@@ -1125,18 +1231,19 @@ function keywordSearch(){
         '''
         if (int(page) * int(item_per_page)) < total_rows:
             notlast = True
-            outstring += loadlist_access_list(files, starti, endi, filedir)+"<br />"
+            outstring += loadlist_access_list(files, starti, endi, filedir) + "<br />"
         else:
             outstring += "<br /><br />"
-            outstring += loadlist_access_list(files, starti, total_rows, filedir)+"<br />"
+            outstring += loadlist_access_list(files, starti, total_rows, filedir) + "<br />"
         
         if int(page) > 1:
             outstring += "<a href='"
-            outstring += "/"+filedir+"?&amp;page=1&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('search_keyword'))
+            outstring += "/"+filedir + "?&amp;page=1&amp;item_per_page=" + str(item_per_page)+"&amp;keyword=" + str(session.get('search_keyword'))
             outstring += "'>{{</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
-            outstring += "/"+filedir+"?&amp;page="+str(page_num)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('search_keyword'))
+            outstring += "/"+filedir + "?&amp;page=" + str(page_num)+"&amp;item_per_page=" + \
+                              str(item_per_page) + "&amp;keyword=" + str(session.get('search_keyword'))
             outstring += "'>Previous</a> "
         span = 5
         for index in range(int(page)-span, int(page)+span):
@@ -1144,18 +1251,24 @@ function keywordSearch(){
             if index >=0 and index < totalpage:
                 page_now = index + 1
                 if page_now == int(page):
-                    outstring += "<font size='+1' color='red'>"+str(page)+" </font>"
+                    outstring += "<font size='+1' color='red'>" + str(page) + " </font>"
                 else:
                     outstring += "<a href='"
-                    outstring += "/"+filedir+"?&amp;page="+str(page_now)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('search_keyword'))
-                    outstring += "'>"+str(page_now)+"</a> "
+                    outstring += "/" + filedir + "?&amp;page=" + str(page_now) + \
+                                      "&amp;item_per_page=" + str(item_per_page) + \
+                                      "&amp;keyword="+str(session.get('search_keyword'))
+                    outstring += "'>" + str(page_now) + "</a> "
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
-            outstring += "/"+filedir+"?&amp;page="+str(nextpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('search_keyword'))
+            outstring += "/" + filedir + "?&amp;page=" + str(nextpage) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('search_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
-            outstring += "/"+filedir+"?&amp;page="+str(totalpage)+"&amp;item_per_page="+str(item_per_page)+"&amp;keyword="+str(session.get('search_keyword'))
+            outstring += "/" + filedir + "?&amp;page=" + str(totalpage) + \
+                              "&amp;item_per_page=" + str(item_per_page) + \
+                              "&amp;keyword=" + str(session.get('search_keyword'))
             outstring += "'>}}</a>"
     else:
         outstring += "no data!"
@@ -1176,31 +1289,34 @@ def loadlist_access_list(files, starti, endi, filedir):
         fileSize = sizeof_fmt(os.path.getsize(config_dir+filedir+"_programs/"+files[index]))
         # images files
         if fileExtension == ".png" or fileExtension == ".jpg" or fileExtension == ".gif":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/downloads/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
+            outstring += '<input type="checkbox" name="filename" value="' + files[index] + \
+                              '"><a href="javascript:;" onClick="window.open(\'/downloads/'+ \
+                            files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + files[index] + '</a> (' + str(fileSize)+')<br />'
         # stl files
         elif fileExtension == ".stl":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/static/viewstl.html?src=/downloads/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
+            outstring += '<input type="checkbox" name="filename" value="' + files[index] + '"><a href="javascript:;" onClick="window.open(\'/static/viewstl.html?src=/downloads/' + \
+            files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + files[index] + '</a> ('+str(fileSize)+')<br />'
         # flv files
         elif fileExtension == ".flv":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/flvplayer?filepath=/downloads/'+ \
-            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
+            outstring += '<input type="checkbox" name="filename" value="' + files[index] + '"><a href="javascript:;" onClick="window.open(\'/flvplayer?filepath=/downloads/' + \
+            files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">' + files[index] + '</a> ('+str(fileSize)+')<br />'
         # py files
         elif fileExtension == ".py":
-            outstring += '<input type="radio" name="filename" value="'+files[index]+'">'+files[index]+' ('+str(fileSize)+')<br />'
+            outstring += '<input type="radio" name="filename" value="' + files[index] + '">' + files[index] + ' (' + str(fileSize) + ')<br />'
         # direct download files
         else:
-            outstring += "<input type='checkbox' name='filename' value='"+files[index]+"'><a href='/"+filedir+"_programs/"+files[index]+"'>"+files[index]+"</a> ("+str(fileSize)+")<br />"
+            outstring += "<input type='checkbox' name='filename' value='" + files[index] + \
+                             "'><a href='/" + filedir + "_programs/" + files[index] + "'>" + files[index] + "</a> (" + str(fileSize) + ")<br />"
     return outstring
 @app.route('/login')
 def login():
+    """login routine"""
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     if not isAdmin():
-        return set_css()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>Login</h1><form method='post' action='checkLogin'> \
-    Password:<input type='password' name='password'> \
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section><h1>Login</h1><form method='post' action='checkLogin'> \
+                Password:<input type='password' name='password'> \
     <input type='submit' value='login'></form> \
     </section></div></body></html>"
     else:
@@ -1213,18 +1329,19 @@ def logout():
 def parse_config():
     if not os.path.isfile(config_dir+"config"):
         # create config file if there is no config file
-        file = open(config_dir+"config", "w", encoding="utf-8")
+        file = open(config_dir + "config", "w", encoding="utf-8")
         # default password is admin
         password="admin"
         hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
-        file.write("siteTitle:2018 計算機程式\npassword:"+hashed_password)
+        file.write("siteTitle:CMSimfly \npassword:"+hashed_password)
         file.close()
-    config = file_get_contents(config_dir+"config")
+    config = file_get_contents(config_dir + "config")
     config_data = config.split("\n")
     site_title = config_data[0].split(":")[1]
     password = config_data[1].split(":")[1]
     return site_title, password
 def parse_content():
+    """use bs4 and re module functions to parse content.htm"""
     #from pybean import Store, SQLiteWriter
     # if no content.db, create database file with cms table
     '''
@@ -1241,47 +1358,60 @@ def parse_content():
     # if no content.htm, generate a head 1 and content 1 file
     if not os.path.isfile(config_dir+"content.htm"):
         # create content.htm if there is no content.htm
-        File = open(config_dir+"content.htm", "w", encoding="utf-8")
+        File = open(config_dir + "content.htm", "w", encoding="utf-8")
         File.write("<h1>head 1</h1>content 1")
         File.close()
     subject = file_get_contents(config_dir+"content.htm")
     # deal with content without content
     if subject == "":
         # create content.htm if there is no content.htm
-        File = open(config_dir+"content.htm", "w", encoding="utf-8")
+        File = open(config_dir + "content.htm", "w", encoding="utf-8")
         File.write("<h1>head 1</h1>content 1")
         File.close()
-    # deal with content has content but no heading
-    # replace subject content with special seperate string to avoid error 
-    subject = re.sub('#@CMSIMPLY_SPLIT@#', '井@CMSIMPLY_SPLIT@井', subject)
-    content_sep = '#@CMSIMPLY_SPLIT@#'
-    head_level = 3
-    # remove all attribute inside h1, h2 and h3 tags
-    subject = re.sub('<(h1|h2|h3)[^>]*>', r'<\1>', subject, flags=re.I)
-    content = re.split('</body>', subject)
-    result = re.sub('<h[1-'+str(head_level)+']>', content_sep, content[0])
-    # remove the first element contains html and body tags
-    data = result.split(content_sep)[1:]
+        subject = "<h1>head 1</h1>content 1"
+    # initialize the return lists
     head_list = []
     level_list = []
     page_list = []
-    order = 1
-    for index in range(len(data)):
-        #page_data = re.sub('</h[1-'+str(head_level)+']>', content_sep, data[index])
-        page_data = re.sub('</h', content_sep, data[index])
-        head = page_data.split(content_sep)[0]
-        # remove all tags from head - bug 180726
-        head = re.sub("<.*?>", "", head)
-        order += 1
-        head_list.append(head)
-        # put level data into level variable
-        level = page_data.split(content_sep)[1][0]
-        level_list.append(level)
-        # remove  1>,  2> or 3>
-        page = page_data.split(content_sep)[1][2:]
-        page_list.append(page)
-    # send head to unique function to avoid duplicate heading
-    #head_list = unique(head_list)
+    # make the soup out of the html content
+    soup = BeautifulSoup(subject, 'html.parser')
+    # get all h1, h2, h3 tags into list
+    htag= soup.find_all(['h1', 'h2', 'h3'])
+    n = len(htag)
+    # get all h tags
+    # g.es(soup.find_all(re.compile(r"^h\d$")))
+    # get the page content to split subject using each h tag
+    # i = 0
+    temp_data = subject.split(str(htag[0]))
+    # cut the first htag out
+    subject = temp_data[1]
+
+    if n >1:
+            # i from 1 to i-1
+            for i in range(1, len(htag)):
+                # add the first page title
+                head_list.append(htag[i-1].text.strip())
+                # use name attribute of h* tag to get h1, h2 or h3
+                # the number of h1, h2 or h3 is the level of page menu
+                level_list.append(htag[i-1].name[1])
+                temp_data = subject.split(str(htag[i]))
+                subject = temp_data[1]
+                # cut the other page content out of htag from 1 to i-1
+                cut = temp_data[0]
+                # add the page content
+                page_list.append(cut)
+    # last i
+    # add the last page title
+    head_list.append(htag[n-1].text.strip())
+    # add the last level
+    level_list.append(htag[n-1].name[1])
+    temp_data = subject.split(str(htag[n-1]))
+    # the last subject
+    subject = temp_data[0]
+    # cut the last page content out
+    cut = temp_data[0]
+    # the last page content
+    page_list.append(cut)
     return head_list, level_list, page_list
 def render_menu(head, level, page, sitemap=0):
     directory = ""
@@ -1293,29 +1423,30 @@ def render_menu(head, level, page, sitemap=0):
     for index in range(len(head)):
         if level[index] > current_level:
             directory += "<ul>"
-            directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+            directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
         elif level[index] == current_level:
             if level[index] == 1:
                 if sitemap:
-                    directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+                    directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index]+"</a>"
                 else:
-                    directory += "<li class='topmenu'><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+                    directory += "<li class='topmenu'><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
             else:
-                directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+                directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
         else:
             directory += "</li>"*(int(current_level) - int(level[index]))
             directory += "</ul>"*(int(current_level) - int(level[index]))
             if level[index] == 1:
                 if sitemap:
-                    directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+                    directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
                 else:
-                    directory += "<li class='topmenu'><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+                    directory += "<li class='topmenu'><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
             else:
-                directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
+                directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
         current_level = level[index]
     directory += "</li></ul>"
     return directory
 def render_menu2(head, level, page, sitemap=0):
+    """render menu for static site"""
     directory = ""
     current_level = level[0]
     if sitemap:
@@ -1327,32 +1458,32 @@ def render_menu2(head, level, page, sitemap=0):
             directory += "<ul>"
             #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
             # 改為連結到 content/標題.html
-            directory += "<li><a href='"+head[index]+".html'>"+head[index]+"</a>"
+            directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
         elif level[index] == current_level:
             if level[index] == 1:
                 if sitemap:
                     # 改為連結到 content/標題.html
                     #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
-                    directory += "<li><a href='"+head[index]+".html'>"+head[index]+"</a>"
+                    directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
                 else:
                     #directory += "<li class='topmenu'><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
-                    directory += "<li class='topmenu'><a href='content/"+head[index]+".html'>"+head[index]+"</a>"
+                    directory += "<li class='topmenu'><a href='content/" + head[index] + ".html'>" + head[index] + "</a>"
             else:
                 #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
-                directory += "<li><a href='"+head[index]+".html'>"+head[index]+"</a>"
+                directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
         else:
             directory += "</li>"*(int(current_level) - int(level[index]))
             directory += "</ul>"*(int(current_level) - int(level[index]))
             if level[index] == 1:
                 if sitemap:
                     #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
-                    directory += "<li><a href='"+head[index]+".html'>"+head[index]+"</a>"
+                    directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
                 else:
                     #directory += "<li class='topmenu'><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
-                    directory += "<li class='topmenu'><a href='"+head[index]+".html'>"+head[index]+"</a>"
+                    directory += "<li class='topmenu'><a href='" + head[index] + ".html'>" + head[index] + "</a>"
             else:
                 #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
-                directory += "<li><a href='"+head[index]+".html'>"+head[index]+"</a>"
+                directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
         current_level = level[index]
     directory += "</li></ul>"
     return directory
@@ -1386,18 +1517,18 @@ def saveConfig():
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     if site_title == None or password == None or password2 != old_password or password == '':
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>Error!</h1><a href='/'>Home</a></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                directory + "</nav><section><h1>Error!</h1><a href='/'>Home</a></body></html>"
     else:
         if password == password2 and password == old_password:
             hashed_password = old_password
         else:
             hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
-        file = open(config_dir+"config", "w", encoding="utf-8")
-        file.write("siteTitle:"+site_title+"\npassword:"+hashed_password)
+        file = open(config_dir + "config", "w", encoding="utf-8")
+        file.write("siteTitle:" + site_title + "\npassword:" + hashed_password)
         file.close()
-        return set_css()+"<div class='container'><nav>"+ \
-        directory+"</nav><section><h1>config file saved</h1><a href='/'>Home</a></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                 directory + "</nav><section><h1>config file saved</h1><a href='/'>Home</a></body></html>"
 @app.route('/savePage', methods=['POST'])
 def savePage():
     page_content = request.form['page_content']
@@ -1445,6 +1576,7 @@ for i in range(len(search_result)):
 # 準備傳回 page_order 與 page_content 等兩個數列
 '''
 def search_content(head, page, search):
+    """search content"""
     ''' 舊內容
     return page[head.index(search)]
     '''
@@ -1464,39 +1596,45 @@ def search_content(head, page, search):
 @app.route('/search_form', defaults={'edit': 1})
 @app.route('/search_form/<path:edit>')
 def search_form(edit):
+    """form of keyword search"""
     if isAdmin():
         head, level, page = parse_content()
         directory = render_menu(head, level, page)
-        return set_css()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>Search</h1><form method='post' action='doSearch'> \
-    keywords:<input type='text' name='keyword'> \
-    <input type='submit' value='search'></form> \
-    </section></div></body></html>"
+        return set_css() + "<div class='container'><nav>" + \
+                 directory+"</nav><section><h1>Search</h1> \
+                 <form method='post' action='doSearch'> \
+                 keywords:<input type='text' name='keyword'> \
+                 <input type='submit' value='search'></form> \
+                 </section></div></body></html>"
     else:
         return redirect("/login")
 # setup static directory
 @app.route('/static/<path:path>')
 def send_file(path):
-  return app.send_static_file(static_dir+path)
+    """send file function"""
+    return app.send_static_file(static_dir + path)
 
 # setup static directory
 #@app.route('/images/<path:path>')
 @app.route('/images/<path:path>')
 def send_images(path):
-    return send_from_directory(_curdir+"/images/", path)
+    """send image files"""
+    return send_from_directory(_curdir + "/images/", path)
 # setup static directory
 @app.route('/static/')
 def send_static():
-  return app.send_static_file('index.html')
+    """send static files"""
+    return app.send_static_file('index.html')
 
 # set_admin_css for administrator
 def set_admin_css():
+    """set css for admin"""
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 計算機程式</title> \
+<title>電腦輔助設計教材</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
-'''+syntaxhighlight()
+''' + syntaxhighlight()
 
     outstring += '''
 <script src="/static/jquery.js"></script>
@@ -1517,13 +1655,13 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 '''
     site_title, password = parse_config()
     outstring += '''
-</head><header><h1>'''+site_title+'''</h1> \
+</head><header><h1>''' + site_title + '''</h1> \
 <confmenu>
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="/sitemap">SiteMap</a></li>
 <li><a href="/edit_page">Edit All</a></li>
-<li><a href="'''+str(request.url)+'''/1">Edit</a></li>
+<li><a href="''' + str(request.url) + '''/1">Edit</a></li>
 <li><a href="/edit_config">Config</a></li>
 <li><a href="/search_form">Search</a></li>
 <li><a href="/imageuploadform">Image Upload</a></li>
@@ -1539,12 +1677,13 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 '''
     return outstring
 def set_css():
+    """set css for dynamic site"""
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 計算機程式教學手冊</title> \
+<title>電腦輔助設計教材</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
-'''+syntaxhighlight()
+''' + syntaxhighlight()
 
     outstring += '''
 <script src="/static/jquery.js"></script>
@@ -1564,7 +1703,7 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 '''
     site_title, password = parse_config()
     outstring += '''
-</head><header><h1>'''+site_title+'''</h1> \
+</head><header><h1>''' + site_title + '''</h1> \
 <confmenu>
 <ul>
 <li><a href="/">Home</a></li>
@@ -1573,7 +1712,7 @@ window.location= 'https://' + location.host + location.pathname + location.searc
     if isAdmin():
         outstring += '''
 <li><a href="/edit_page">Edit All</a></li>
-<li><a href="'''+str(request.url)+'''/1">Edit</a></li>
+<li><a href="''' + str(request.url) + '''/1">Edit</a></li>
 <li><a href="/edit_config">Config</a></li>
 <li><a href="/search_form">Search</a></li>
 <li><a href="/imageuploadform">image upload</a></li>
@@ -1593,12 +1732,13 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 '''
     return outstring
 def set_css2():
+    """set css for static site"""
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>2018 計算機程式教學手冊</title> \
+<title>電腦輔助設計教材</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
-'''+syntaxhighlight2()
+''' + syntaxhighlight2()
 
     outstring += '''
 <script src="./../static/jquery.js"></script>
@@ -1618,7 +1758,7 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 '''
     site_title, password = parse_config()
     outstring += '''
-</head><header><h1>'''+site_title+'''</h1> \
+</head><header><h1>''' + site_title + '''</h1> \
 <confmenu>
 <ul>
 <li><a href="index.html">Home</a></li>
@@ -1632,9 +1772,10 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 '''
     return outstring
 def set_footer():
+    """footer for page"""
     return "<footer> \
         <a href='/edit_page'>Edit All</a>| \
-        <a href='"+str(request.url)+"/1'>Edit</a>| \
+        <a href='" + str(request.url) + "/1'>Edit</a>| \
         <a href='edit_config'>Config</a> \
         <a href='login'>login</a>| \
         <a href='logout'>logout</a> \
@@ -1644,27 +1785,32 @@ def set_footer():
 @app.route('/sitemap', defaults={'edit':1})
 @app.route('/sitemap/<path:edit>')
 def sitemap(edit):
+    """sitemap for dynamic site"""
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     sitemap = render_menu(head, level, page, sitemap=1)
-    return set_css()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>Site Map</h1>"+sitemap+"</section></div></body></html>"
+    return set_css() + "<div class='container'><nav>"+ directory + \
+             "</nav><section><h1>Site Map</h1>" + sitemap + \
+             "</section></div></body></html>"
 def sitemap2():
+    """sitemap for static content generation"""
     edit = 0
     head, level, page = parse_content()
     directory = render_menu2(head, level, page)
     sitemap = render_menu2(head, level, page, sitemap=1)
-    return set_css2()+"<div class='container'><nav>"+ \
-    directory+"</nav><section><h1>Site Map</h1>"+sitemap+"</section></div></body></html>"
+    return set_css2() + "<div class='container'><nav>" + directory + \
+             "</nav><section><h1>Site Map</h1>" + sitemap + \
+             "</section></div></body></html>"
 def sizeof_fmt(num):
+    """size formate"""
     for x in ['bytes','KB','MB','GB']:
         if num < 1024.0:
             return "%3.1f%s" % (num, x)
         num /= 1024.0
     return "%3.1f%s" % (num, 'TB')
-# seperate save page
 @app.route('/ssavePage', methods=['POST'])
 def ssavePage():
+    """seperate save page function"""
     page_content = request.form['page_content']
     page_order = request.form['page_order']
     if not isAdmin():
@@ -1675,12 +1821,13 @@ def ssavePage():
     page_content = page_content.replace("\n","")
     head, level, page = parse_content()
     original_head_title = head[int(page_order)]
-    file = open(config_dir+"content.htm", "w", encoding="utf-8")
+    file = open(config_dir + "content.htm", "w", encoding="utf-8")
     for index in range(len(head)):
         if index == int(page_order):
             file.write(page_content)
         else:
-            file.write("<h"+str(level[index])+">"+str(head[index])+"</h"+str(level[index])+">"+str(page[index]))
+            file.write("<h"+str(level[index])+ ">" + str(head[index]) + "</h" + \
+                          str(level[index])+">"+str(page[index]))
     file.close()
     # if every ssavePage generate_pages needed
     #generate_pages()
@@ -1696,7 +1843,7 @@ def ssavePage():
     if original_head_title == head[int(page_order)]:
         #edit_url = "/get_page/"+urllib.parse.quote_plus(head[int(page_order)])+"&edit=1"
         #edit_url = "/get_page/"+urllib.parse.quote_plus(original_head_title)+"/1"
-        edit_url = "/get_page/"+original_head_title+"/1"
+        edit_url = "/get_page/" + original_head_title + "/1"
         return redirect(edit_url)
     else:
         return redirect("/")
@@ -1799,26 +1946,28 @@ init_mathjax();
 -->
 '''
 def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
-    sitecontent =file_get_contents(config_dir+"content.htm")
-    editor = set_admin_css()+editorhead()+'''</head>'''+editorfoot()
+    sitecontent =file_get_contents(config_dir + "content.htm")
+    editor = set_admin_css() + editorhead() + '''</head>''' + editorfoot()
     # edit all pages
     if page_order == None:
-        outstring = editor + "<div class='container'><nav>"+ \
-            menu_input+"</nav><section><form method='post' action='savePage'> \
-     <textarea class='simply-editor' name='page_content' cols='50' rows='15'>"+editor_content+"</textarea> \
-     <input type='submit' value='save'></form></section></body></html>"
+        outstring = editor + "<div class='container'><nav>" + \
+                        menu_input + "</nav><section><form method='post' action='savePage'> \
+                        <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" +  \
+                        editor_content + "</textarea><input type='submit' value='save'> \
+                        </form></section></body></html>"
     else:
         # add viewpage button wilie single page editing
         head, level, page = parse_content()
-        outstring = editor + "<div class='container'><nav>"+ \
-            menu_input+"</nav><section><form method='post' action='/ssavePage'> \
-     <textarea class='simply-editor' name='page_content' cols='50' rows='15'>"+editor_content+"</textarea> \
-<input type='hidden' name='page_order' value='"+str(page_order)+"'> \
-     <input type='submit' value='save'>"
-        outstring += '''<input type=button onClick="location.href='/get_page/'''+head[page_order]+ \
-            ''''" value='viewpage'></form></section></body></html>'''
+        outstring = editor + "<div class='container'><nav>" + \
+                        menu_input+"</nav><section><form method='post' action='/ssavePage'> \
+                        <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" + \
+                        editor_content + "</textarea><input type='hidden' name='page_order' value='" + \
+                        str(page_order) + "'><input type='submit' value='save'>"
+        outstring += '''<input type=button onClick="location.href='/get_page/''' + head[page_order] + \
+                          ''''" value='viewpage'></form></section></body></html>'''
     return outstring
 def unique(items):
+    """make items element unique"""
     found = set([])
     keep = []
     count = {}
