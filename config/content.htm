@@ -16,7 +16,1622 @@
 <p>雲端:&nbsp;<a href="https://www.onshape.com/">https://www.onshape.com/</a>&nbsp; (學生可免費使用)</p>
 <p>or</p>
 <p><a href="https://www.autodesk.com/products/fusion-360/students-teachers-educators">https://www.autodesk.com/products/fusion-360/students-teachers-educators</a>&nbsp; (學生可免費使用三年, 近端必須安裝 2.7 GB 套件)</p>
-<p></p><h2>最佳化設計</h2><p>Mechanical Design Optimization Using Advanced Optimization Techniques</p><p><a href="https://link.springer.com/book/10.1007/978-1-4471-2748-2">https://link.springer.com/book/10.1007/978-1-4471-2748-2</a>&nbsp;</p><p>Optimization Methods for Engineering Design</p><p><a href="http://apmonitor.com/me575/uploads/Main/optimization_book.pdf">http://apmonitor.com/me575/uploads/Main/optimization_book.pdf</a>&nbsp;&nbsp;or <a href="/downloads/optimization_book.pdf">local</a></p><p><a href="https://github.com/williamhunter/topy">https://github.com/williamhunter/topy</a>&nbsp;</p><p><a href="http://www.analyzemath.com/calculus.html#Calculus_Problems">http://www.analyzemath.com/calculus.html#Calculus_Problems</a></p><p>以 <a href="https://en.wikipedia.org/wiki/Differential_evolution">Differential Evolution</a> algorithm 解題:</p><p>以總面積 80 cm^2 的鐵皮所能焊出最大容量的方形容器:</p><pre class="brush:cpp;auto-links:false;toolbar:false" contenteditable="false">// 必須在演算過程中, 設法限制各變數的上下限!#include &lt;stdio.h&gt;#include &lt;stdlib.h&gt;#include &lt;math.h&gt;#include &lt;memory.h&gt;#include &lt;time.h&gt; // 最大族群數, NP#define MAXPOP  5000// 最大向量維度, D#define MAXDIM  35// MAXIMAPROBLEM =1 最大化 0 最小化#define MAXIMAPROBLEM 1// 最大化時 PENALITY 必須為負值, 否則為正值#define PENALITY -1000/*#define MAXIMAPROBLEM 0#define PENALITY 1000*/ /*------Constants for rnd_uni()--------------------------------------------*/ #define IM1 2147483563#define IM2 2147483399#define AM (1.0/IM1)#define IMM1 (IM1-1)#define IA1 40014#define IA2 40692#define IQ1 53668#define IQ2 52774#define IR1 12211#define IR2 3791#define NTAB 32#define NDIV (1+IMM1/NTAB)#define EPS 1.2e-7#define RNMX (1.0-EPS) /*------------------------Globals---------------------------------------*/ long  rnd_uni_init;                 /* serves as a seed for rnd_uni()   */double c[MAXPOP][MAXDIM], d[MAXPOP][MAXDIM];double (*pold)[MAXPOP][MAXDIM], (*pnew)[MAXPOP][MAXDIM], (*pswap)[MAXPOP][MAXDIM]; /*---------Function declarations----------------------------------------*/ void  assignd(int D, double a[], double b[]);double rnd_uni(long *idum);    /* uniform pseudo random number generator */double extern evaluate(int D, double tmp[], long *nfeval); /* obj. funct. */ /*---------Function definitions-----------------------------------------*/// 指定向量 b 為 avoid  assignd(int D, double a[], double b[]){   int j;   for (j=0; j&lt;D; j++)   {      a[j] = b[j];   }} // 產生 0 ~ 1 間的亂數double rnd_uni(long *idum){  long j;  long k;  static long idum2=123456789;  static long iy=0;  static long iv[NTAB];  double temp;   if (*idum &lt;= 0)  {    if (-(*idum) &lt; 1) *idum=1;    else *idum = -(*idum);    idum2=(*idum);    for (j=NTAB+7;j&gt;=0;j--)    {      k=(*idum)/IQ1;      *idum=IA1*(*idum-k*IQ1)-k*IR1;      if (*idum &lt; 0) *idum += IM1;      if (j &lt; NTAB) iv[j] = *idum;    }    iy=iv[0];  }  k=(*idum)/IQ1;  *idum=IA1*(*idum-k*IQ1)-k*IR1;  if (*idum &lt; 0) *idum += IM1;  k=idum2/IQ2;  idum2=IA2*(idum2-k*IQ2)-k*IR2;  if (idum2 &lt; 0) idum2 += IM2;  j=iy/NDIV;  iy=iv[j]-idum2;  iv[j] = *idum;  if (iy &lt; 1) iy += IMM1;  if ((temp=AM*iy) &gt; RNMX) return RNMX;  else return temp; }/*------End of rnd_uni()--------------------------*/ // 將上下限轉為全域變數double inibound_h;      /* upper parameter bound              */double inibound_l;      /* lower parameter bound              */// 與機構合成相關的全域變數// 宣告一個座標結構struct Coord {    double x;    double y;  // 這裡保留 double z;}; main(int argc, char *argv[]){   char  chr;             /* y/n choice variable                */   char  *strat[] =       /* strategy-indicator                 */   {            "",            "DE/best/1/exp",            "DE/rand/1/exp",            "DE/rand-to-best/1/exp",            "DE/best/2/exp",            "DE/rand/2/exp",            "DE/best/1/bin",            "DE/rand/1/bin",            "DE/rand-to-best/1/bin",            "DE/best/2/bin",            "DE/rand/2/bin"   };    int   i, j, L, n;      /* counting variables                 */   int   r1, r2, r3, r4;  /* placeholders for random indexes    */   int   r5;              /* placeholders for random indexes    */   int   D;               /* Dimension of parameter vector      */   int   NP;              /* number of population members       */   int   imin;            /* index to member with lowest energy */   int   refresh;         /* refresh rate of screen output      */   int   strategy;        /* choice parameter for screen output */   int   gen, genmax, seed;       long  nfeval;          /* number of function evaluations     */    double trial_cost;      /* buffer variable                    */   // 將上下限轉為全域變數, 可能要根據各變數加以設定   //double inibound_h;      /* upper parameter bound              */   //double inibound_l;      /* lower parameter bound              */   double tmp[MAXDIM], best[MAXDIM], bestit[MAXDIM]; /* members  */   double cost[MAXPOP];    /* obj. funct. values                 */   double cvar;            /* computes the cost variance         */   double cmean;           /* mean cost                          */   double F,CR;            /* control variables of DE            */   double cmin;            /* help variables                     */    FILE  *fpin_ptr;   FILE  *fpout_ptr; // 計算執行過程所需時間起點, 需要導入 time.h  clock_t start = clock(); /*------Initializations----------------------------*/ // 將結果寫入 out.dat fpout_ptr = fopen("out.dat","w");          /* open output file for reading,    */// 目前已經採用 strategy 3 可以得到最佳結果  strategy = 3;  genmax = 2000;  refresh = 100;  // 配合機構尺寸合成, 每一個體有 9 個機構尺寸值與 5 個通過點角度值  D = 2;  NP = 200;  inibound_h = 50.;  inibound_l = 0.;/*得到最佳解  F = 0.85;CR 必須介於 0 to 1. 之間  CR = 1.;*/  F = 0.85;  CR = 1.;  seed = 3;  //fclose(fpin_ptr); /*-----Checking input variables for proper range----------------------------*/   if (D &gt; MAXDIM)  {     printf("\nError! D=%d &gt; MAXDIM=%d\n",D,MAXDIM);     exit(1);  }  if (D &lt;= 0)  {     printf("\nError! D=%d, should be &gt; 0\n",D);     exit(1);  }  if (NP &gt; MAXPOP)  {     printf("\nError! NP=%d &gt; MAXPOP=%d\n",NP,MAXPOP);     exit(1);  }  if (NP &lt;= 0)  {     printf("\nError! NP=%d, should be &gt; 0\n",NP);     exit(1);  }  if ((CR &lt; 0) || (CR &gt; 1.0))  {     printf("\nError! CR=%f, should be ex [0,1]\n",CR);     exit(1);  }  if (seed &lt;= 0)  {     printf("\nError! seed=%d, should be &gt; 0\n",seed);     exit(1);  }  if (refresh &lt;= 0)  {     printf("\nError! refresh=%d, should be &gt; 0\n",refresh);     exit(1);  }  if (genmax &lt;= 0)  {     printf("\nError! genmax=%d, should be &gt; 0\n",genmax);     exit(1);  }  if ((strategy &lt; 0) || (strategy &gt; 10))  {     printf("\nError! strategy=%d, should be ex {1,2,3,4,5,6,7,8,9,10}\n",strategy);     exit(1);  }  if (inibound_h &lt; inibound_l)  {     printf("\nError! inibound_h=%f &lt; inibound_l=%f\n",inibound_h, inibound_l);     exit(1);  } /*-----Initialize random number generator-----------------------------*/  rnd_uni_init = -(long)seed;  /* initialization of rnd_uni() */ nfeval       =  0;  /* reset number of function evaluations */ /*------Initialization------------------------------------------------*//*------Right now this part is kept fairly simple and just generates--*//*------random numbers in the range [-initfac, +initfac]. You might---*//*------want to extend the init part such that you can initialize-----*//*------each parameter separately.------------------------------------*/    for (i=0; i&lt;NP; i++)   {      for (j=0; j&lt;D; j++) /* spread initial population members */      {        c[i][j] = inibound_l + rnd_uni(&amp;rnd_uni_init)*(inibound_h - inibound_l);      }      cost[i] = evaluate(D,c[i],&amp;nfeval); /* obj. funct. value */   }   cmin = cost[0];   imin = 0;   for (i=1; i&lt;NP; i++)   {     if(MAXIMAPROBLEM == 1)     {       // 改為最大化        if (cost[i]&gt;cmin)        {          cmin = cost[i];          imin = i;        }      }      else      {        // 最小化問題        if (cost[i]&lt;cmin)        {          cmin = cost[i];          imin = i;        }      }   }    assignd(D,best,c[imin]);            /* save best member ever          */   assignd(D,bestit,c[imin]);          /* save best member of generation */    pold = &amp;c; /* old population (generation G)   */   pnew = &amp;d; /* new population (generation G+1) */ /*=======================================================================*//*=========Iteration loop================================================*//*=======================================================================*/    gen = 0;                          /* generation counter reset */   while ((gen &lt; genmax) /*&amp;&amp; (kbhit() == 0)*/) /* remove comments if conio.h */   {                                            /* is accepted by compiler    */      gen++;      imin = 0;       for (i=0; i&lt;NP; i++)         /* Start of loop through ensemble  */      {     do                        /* Pick a random population member */     {                         /* Endless loop for NP &lt; 2 !!!     */       r1 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);     }while(r1==i);                  do                        /* Pick a random population member */     {                         /* Endless loop for NP &lt; 3 !!!     */       r2 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);     }while((r2==i) || (r2==r1));      do                        /* Pick a random population member */     {                         /* Endless loop for NP &lt; 4 !!!     */       r3 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);     }while((r3==i) || (r3==r1) || (r3==r2));      do                        /* Pick a random population member */     {                         /* Endless loop for NP &lt; 5 !!!     */       r4 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);     }while((r4==i) || (r4==r1) || (r4==r2) || (r4==r3));      do                        /* Pick a random population member */     {                         /* Endless loop for NP &lt; 6 !!!     */       r5 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);     }while((r5==i) || (r5==r1) || (r5==r2) || (r5==r3) || (r5==r4)); /*=======EXPONENTIAL CROSSOVER============================================================*/ /*-------DE/best/1/exp--------------------------------------------------------------------*//*-------Our oldest strategy but still not bad. However, we have found several------------*//*-------optimization problems where misconvergence occurs.-------------------------------*/     if (strategy == 1) /* strategy DE0 (not in our paper) */     {       assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);       L = 0;       do       {                                tmp[n] = bestit[n] + F*((*pold)[r2][n]-(*pold)[r3][n]);         n = (n+1)%D;         L++;       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));     }/*-------DE/rand/1/exp-------------------------------------------------------------------*//*-------This is one of my favourite strategies. It works especially well when the-------*//*-------"bestit[]"-schemes experience misconvergence. Try e.g. F=0.7 and CR=0.5---------*//*-------as a first guess.---------------------------------------------------------------*/     else if (strategy == 2) /* strategy DE1 in the techreport */     {       assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);       L = 0;       do       {                                tmp[n] = (*pold)[r1][n] + F*((*pold)[r2][n]-(*pold)[r3][n]);         n = (n+1)%D;         L++;       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));     }/*-------DE/rand-to-best/1/exp-----------------------------------------------------------*//*-------This strategy seems to be one of the best strategies. Try F=0.85 and CR=1.------*//*-------If you get misconvergence try to increase NP. If this doesn't help you----------*//*-------should play around with all three control variables.----------------------------*/     else if (strategy == 3) /* similiar to DE2 but generally better */     {        assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);        L = 0;       do       {                                tmp[n] = tmp[n] + F*(bestit[n] - tmp[n]) + F*((*pold)[r1][n]-(*pold)[r2][n]);         n = (n+1)%D;         L++;       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));     }/*-------DE/best/2/exp is another powerful strategy worth trying--------------------------*/     else if (strategy == 4)     {        assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);        L = 0;       do       {                                    tmp[n] = bestit[n] +               ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;         n = (n+1)%D;         L++;       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));     }/*-------DE/rand/2/exp seems to be a robust optimizer for many functions-------------------*/     else if (strategy == 5)     {        assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);        L = 0;       do       {                                    tmp[n] = (*pold)[r5][n] +               ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;         n = (n+1)%D;         L++;       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));     } /*=======Essentially same strategies but BINOMIAL CROSSOVER===============================*/ /*-------DE/best/1/bin--------------------------------------------------------------------*/     else if (strategy == 6)      {       assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);            for (L=0; L&lt;D; L++) /* perform D binomial trials */           {         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */         {                                  tmp[n] = bestit[n] + F*((*pold)[r2][n]-(*pold)[r3][n]);         }         n = (n+1)%D;           }     }/*-------DE/rand/1/bin-------------------------------------------------------------------*/     else if (strategy == 7)      {       assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);            for (L=0; L&lt;D; L++) /* perform D binomial trials */           {         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */         {                                  tmp[n] = (*pold)[r1][n] + F*((*pold)[r2][n]-(*pold)[r3][n]);         }         n = (n+1)%D;           }     }/*-------DE/rand-to-best/1/bin-----------------------------------------------------------*/     else if (strategy == 8)      {        assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);            for (L=0; L&lt;D; L++) /* perform D binomial trials */           {         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */         {                                  tmp[n] = tmp[n] + F*(bestit[n] - tmp[n]) + F*((*pold)[r1][n]-(*pold)[r2][n]);         }         n = (n+1)%D;           }     }/*-------DE/best/2/bin--------------------------------------------------------------------*/     else if (strategy == 9)     {        assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);            for (L=0; L&lt;D; L++) /* perform D binomial trials */           {         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */         {                                  tmp[n] = bestit[n] +               ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;         }         n = (n+1)%D;           }     }/*-------DE/rand/2/bin--------------------------------------------------------------------*/     else     {        assignd(D,tmp,(*pold)[i]);       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);            for (L=0; L&lt;D; L++) /* perform D binomial trials */           {         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */         {                                  tmp[n] = (*pold)[r5][n] +               ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;         }         n = (n+1)%D;           }     }  /*=======Trial mutation now in tmp[]. Test how good this choice really was.==================*/      trial_cost = evaluate(D,tmp,&amp;nfeval);  /* Evaluate new vector in tmp[] */   if(MAXIMAPROBLEM == 1)   {    // 改為最大化       if (trial_cost &gt;= cost[i])   /* improved objective function value ? */       {                                            cost[i]=trial_cost;                   assignd(D,(*pnew)[i],tmp);          if (trial_cost&gt;cmin)          /* Was this a new minimum? */          {                               /* if so...*/             cmin=trial_cost;           /* reset cmin to new low...*/             imin=i;             assignd(D,best,tmp);                     }                                  }                                   else       {          assignd(D,(*pnew)[i],(*pold)[i]); /* replace target with old value */       }    }    else    {          // 最小化問題       if (trial_cost &lt;= cost[i])   /* improved objective function value ? */       {                                            cost[i]=trial_cost;                   assignd(D,(*pnew)[i],tmp);          if (trial_cost&lt;cmin)          /* Was this a new minimum? */          {                               /* if so...*/             cmin=trial_cost;           /* reset cmin to new low...*/             imin=i;             assignd(D,best,tmp);                     }                                  }                                   else       {          assignd(D,(*pnew)[i],(*pold)[i]); /* replace target with old value */       }    }       }   /* End mutation loop through pop. */       assignd(D,bestit,best);  /* Save best population member of current iteration */       /* swap population arrays. New generation becomes old one */       pswap = pold;      pold  = pnew;      pnew  = pswap; /*----Compute the energy variance (just for monitoring purposes)-----------*/       cmean = 0.;          /* compute the mean value first */      for (j=0; j&lt;NP; j++)      {         cmean += cost[j];      }      cmean = cmean/NP;       cvar = 0.;           /* now the variance              */      for (j=0; j&lt;NP; j++)      {         cvar += (cost[j] - cmean)*(cost[j] - cmean);      }      cvar = cvar/(NP-1);  /*----Output part----------------------------------------------------------*/       if (gen%refresh==1)   /* display after every refresh generations */      { /* ABORT works only if conio.h is accepted by your compiler */    printf("\n\n                         PRESS ANY KEY TO ABORT");     printf("\n\n\n Best-so-far cost funct. value=%-15.10g\n",cmin);     for (j=0;j&lt;D;j++)    {      printf("\n best[%d]=%-15.10g",j,best[j]);    }    printf("\n\n Generation=%d  NFEs=%ld   Strategy: %s    ",gen,nfeval,strat[strategy]);    printf("\n NP=%d    F=%-4.2g    CR=%-4.2g   cost-variance=%-10.5g\n",               NP,F,CR,cvar);      }       fprintf(fpout_ptr,"%ld   %-15.10g\n",nfeval,cmin);   }/*=======================================================================*//*=========End of iteration loop=========================================*//*=======================================================================*/ /*-------Final output in file-------------------------------------------*/     fprintf(fpout_ptr,"\n\n\n Best-so-far obj. funct. value = %-15.10g\n",cmin);    for (j=0;j&lt;D;j++)   {     fprintf(fpout_ptr,"\n best[%d]=%-15.10g",j,best[j]);   }   fprintf(fpout_ptr,"\n\n Generation=%d  NFEs=%ld   Strategy: %s    ",gen,nfeval,strat[strategy]);   fprintf(fpout_ptr,"\n NP=%d    F=%-4.2g    CR=%-4.2g    cost-variance=%-10.5g\n",           NP,F,CR,cvar);    fclose(fpout_ptr);   /* Code you want timed here */  printf("Time elapsed: %f\n", ((double)clock() - start) / CLOCKS_PER_SEC);   return(0);} /*-----------End of main()------------------------------------------*/ // 適應函式 fittness function (cost function)double evaluate(int D, double tmp[], long *nfeval){   double result=0, surface = 80.0, z, volume, penality;   (*nfeval)++;   z = (surface-tmp[0]*tmp[1])/(2.0*(tmp[0]+tmp[1]));   volume = tmp[0]*tmp[1]*z;   if(volume &lt;= 0){    return PENALITY;  }// 只限制長度與寬度必須大於 0  if(tmp[0] &lt;= inibound_l){    return PENALITY;  }   if(tmp[1] &lt;= inibound_l){    return PENALITY;  }/*  if((tmp[0] &lt;= inibound_l)|| (tmp[0] &gt;inibound_h)){    return PENALITY;  }   if((tmp[1] &lt;= inibound_l) || (tmp[1] &gt;inibound_h)){    return PENALITY;  }  */  // volume must &gt;0 and max volume  // 目前為最小化問題   //return 1+1/(volume*volume);  return volume;} </pre><p>Python <a href="https://en.wikipedia.org/wiki/Differential_evolution">Differential Evolution</a> algorithm:</p><pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import randomclass Chromosome(object):    """    just copy the idea of genetic algorithm, pretty similar..    """    def __init__(self, n):        """        int n, dimension of question        """        # dimension        self.n = n        # the gene        self.v = [0] * n        # the fitness value        self.f = 0    def assign(self, obj):        """        Chromosome obj        copy all attribute from obj to itself        """        self.n = obj.n        self.v = obj.v[:]        self.f = obj.fclass DiffertialEvolution(object):    def __init__(self,Func, pType, strategy, D, NP, F, CR, lower, upper, maxGen, report):        # if pType = 1 it is maximization  otherwise is minimization problem        self.pType = pType        # strategy 1~10, choice what strategy to generate new member in temporary        self.strategy = strategy        # dimesion of quesiton        self.D = D        # population size        # To start off NP = 10*D is a reasonable choice. Increase NP if misconvergence        self.NP = NP        # weight factor        # F is usually between 0.5 and 1 (in rare cases &gt; 1)        self.F = F        # crossover possible        # CR in [0,1]        self.CR = CR        # lower bound array        self.lb = lower[:]        # upper bound array        self.ub = upper[:]        # maximum generation        self.maxGen = maxGen        # how many generation report once        self.rpt = report        # object function, or enviorment        self.f = Func        # check parameter is set properly        self.checkParameter()        # generation pool, depend on population size        self.pop = [Chromosome(D) for i in range(NP)]        # last generation best member        self.lastgenbest = Chromosome(D)        # current best member        self.currentbest = Chromosome(D)        # the generation count        self.gen = 0        # the vector        self.r1 = 0        self.r2 = 0        self.r3 = 0        self.r4 = 0        self.r5 = 0    def checkParameter(self):        """        check parameter is set properly        """        if (type(self.D) is not int) and self.D &lt;= 0:            raise Exception('D shoud be integer and larger than 0')        if (type(self.NP) is not int) and self.NP &lt;= 0:            raise Exception('NP shoud be integer and larger than 0')        if self.CR &lt; 0 or self.CR &gt; 1:            raise Exception('CR should be [0,1]')        if self.maxGen &lt;= 0:            raise Exception('generation should larger than 0')        if self.rpt &lt;= 0 or self.rpt &gt; self.maxGen:            raise Exception('report should be larger than 0 and less than max genration')        if self.strategy &lt; 1 or self.strategy &gt; 10:            raise Exception('strategy should be [1,10]')        for lower, upper in zip(self.lb, self.ub):            if lower &gt; upper:                raise Exception('upper bound should be larger than lower bound')    def init(self):        """        init population        """        for i in range(self.NP):            for j in range(self.D):                self.pop[i].v[j] = self.lb[j] + random.random()*(self.ub[j] - self.lb[j])            self.pop[i].f = self.evalute(self.pop[i])    def evalute(self, p):        """        evalute the member in enviorment        """        return self.f(p.v)    def findBest(self):        """        find member that have minimum fitness value from pool        """        if self.pType == 1:            return max(self.pop, key=lambda chrom:chrom.f)        else:            return min(self.pop, key=lambda chrom:chrom.f)    def generateRandomVector(self, i):        """        generate new vector        """        while True:            self.r1 = int(random.random() * self.NP)            if not (self.r1 == i):                break        while True:            self.r2 = int(random.random() * self.NP)            if not ((self.r2 == i) or (self.r2 == self.r1)):                break        while True:            self.r3 = int(random.random() * self.NP)            if not ((self.r3 == i) or (self.r3 == self.r1) or (self.r3 == self.r2)):                break        while True:            self.r4 = int(random.random() * self.NP)            if not ((self.r4 == i) or (self.r4 == self.r1) or (self.r4 == self.r2) or (self.r4 == self.r3)):                break        while True:            self.r5 = int(random.random() * self.NP)            if not ((self.r5 == i) or (self.r5 == self.r1) or (self.r5 == self.r2) or (self.r5 == self.r3) or (self.r5 == self.r4)):                break    def recombination(self, i):        """        use new vector, recombination the new one member to tmp        """        tmp = Chromosome(self.D)        if self.strategy == 1:            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            L = 0            while True:                tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D                L += 1                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):                    break        elif self.strategy == 2:            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            L = 0            while True:                tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D                L += 1                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 3):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            L = 0            while True:                tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])                n = (n + 1) % self.D                L += 1                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 4):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            L = 0            while True:                tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D                L += 1                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 5):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            L = 0            while True:                tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D                L += 1                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 6):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            for L in range(self.D):                if ((random.random() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D        elif (self.strategy == 7):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            for L in range(self.D):                if ((random.random() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D        elif (self.strategy == 8):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            for L in range(self.D):                if ((random.random() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])                n = (n + 1) % self.D        elif (self.strategy == 9):            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            for L in range(self.D):                if ((random.random() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D        else:            tmp.assign(self.pop[i])            n = int(random.random() * self.D)            for L in range(self.D):                if ((random.random() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D        return tmp    def report(self):        """        report current generation status        """        if self.gen == 0:            print("DiffertialEvolution results - init pop")        elif self.gen == self.maxGen:            print("Final DiffertialEvolution results at", self.gen, "generations")        else:            print("DiffertialEvolution results after", self.gen, "generations")        print("Function : %.6f" % (self.currentbest.f))        for i, v in enumerate(self.currentbest.v, start=1):            print("Var", i, ":", v)    def overbound(self, member):        """        check the member's chromosome that is out of bound?        """        for i in range(self.D):            if member.v[i] &gt; self.ub[i] or member.v[i] &lt; self.lb[i]:                return True        return False    def run(self):        """        run the algorithm...        """        # initial step        # generation 0        self.gen = 0        # init the member's chromsome        self.init()        # find the best one(smallest fitness value)        tmp = self.findBest()        # copy to lastgenbest        self.lastgenbest.assign(tmp)        # copy to currentbest        self.currentbest.assign(tmp)        # report status        self.report()        # end initial step        # the evolution journey is beggin...        for self.gen in range(1, self.maxGen + 1):            for i in range(self.NP):                # generate new vector                self.generateRandomVector(i)                # use the vector recombine the member to temporary                tmp = self.recombination(i)                # check the one is out of bound?                if self.overbound(tmp):                    # if it is, then ignore                    continue                # is not out of bound, that mean it's quilify of enviorment                # then evalute the one                tmp.f = self.evalute(tmp)                # if temporary one is better than origin(fitness value is larger or smaller)                # pType is 1, the problem is maximization type                if self.pType == 1:                    if tmp.f &gt;= self.pop[i].f:                        # copy the temporary one to origin member                        self.pop[i].assign(tmp)                        # check the temporary one is better than the currentbest                        if tmp.f &gt; self.currentbest.f:                            # copy the temporary one to currentbest                            self.currentbest.assign(tmp)                else:                    if tmp.f &lt;= self.pop[i].f:                        # copy the temporary one to origin member                        self.pop[i].assign(tmp)                        # check the temporary one is better than the currentbest                        if tmp.f &lt; self.currentbest.f:                            # copy the temporary one to currentbest                            self.currentbest.assign(tmp)            # copy the currentbest to lastgenbest            self.lastgenbest.assign(self.currentbest)            # if report generation is set, report            if self.rpt != 0:                if self.gen % self.rpt == 0:                    self.report()        # the evolution journey is done, report the final status        self.report()#fittness function (cost function)def evaluate(designVariablel):    surface = 80.0    # if pType is 1, the penality is negative (maximization problem)    # if pType is 0, the penality is positive (minimization problem)    penality = -1000    z = (surface-designVariablel[0]*designVariablel[1])/(2.0*(designVariablel[0]\         +designVariablel[1]))    volume = designVariablel[0]*designVariablel[1]*z      if(volume &lt;= 0):        return penality    # box length and width need to be larger than 0    if(designVariablel[0] &lt;= 0):        return penality    if(designVariablel[1] &lt;= 0):        return penality    return volume#volume = DiffertialEvolution((self,Func, max, strategy, D, NP, F, CR, lower, upper, maxGen, report)volume = DiffertialEvolution(evaluate, 1, 3, 2, 100, 0.6, 0.85, [0, 0], [50, 50], 100, 10)volume.run()</pre><p>將上述 Python 程式轉為 Cython 格式:</p><pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">#import randomfrom cpython cimport bool#from array import arrayimport numpy as npcimport numpy as npfrom libc.stdlib cimport rand, RAND_MAX, srandfrom libc.time cimport time# make true it is random everytimesrand(time(NULL))cdef double randV():    return rand()*1.0 / RAND_MAXcdef class Chromosome(object):    """    just copy the idea of genetic algorithm, pretty similar..    """    cdef public int n    cdef public double f    cdef public np.ndarray v    def __cinit__(self, int n):        """        int n, dimension of question        """        # dimension        self.n = n        # the gene        self.v = np.zeros(n)        # the fitness value        self.f = 0    def assign(self, Chromosome obj):        """        Chromosome obj        copy all attribute from obj to itself        """        self.n = obj.n        self.v[:] = obj.v        self.f = obj.fcdef class DiffertialEvolution(object):    cdef:        int strategy, D, NP, maxGen, rpt, gen, r1, r2, r3, r4, r5        double F, CR        np.ndarray lb, ub, pop        object f        Chromosome lastgenbest, currentbest    def __cinit__(self, object Func, int strategy, int D, int NP, double F, double CR, object lower, object upper, int maxGen, int report):        # strategy 1~10, choice what strategy to generate new member in temporary        self.strategy = strategy        # dimesion of quesiton        self.D = D        # population size        # To start off NP = 10*D is a reasonable choice. Increase NP if misconvergence        self.NP = NP        # weight factor        # F is usually between 0.5 and 1 (in rare cases &gt; 1)        self.F = F        # crossover possible        # CR in [0,1]        self.CR = CR        # low bound        self.lb = np.array(lower[:])        # up bound        self.ub = np.array(upper[:])        # maximum generation        self.maxGen = maxGen        # how many generation report once        self.rpt = report        # object function, or enviorment        self.f = Func        # check parameter is set properly        self.checkParameter()        # generation pool, depend on population size        #self.pop = [Chromosome(self.D) for i in range(self.NP)]        self.pop = np.ndarray((NP,),dtype=np.object)        for i in range(NP):            self.pop[i] = Chromosome(self.D)        # last generation best member        self.lastgenbest = Chromosome(D)        # current best member        self.currentbest = Chromosome(D)        # the generation count        self.gen = 0        # the vector        self.r1 = 0        self.r2 = 0        self.r3 = 0        self.r4 = 0        self.r5 = 0    cdef void checkParameter(self):        """        check parameter is set properly        """        if (type(self.D) is not int) and self.D &lt;= 0:            raise Exception('D shoud be integer and larger than 0')        if (type(self.NP) is not int) and self.NP &lt;= 0:            raise Exception('NP shoud be integer and larger than 0')        if self.CR &lt; 0 or self.CR &gt; 1:            raise Exception('CR should be [0,1]')        if self.maxGen &lt;= 0:            raise Exception('generation should larger than 0')        if self.rpt &lt;= 0 or self.rpt &gt; self.maxGen:            raise Exception('report should be larger than 0 and less than max genration')        if self.strategy &lt; 1 or self.strategy &gt; 10:            raise Exception('strategy should be [1,10]')        for lower, upper in zip(self.lb, self.ub):            if lower &gt; upper:                raise Exception('upper bound should be larger than lower bound')    cdef void init(self):        """        init population        """        cdef int i, j        for i in range(self.NP):            for j in range(self.D):                self.pop[i].v[j] = self.lb[j] + randV()*(self.ub[j] - self.lb[j])            self.pop[i].f = self.evalute(self.pop[i])    cdef double evalute(self, Chromosome member):        """        evalute the member in enviorment        """        return self.f(member.v)    cdef Chromosome findBest(self):        """        find member that have minimum fitness value from pool        """        return min(self.pop, key=lambda chrom:chrom.f)    cdef void generateRandomVector(self, i):        """        generate new vector        """        while True:            self.r1 = int(randV() * self.NP)            if not (self.r1 == i):                break        while True:            self.r2 = int(randV() * self.NP)            if not ((self.r2 == i) or (self.r2 == self.r1)):                break        while True:            self.r3 = int(randV() * self.NP)            if not ((self.r3 == i) or (self.r3 == self.r1) or (self.r3 == self.r2)):                break        while True:            self.r4 = int(randV() * self.NP)            if not ((self.r4 == i) or (self.r4 == self.r1) or (self.r4 == self.r2) or (self.r4 == self.r3)):                break        while True:            self.r5 = int(randV() * self.NP)            if not ((self.r5 == i) or (self.r5 == self.r1) or (self.r5 == self.r2) or (self.r5 == self.r3) or (self.r5 == self.r4)):                break    cdef Chromosome recombination(self, int i):        """        use new vector, recombination the new one member to tmp        """        cdef Chromosome tmp        cdef int n, L        tmp = Chromosome(self.D)        if self.strategy == 1:            tmp.assign(self.pop[i])            n = int(randV() * self.D)            L = 0            while True:                tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D                L += 1                if not ((randV() &lt; self.CR) and (L &lt; self.D)):                    break        elif self.strategy == 2:            tmp.assign(self.pop[i])            n = int(randV() * self.D)            L = 0            while True:                tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D                L += 1                if not ((randV() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 3):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            L = 0            while True:                tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])                n = (n + 1) % self.D                L += 1                if not ((randV() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 4):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            L = 0            while True:                tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D                L += 1                if not ((randV() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 5):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            L = 0            while True:                tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D                L += 1                if not ((randV() &lt; self.CR) and (L &lt; self.D)):                    break        elif (self.strategy == 6):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            for L in range(self.D):                if ((randV() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D        elif (self.strategy == 7):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            for L in range(self.D):                if ((randV() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])                n = (n + 1) % self.D        elif (self.strategy == 8):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            for L in range(self.D):                if ((randV() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])                n = (n + 1) % self.D        elif (self.strategy == 9):            tmp.assign(self.pop[i])            n = int(randV() * self.D)            for L in range(self.D):                if ((randV() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D        else:            tmp.assign(self.pop[i])            n = int(randV() * self.D)            for L in range(self.D):                if ((randV() &lt; self.CR) or L == (self.D - 1)):                    tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F                n = (n + 1) % self.D        return tmp    cdef void report(self):        """        report current generation status        """        cdef int i        cdef double v        if self.gen == 0:            print("DiffertialEvolution results - init pop")        elif self.gen == self.maxGen:            print("Final DiffertialEvolution results at %d generations"%(self.gen,))        else:            print("DiffertialEvolution results after %d generations"%(self.gen,))        print("Function : %.6f" % (self.currentbest.f))        for i, v in enumerate(self.currentbest.v.flat, start=1):            print("Var %d : %.4f"%(i, v))    cdef bool overbound(self, Chromosome member):        """        check the member's chromosome that is out of bound?        """        cdef int i        for i in range(self.D):            if member.v[i] &gt; self.ub[i] or member.v[i] &lt; self.lb[i]:                return True        return False    cdef void run(self):        """        run the algorithm...        """        cdef Chromosome tmp        cdef int i        # initial step        # generation 0        self.gen = 0        # init the member's chromsome        self.init()        # find the best one(smallest fitness value)        tmp = self.findBest()        # copy to lastgenbest        self.lastgenbest.assign(tmp)        # copy to currentbest        self.currentbest.assign(tmp)        # report status        self.report()        # end initial step        # the evolution journey is beggin...        for self.gen in range(1, self.maxGen + 1):            for i in range(self.NP):                # generate new vector                self.generateRandomVector(i)                # use the vector recombine the member to temporary                tmp = self.recombination(i)                # check the one is out of bound?                if self.overbound(tmp):                    # if it is, then abandon it                    continue                # is not out of bound, that mean it's quilify of enviorment                # then evalute the one                tmp.f = self.evalute(tmp)                # if temporary one is better than origin(fitness value is smaller)                if tmp.f &lt;= self.pop[i].f:                    # copy the temporary one to origin member                    self.pop[i].assign(tmp)                    # check the temporary one is better than the currentbest                    if tmp.f &lt; self.currentbest.f:                        # copy the temporary one to currentbest                        self.currentbest.assign(tmp)            # copy the currentbest to lastgenbest            self.lastgenbest.assign(self.currentbest)            # if report generation is set, report            if self.rpt != 0:                if self.gen % self.rpt == 0:                    self.report()        # the evolution journey is done, report the final status        self.report()</pre><p>使用 Real-coded Genetic algorithm 解題:</p><pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import timeimport mathclass Chromosome(object):    def __init__(self, n=None):        self.np = n if n &gt; 0 else 2        self.f = 0.0        self.v = [0.0] * n    def cp(self, obj):        """        copy all atribute from another chromsome object        """        self.np = obj.np        self.f = obj.f        self.v = obj.v[:]    def get_v(self, i):        return self.v[i]    def is_self(self, obj):        """        check the object is self?        """        return obj is self    def assign(self, obj):        if not self.is_self(obj):            self.cp(obj)class Genetic(object):    def __init__(self, func, pType, nParm, nPop, pCross, pMute, pWin, bDelta, upper, lower):        """        init(function func)        """        self.func=func        self.pType = pType        self.nParm=nParm        self.nPop=nPop        self.pCross=pCross        self.pMute=pMute        self.pWin=pWin        self.bDelta=bDelta        self.chrom = [Chromosome(nParm) for i in range(nPop)]        self.newChrom = [Chromosome(nParm) for i in range(nPop)]        self.babyChrom = [Chromosome(nParm) for i in range(3)]        self.chromElite = [Chromosome(nParm)]        self.chromBest = [Chromosome(nParm)]        self.maxLimit = upper[:]        self.minLimit = lower[:]        self.maxGen = None        self.gen = None        self.seed = 0.0        self.iseed = 470211272.0        self.mask = 2147483647    def check(self, i, v):        """        If a variable is out of bound,        replace it with a random value        """        if (v &gt; self.maxLimit[i]) or (v &lt; self.minLimit[i]):            return self.randVal(self.minLimit[i], self.maxLimit[i])        return v    def crossOver(self):        for i in range(0, self.nPop-1, 2):            # crossover            if(self.rnd() &lt; self.pCross):                for s in range(self.nParm):                    # first baby, half father half mother                    self.babyChrom[0].v[s] = 0.5 * self.chrom[i].v[s] + 0.5*self.chrom[i+1].v[s];                    # second baby, three quaters of fater and quater of mother                    self.babyChrom[1].v[s] = self.check(s, 1.5 * self.chrom[i].v[s] - 0.5*self.chrom[i+1].v[s])                    # third baby, quater of fater and three quaters of mother                    self.babyChrom[2].v[s] = self.check(s,-0.5 * self.chrom[i].v[s] + 1.5*self.chrom[i+1].v[s]);                for j in range(3):                    self.babyChrom[j].f = self.func(self.babyChrom[j].v)                # maximization                if self.pType == 1:                                        if self.babyChrom[1].f &gt; self.babyChrom[0].f:                        self.babyChrom[0], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[0]                    if self.babyChrom[2].f &gt; self.babyChrom[0].f:                        self.babyChrom[2], self.babyChrom[0] = self.babyChrom[0], self.babyChrom[2]                    if self.babyChrom[2].f &gt; self.babyChrom[1].f:                        self.babyChrom[2], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[2]                else:                                        if self.babyChrom[1].f &lt; self.babyChrom[0].f:                        self.babyChrom[0], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[0]                    if self.babyChrom[2].f &lt; self.babyChrom[0].f:                        self.babyChrom[2], self.babyChrom[0] = self.babyChrom[0], self.babyChrom[2]                    if self.babyChrom[2].f &lt; self.babyChrom[1].f:                        self.babyChrom[2], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[2]                # replace first two baby to parent, another one will be                self.chrom[i].assign(self.babyChrom[0])                self.chrom[i+1].assign(self.babyChrom[1])    def delta(self, y):        r = float(self.gen) / self.maxGen;        return y*self.rnd()*math.pow(1.0-r, self.bDelta)    def fitness(self):        for j in range(self.nPop):            self.chrom[j].f = self.func(self.chrom[j].v)        self.chromBest[0].assign(self.chrom[0])        for j in range(self.nPop):            if self.pType == 1:                if(self.chrom[j].f &gt; self.chromBest[0].f):                    self.chromBest[0].assign(self.chrom[j])            else:                if(self.chrom[j].f &lt; self.chromBest[0].f):                    self.chromBest[0].assign(self.chrom[j])        if self.pType == 1:            if(self.chromBest[0].f &gt; self.chromElite[0].f):                self.chromElite[0].assign(self.chromBest[0])        else:            if(self.chromBest[0].f &lt; self.chromElite[0].f):                self.chromElite[0].assign(self.chromBest[0])    def initialPop(self):        for j in range(self.nPop):            for i in range(self.nParm):                self.chrom[j].v[i] = self.randVal(self.minLimit[i], self.maxLimit[i])    def mutate(self):        for i in range(self.nPop):            if self.rnd() &lt; self.pMute:                s = self.random(self.nParm)                if (self.random(2) == 0):                    self.chrom[i].v[s] += self.delta(self.maxLimit[s]-self.chrom[i].v[s])                else:                    self.chrom[i].v[s] -= self.delta(self.chrom[i].v[s]-self.minLimit[s])    def report(self):        if self.gen == 0:            print("Genetik results - Initial population")        elif self.gen == self.maxGen:            print("Final Genetik results at", self.gen, "generations")        else:            print("Genetik results after", self.gen, "generations")        print("Function : %.6f" % (self.chromElite[0].f))        for i, p in enumerate(self.chromElite[0].v):            print("Var", i+1, ":", p)    def select(self):        """        roulette wheel selection        """        for i in range(self.nPop):            j = self.random(self.nPop)            k = self.random(self.nPop)            self.newChrom[i].assign(self.chrom[j])            if self.pType == 1:                if(self.chrom[k].f &gt; self.chrom[j].f) and (self.rnd() &gt; self.pWin):                    self.newChrom[i].assign(self.chrom[k])            else:                if(self.chrom[k].f &lt; self.chrom[j].f) and (self.rnd() &lt; self.pWin):                    self.newChrom[i].assign(self.chrom[k])        # in this stage, newChrom is select finish        # now replace origin chrom        for i in range(self.nPop):            self.chrom[i].assign(self.newChrom[i])        # select random one chrom to be best chrom, make best chrom still exist        j = self.random(self.nPop);        self.chrom[j].assign(self.chromElite[0])    def run(self, mxg, rp):        """        // **** Init and run GA for maxGen times        // **** mxg : maximum generation        // **** rp  : report cycle, 0 for final report or        // ****       report each mxg modulo rp        """        self.maxGen = mxg        self.rpt = rp        self.randomize()        self.initialPop()        self.chrom[0].f = self.func(self.chrom[0].v)        self.chromElite[0].assign(self.chrom[0])        self.gen = 0        self.fitness()        self.report()        for self.gen in range(1, self.maxGen + 1):            self.select()            self.crossOver()            self.mutate()            self.fitness()            if rp != 0:                if self.gen % self.rpt == 0:                    self.report()        self.report()    def newSeed(self):        if(self.seed == 0.0):            self.seed=self.iseed        else:            self.seed *= 16807.0            self.seed = math.fmod(self.seed, self.mask)    def rnd(self):        self.newSeed()        return self.seed/self.mask    def randomize(self):        self.seed = time.time()    def random(self, k):        return int(self.rnd()*k)    def randVal(self, low, high):        number_types = (int, float)        if isinstance(low, number_types) and isinstance(high, number_types):            return self.rnd()*(high-low)+low        raise ValueError        #fittness function (cost function)def evaluate(designVariablel):    surface = 80.0    # if pType is 1, the penality is negative (maximization problem)    # if pType is 0, the penality is positive (minimization problem)    penality = -1000    z = (surface-designVariablel[0]*designVariablel[1])/(2.0*(designVariablel[0]\         +designVariablel[1]))    volume = designVariablel[0]*designVariablel[1]*z      if(volume &lt;= 0):        return penality    # box length and width need to be larger than 0    if(designVariablel[0] &lt;= 0):        return penality    if(designVariablel[1] &lt;= 0):        return penality    #return 1+1/(volume*volume)    return volume#volume = Genetic(self, func, pType, nParm, nPop, pCross, pMute, pWin, bDelta, upper, lower):volume = Genetic(evaluate, 1, 2, 1000, 0.95, 0.05, 0.95, 5, [0, 0], [50, 50])volume.run(1000, 50)</pre><p></p><h2>雲端 CAD</h2>
+<p></p><h2>最佳化設計</h2>
+<p>Mechanical Design Optimization Using Advanced Optimization Techniques</p>
+<p><a href="https://link.springer.com/book/10.1007/978-1-4471-2748-2">https://link.springer.com/book/10.1007/978-1-4471-2748-2</a>&nbsp;</p>
+<p>Optimization Methods for Engineering Design</p>
+<p><a href="http://apmonitor.com/me575/uploads/Main/optimization_book.pdf">http://apmonitor.com/me575/uploads/Main/optimization_book.pdf</a>&nbsp;&nbsp;or <a href="/downloads/optimization_book.pdf">local</a></p>
+<p><a href="https://github.com/williamhunter/topy">https://github.com/williamhunter/topy</a>&nbsp;</p>
+<p><a href="http://www.analyzemath.com/calculus.html#Calculus_Problems">http://www.analyzemath.com/calculus.html#Calculus_Problems</a></p>
+<p>以 <a href="https://en.wikipedia.org/wiki/Differential_evolution">Differential Evolution</a> algorithm 解題:</p>
+<p>以總面積 80 cm^2 的鐵皮所能焊出最大容量的方形容器:</p>
+<pre class="brush:cpp;auto-links:false;toolbar:false" contenteditable="false">// 必須在演算過程中, 設法限制各變數的上下限!
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#include &lt;memory.h&gt;
+#include &lt;time.h&gt;
+ 
+// 最大族群數, NP
+#define MAXPOP  5000
+// 最大向量維度, D
+#define MAXDIM  35
+// MAXIMAPROBLEM =1 最大化 0 最小化
+#define MAXIMAPROBLEM 1
+// 最大化時 PENALITY 必須為負值, 否則為正值
+#define PENALITY -1000
+/*
+#define MAXIMAPROBLEM 0
+#define PENALITY 1000
+*/
+ 
+/*------Constants for rnd_uni()--------------------------------------------*/
+ 
+#define IM1 2147483563
+#define IM2 2147483399
+#define AM (1.0/IM1)
+#define IMM1 (IM1-1)
+#define IA1 40014
+#define IA2 40692
+#define IQ1 53668
+#define IQ2 52774
+#define IR1 12211
+#define IR2 3791
+#define NTAB 32
+#define NDIV (1+IMM1/NTAB)
+#define EPS 1.2e-7
+#define RNMX (1.0-EPS)
+ 
+/*------------------------Globals---------------------------------------*/
+ 
+long  rnd_uni_init;                 /* serves as a seed for rnd_uni()   */
+double c[MAXPOP][MAXDIM], d[MAXPOP][MAXDIM];
+double (*pold)[MAXPOP][MAXDIM], (*pnew)[MAXPOP][MAXDIM], (*pswap)[MAXPOP][MAXDIM];
+ 
+/*---------Function declarations----------------------------------------*/
+ 
+void  assignd(int D, double a[], double b[]);
+double rnd_uni(long *idum);    /* uniform pseudo random number generator */
+double extern evaluate(int D, double tmp[], long *nfeval); /* obj. funct. */
+ 
+/*---------Function definitions-----------------------------------------*/
+// 指定向量 b 為 a
+void  assignd(int D, double a[], double b[])
+{
+   int j;
+   for (j=0; j&lt;D; j++)
+   {
+      a[j] = b[j];
+   }
+}
+ 
+// 產生 0 ~ 1 間的亂數
+double rnd_uni(long *idum)
+{
+  long j;
+  long k;
+  static long idum2=123456789;
+  static long iy=0;
+  static long iv[NTAB];
+  double temp;
+ 
+  if (*idum &lt;= 0)
+  {
+    if (-(*idum) &lt; 1) *idum=1;
+    else *idum = -(*idum);
+    idum2=(*idum);
+    for (j=NTAB+7;j&gt;=0;j--)
+    {
+      k=(*idum)/IQ1;
+      *idum=IA1*(*idum-k*IQ1)-k*IR1;
+      if (*idum &lt; 0) *idum += IM1;
+      if (j &lt; NTAB) iv[j] = *idum;
+    }
+    iy=iv[0];
+  }
+  k=(*idum)/IQ1;
+  *idum=IA1*(*idum-k*IQ1)-k*IR1;
+  if (*idum &lt; 0) *idum += IM1;
+  k=idum2/IQ2;
+  idum2=IA2*(idum2-k*IQ2)-k*IR2;
+  if (idum2 &lt; 0) idum2 += IM2;
+  j=iy/NDIV;
+  iy=iv[j]-idum2;
+  iv[j] = *idum;
+  if (iy &lt; 1) iy += IMM1;
+  if ((temp=AM*iy) &gt; RNMX) return RNMX;
+  else return temp;
+ 
+}/*------End of rnd_uni()--------------------------*/
+ 
+// 將上下限轉為全域變數
+double inibound_h;      /* upper parameter bound              */
+double inibound_l;      /* lower parameter bound              */
+// 與機構合成相關的全域變數
+// 宣告一個座標結構
+struct Coord {
+    double x;
+    double y;
+  // 這裡保留 double z;
+};
+ 
+main(int argc, char *argv[])
+{
+   char  chr;             /* y/n choice variable                */
+   char  *strat[] =       /* strategy-indicator                 */
+   {
+            "",
+            "DE/best/1/exp",
+            "DE/rand/1/exp",
+            "DE/rand-to-best/1/exp",
+            "DE/best/2/exp",
+            "DE/rand/2/exp",
+            "DE/best/1/bin",
+            "DE/rand/1/bin",
+            "DE/rand-to-best/1/bin",
+            "DE/best/2/bin",
+            "DE/rand/2/bin"
+   };
+ 
+   int   i, j, L, n;      /* counting variables                 */
+   int   r1, r2, r3, r4;  /* placeholders for random indexes    */
+   int   r5;              /* placeholders for random indexes    */
+   int   D;               /* Dimension of parameter vector      */
+   int   NP;              /* number of population members       */
+   int   imin;            /* index to member with lowest energy */
+   int   refresh;         /* refresh rate of screen output      */
+   int   strategy;        /* choice parameter for screen output */
+   int   gen, genmax, seed;   
+ 
+   long  nfeval;          /* number of function evaluations     */
+ 
+   double trial_cost;      /* buffer variable                    */
+   // 將上下限轉為全域變數, 可能要根據各變數加以設定
+   //double inibound_h;      /* upper parameter bound              */
+   //double inibound_l;      /* lower parameter bound              */
+   double tmp[MAXDIM], best[MAXDIM], bestit[MAXDIM]; /* members  */
+   double cost[MAXPOP];    /* obj. funct. values                 */
+   double cvar;            /* computes the cost variance         */
+   double cmean;           /* mean cost                          */
+   double F,CR;            /* control variables of DE            */
+   double cmin;            /* help variables                     */
+ 
+   FILE  *fpin_ptr;
+   FILE  *fpout_ptr;
+ 
+// 計算執行過程所需時間起點, 需要導入 time.h
+  clock_t start = clock();
+ 
+/*------Initializations----------------------------*/
+ 
+// 將結果寫入 out.dat
+ fpout_ptr = fopen("out.dat","w");          /* open output file for reading,    */
+// 目前已經採用 strategy 3 可以得到最佳結果
+  strategy = 3;
+  genmax = 2000;
+  refresh = 100;
+  // 配合機構尺寸合成, 每一個體有 9 個機構尺寸值與 5 個通過點角度值
+  D = 2;
+  NP = 200;
+  inibound_h = 50.;
+  inibound_l = 0.;
+/*得到最佳解
+  F = 0.85;
+CR 必須介於 0 to 1. 之間
+  CR = 1.;
+*/
+  F = 0.85;
+  CR = 1.;
+  seed = 3;
+ 
+ //fclose(fpin_ptr);
+ 
+/*-----Checking input variables for proper range----------------------------*/
+ 
+  if (D &gt; MAXDIM)
+  {
+     printf("\nError! D=%d &gt; MAXDIM=%d\n",D,MAXDIM);
+     exit(1);
+  }
+  if (D &lt;= 0)
+  {
+     printf("\nError! D=%d, should be &gt; 0\n",D);
+     exit(1);
+  }
+  if (NP &gt; MAXPOP)
+  {
+     printf("\nError! NP=%d &gt; MAXPOP=%d\n",NP,MAXPOP);
+     exit(1);
+  }
+  if (NP &lt;= 0)
+  {
+     printf("\nError! NP=%d, should be &gt; 0\n",NP);
+     exit(1);
+  }
+  if ((CR &lt; 0) || (CR &gt; 1.0))
+  {
+     printf("\nError! CR=%f, should be ex [0,1]\n",CR);
+     exit(1);
+  }
+  if (seed &lt;= 0)
+  {
+     printf("\nError! seed=%d, should be &gt; 0\n",seed);
+     exit(1);
+  }
+  if (refresh &lt;= 0)
+  {
+     printf("\nError! refresh=%d, should be &gt; 0\n",refresh);
+     exit(1);
+  }
+  if (genmax &lt;= 0)
+  {
+     printf("\nError! genmax=%d, should be &gt; 0\n",genmax);
+     exit(1);
+  }
+  if ((strategy &lt; 0) || (strategy &gt; 10))
+  {
+     printf("\nError! strategy=%d, should be ex {1,2,3,4,5,6,7,8,9,10}\n",strategy);
+     exit(1);
+  }
+  if (inibound_h &lt; inibound_l)
+  {
+     printf("\nError! inibound_h=%f &lt; inibound_l=%f\n",inibound_h, inibound_l);
+     exit(1);
+  }
+ 
+/*-----Initialize random number generator-----------------------------*/
+ 
+ rnd_uni_init = -(long)seed;  /* initialization of rnd_uni() */
+ nfeval       =  0;  /* reset number of function evaluations */
+ 
+/*------Initialization------------------------------------------------*/
+/*------Right now this part is kept fairly simple and just generates--*/
+/*------random numbers in the range [-initfac, +initfac]. You might---*/
+/*------want to extend the init part such that you can initialize-----*/
+/*------each parameter separately.------------------------------------*/
+ 
+   for (i=0; i&lt;NP; i++)
+   {
+      for (j=0; j&lt;D; j++) /* spread initial population members */
+      {
+        c[i][j] = inibound_l + rnd_uni(&amp;rnd_uni_init)*(inibound_h - inibound_l);
+      }
+      cost[i] = evaluate(D,c[i],&amp;nfeval); /* obj. funct. value */
+   }
+   cmin = cost[0];
+   imin = 0;
+   for (i=1; i&lt;NP; i++)
+   {
+     if(MAXIMAPROBLEM == 1)
+     {
+       // 改為最大化
+        if (cost[i]&gt;cmin)
+        {
+          cmin = cost[i];
+          imin = i;
+        }
+      }
+      else
+      {
+        // 最小化問題
+        if (cost[i]&lt;cmin)
+        {
+          cmin = cost[i];
+          imin = i;
+        }
+      }
+   }
+ 
+   assignd(D,best,c[imin]);            /* save best member ever          */
+   assignd(D,bestit,c[imin]);          /* save best member of generation */
+ 
+   pold = &amp;c; /* old population (generation G)   */
+   pnew = &amp;d; /* new population (generation G+1) */
+ 
+/*=======================================================================*/
+/*=========Iteration loop================================================*/
+/*=======================================================================*/
+ 
+   gen = 0;                          /* generation counter reset */
+   while ((gen &lt; genmax) /*&amp;&amp; (kbhit() == 0)*/) /* remove comments if conio.h */
+   {                                            /* is accepted by compiler    */
+      gen++;
+      imin = 0;
+ 
+      for (i=0; i&lt;NP; i++)         /* Start of loop through ensemble  */
+      {
+     do                        /* Pick a random population member */
+     {                         /* Endless loop for NP &lt; 2 !!!     */
+       r1 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);
+     }while(r1==i);            
+ 
+     do                        /* Pick a random population member */
+     {                         /* Endless loop for NP &lt; 3 !!!     */
+       r2 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);
+     }while((r2==i) || (r2==r1));
+ 
+     do                        /* Pick a random population member */
+     {                         /* Endless loop for NP &lt; 4 !!!     */
+       r3 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);
+     }while((r3==i) || (r3==r1) || (r3==r2));
+ 
+     do                        /* Pick a random population member */
+     {                         /* Endless loop for NP &lt; 5 !!!     */
+       r4 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);
+     }while((r4==i) || (r4==r1) || (r4==r2) || (r4==r3));
+ 
+     do                        /* Pick a random population member */
+     {                         /* Endless loop for NP &lt; 6 !!!     */
+       r5 = (int)(rnd_uni(&amp;rnd_uni_init)*NP);
+     }while((r5==i) || (r5==r1) || (r5==r2) || (r5==r3) || (r5==r4));
+ 
+/*=======EXPONENTIAL CROSSOVER============================================================*/
+ 
+/*-------DE/best/1/exp--------------------------------------------------------------------*/
+/*-------Our oldest strategy but still not bad. However, we have found several------------*/
+/*-------optimization problems where misconvergence occurs.-------------------------------*/
+     if (strategy == 1) /* strategy DE0 (not in our paper) */
+     {
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);
+       L = 0;
+       do
+       {                       
+         tmp[n] = bestit[n] + F*((*pold)[r2][n]-(*pold)[r3][n]);
+         n = (n+1)%D;
+         L++;
+       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));
+     }
+/*-------DE/rand/1/exp-------------------------------------------------------------------*/
+/*-------This is one of my favourite strategies. It works especially well when the-------*/
+/*-------"bestit[]"-schemes experience misconvergence. Try e.g. F=0.7 and CR=0.5---------*/
+/*-------as a first guess.---------------------------------------------------------------*/
+     else if (strategy == 2) /* strategy DE1 in the techreport */
+     {
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D);
+       L = 0;
+       do
+       {                       
+         tmp[n] = (*pold)[r1][n] + F*((*pold)[r2][n]-(*pold)[r3][n]);
+         n = (n+1)%D;
+         L++;
+       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));
+     }
+/*-------DE/rand-to-best/1/exp-----------------------------------------------------------*/
+/*-------This strategy seems to be one of the best strategies. Try F=0.85 and CR=1.------*/
+/*-------If you get misconvergence try to increase NP. If this doesn't help you----------*/
+/*-------should play around with all three control variables.----------------------------*/
+     else if (strategy == 3) /* similiar to DE2 but generally better */
+     { 
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+       L = 0;
+       do
+       {                       
+         tmp[n] = tmp[n] + F*(bestit[n] - tmp[n]) + F*((*pold)[r1][n]-(*pold)[r2][n]);
+         n = (n+1)%D;
+         L++;
+       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));
+     }
+/*-------DE/best/2/exp is another powerful strategy worth trying--------------------------*/
+     else if (strategy == 4)
+     { 
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+       L = 0;
+       do
+       {                           
+         tmp[n] = bestit[n] + 
+              ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;
+         n = (n+1)%D;
+         L++;
+       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));
+     }
+/*-------DE/rand/2/exp seems to be a robust optimizer for many functions-------------------*/
+     else if (strategy == 5)
+     { 
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+       L = 0;
+       do
+       {                           
+         tmp[n] = (*pold)[r5][n] + 
+              ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;
+         n = (n+1)%D;
+         L++;
+       }while((rnd_uni(&amp;rnd_uni_init) &lt; CR) &amp;&amp; (L &lt; D));
+     }
+ 
+/*=======Essentially same strategies but BINOMIAL CROSSOVER===============================*/
+ 
+/*-------DE/best/1/bin--------------------------------------------------------------------*/
+     else if (strategy == 6) 
+     {
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+           for (L=0; L&lt;D; L++) /* perform D binomial trials */
+           {
+         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */
+         {                       
+           tmp[n] = bestit[n] + F*((*pold)[r2][n]-(*pold)[r3][n]);
+         }
+         n = (n+1)%D;
+           }
+     }
+/*-------DE/rand/1/bin-------------------------------------------------------------------*/
+     else if (strategy == 7) 
+     {
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+           for (L=0; L&lt;D; L++) /* perform D binomial trials */
+           {
+         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */
+         {                       
+           tmp[n] = (*pold)[r1][n] + F*((*pold)[r2][n]-(*pold)[r3][n]);
+         }
+         n = (n+1)%D;
+           }
+     }
+/*-------DE/rand-to-best/1/bin-----------------------------------------------------------*/
+     else if (strategy == 8) 
+     { 
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+           for (L=0; L&lt;D; L++) /* perform D binomial trials */
+           {
+         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */
+         {                       
+           tmp[n] = tmp[n] + F*(bestit[n] - tmp[n]) + F*((*pold)[r1][n]-(*pold)[r2][n]);
+         }
+         n = (n+1)%D;
+           }
+     }
+/*-------DE/best/2/bin--------------------------------------------------------------------*/
+     else if (strategy == 9)
+     { 
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+           for (L=0; L&lt;D; L++) /* perform D binomial trials */
+           {
+         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */
+         {                       
+           tmp[n] = bestit[n] + 
+              ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;
+         }
+         n = (n+1)%D;
+           }
+     }
+/*-------DE/rand/2/bin--------------------------------------------------------------------*/
+     else
+     { 
+       assignd(D,tmp,(*pold)[i]);
+       n = (int)(rnd_uni(&amp;rnd_uni_init)*D); 
+           for (L=0; L&lt;D; L++) /* perform D binomial trials */
+           {
+         if ((rnd_uni(&amp;rnd_uni_init) &lt; CR) || L == (D-1)) /* change at least one parameter */
+         {                       
+           tmp[n] = (*pold)[r5][n] + 
+              ((*pold)[r1][n]+(*pold)[r2][n]-(*pold)[r3][n]-(*pold)[r4][n])*F;
+         }
+         n = (n+1)%D;
+           }
+     }
+ 
+ 
+/*=======Trial mutation now in tmp[]. Test how good this choice really was.==================*/
+ 
+     trial_cost = evaluate(D,tmp,&amp;nfeval);  /* Evaluate new vector in tmp[] */
+   if(MAXIMAPROBLEM == 1)
+   {
+    // 改為最大化
+       if (trial_cost &gt;= cost[i])   /* improved objective function value ? */
+       {                                  
+          cost[i]=trial_cost;         
+          assignd(D,(*pnew)[i],tmp);
+          if (trial_cost&gt;cmin)          /* Was this a new minimum? */
+          {                               /* if so...*/
+             cmin=trial_cost;           /* reset cmin to new low...*/
+             imin=i;
+             assignd(D,best,tmp);           
+          }                           
+       }                            
+       else
+       {
+          assignd(D,(*pnew)[i],(*pold)[i]); /* replace target with old value */
+       }
+    }
+    else
+    {
+          // 最小化問題
+       if (trial_cost &lt;= cost[i])   /* improved objective function value ? */
+       {                                  
+          cost[i]=trial_cost;         
+          assignd(D,(*pnew)[i],tmp);
+          if (trial_cost&lt;cmin)          /* Was this a new minimum? */
+          {                               /* if so...*/
+             cmin=trial_cost;           /* reset cmin to new low...*/
+             imin=i;
+             assignd(D,best,tmp);           
+          }                           
+       }                            
+       else
+       {
+          assignd(D,(*pnew)[i],(*pold)[i]); /* replace target with old value */
+       }
+    }
+ 
+      }   /* End mutation loop through pop. */
+ 
+      assignd(D,bestit,best);  /* Save best population member of current iteration */
+ 
+      /* swap population arrays. New generation becomes old one */
+ 
+      pswap = pold;
+      pold  = pnew;
+      pnew  = pswap;
+ 
+/*----Compute the energy variance (just for monitoring purposes)-----------*/
+ 
+      cmean = 0.;          /* compute the mean value first */
+      for (j=0; j&lt;NP; j++)
+      {
+         cmean += cost[j];
+      }
+      cmean = cmean/NP;
+ 
+      cvar = 0.;           /* now the variance              */
+      for (j=0; j&lt;NP; j++)
+      {
+         cvar += (cost[j] - cmean)*(cost[j] - cmean);
+      }
+      cvar = cvar/(NP-1);
+ 
+ 
+/*----Output part----------------------------------------------------------*/
+ 
+      if (gen%refresh==1)   /* display after every refresh generations */
+      { /* ABORT works only if conio.h is accepted by your compiler */
+    printf("\n\n                         PRESS ANY KEY TO ABORT"); 
+    printf("\n\n\n Best-so-far cost funct. value=%-15.10g\n",cmin);
+ 
+    for (j=0;j&lt;D;j++)
+    {
+      printf("\n best[%d]=%-15.10g",j,best[j]);
+    }
+    printf("\n\n Generation=%d  NFEs=%ld   Strategy: %s    ",gen,nfeval,strat[strategy]);
+    printf("\n NP=%d    F=%-4.2g    CR=%-4.2g   cost-variance=%-10.5g\n",
+               NP,F,CR,cvar);
+      }
+ 
+      fprintf(fpout_ptr,"%ld   %-15.10g\n",nfeval,cmin);
+   }
+/*=======================================================================*/
+/*=========End of iteration loop=========================================*/
+/*=======================================================================*/
+ 
+/*-------Final output in file-------------------------------------------*/
+ 
+ 
+   fprintf(fpout_ptr,"\n\n\n Best-so-far obj. funct. value = %-15.10g\n",cmin);
+ 
+   for (j=0;j&lt;D;j++)
+   {
+     fprintf(fpout_ptr,"\n best[%d]=%-15.10g",j,best[j]);
+   }
+   fprintf(fpout_ptr,"\n\n Generation=%d  NFEs=%ld   Strategy: %s    ",gen,nfeval,strat[strategy]);
+   fprintf(fpout_ptr,"\n NP=%d    F=%-4.2g    CR=%-4.2g    cost-variance=%-10.5g\n",
+           NP,F,CR,cvar); 
+ 
+  fclose(fpout_ptr);
+ 
+  /* Code you want timed here */
+  printf("Time elapsed: %f\n", ((double)clock() - start) / CLOCKS_PER_SEC);
+   return(0);
+}
+ 
+/*-----------End of main()------------------------------------------*/
+ 
+// 適應函式 fittness function (cost function)
+double evaluate(int D, double tmp[], long *nfeval)
+{
+   double result=0, surface = 80.0, z, volume, penality;
+   (*nfeval)++;
+   z = (surface-tmp[0]*tmp[1])/(2.0*(tmp[0]+tmp[1]));
+   volume = tmp[0]*tmp[1]*z;
+ 
+  if(volume &lt;= 0){
+    return PENALITY;
+  }
+// 只限制長度與寬度必須大於 0
+  if(tmp[0] &lt;= inibound_l){
+    return PENALITY;
+  }
+ 
+  if(tmp[1] &lt;= inibound_l){
+    return PENALITY;
+  }
+/*
+  if((tmp[0] &lt;= inibound_l)|| (tmp[0] &gt;inibound_h)){
+    return PENALITY;
+  }
+ 
+  if((tmp[1] &lt;= inibound_l) || (tmp[1] &gt;inibound_h)){
+    return PENALITY;
+  }
+  */
+  // volume must &gt;0 and max volume
+  // 目前為最小化問題
+   //return 1+1/(volume*volume);
+  return volume;
+}
+ </pre>
+<p>Python <a href="https://en.wikipedia.org/wiki/Differential_evolution">Differential Evolution</a> algorithm:</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import random
+
+class Chromosome(object):
+
+    """
+    just copy the idea of genetic algorithm, pretty similar..
+    """
+    def __init__(self, n):
+        """
+        int n, dimension of question
+        """
+        # dimension
+        self.n = n
+        # the gene
+        self.v = [0] * n
+        # the fitness value
+        self.f = 0
+
+    def assign(self, obj):
+        """
+        Chromosome obj
+
+        copy all attribute from obj to itself
+        """
+        self.n = obj.n
+        self.v = obj.v[:]
+        self.f = obj.f
+
+
+class DiffertialEvolution(object):
+
+    def __init__(self,Func, pType, strategy, D, NP, F, CR, lower, upper, maxGen, report):
+        # if pType = 1 it is maximization  otherwise is minimization problem
+        self.pType = pType
+        # strategy 1~10, choice what strategy to generate new member in temporary
+        self.strategy = strategy
+        # dimesion of quesiton
+        self.D = D
+        # population size
+        # To start off NP = 10*D is a reasonable choice. Increase NP if misconvergence
+        self.NP = NP
+        # weight factor
+        # F is usually between 0.5 and 1 (in rare cases &gt; 1)
+        self.F = F
+        # crossover possible
+        # CR in [0,1]
+        self.CR = CR
+        # lower bound array
+        self.lb = lower[:]
+        # upper bound array
+        self.ub = upper[:]
+        # maximum generation
+        self.maxGen = maxGen
+        # how many generation report once
+        self.rpt = report
+        # object function, or enviorment
+        self.f = Func
+        # check parameter is set properly
+        self.checkParameter()
+
+        # generation pool, depend on population size
+        self.pop = [Chromosome(D) for i in range(NP)]
+        # last generation best member
+        self.lastgenbest = Chromosome(D)
+        # current best member
+        self.currentbest = Chromosome(D)
+        # the generation count
+        self.gen = 0
+        # the vector
+        self.r1 = 0
+        self.r2 = 0
+        self.r3 = 0
+        self.r4 = 0
+        self.r5 = 0
+
+    def checkParameter(self):
+        """
+        check parameter is set properly
+        """
+        if (type(self.D) is not int) and self.D &lt;= 0:
+            raise Exception('D shoud be integer and larger than 0')
+        if (type(self.NP) is not int) and self.NP &lt;= 0:
+            raise Exception('NP shoud be integer and larger than 0')
+        if self.CR &lt; 0 or self.CR &gt; 1:
+            raise Exception('CR should be [0,1]')
+        if self.maxGen &lt;= 0:
+            raise Exception('generation should larger than 0')
+        if self.rpt &lt;= 0 or self.rpt &gt; self.maxGen:
+            raise Exception('report should be larger than 0 and less than max genration')
+        if self.strategy &lt; 1 or self.strategy &gt; 10:
+            raise Exception('strategy should be [1,10]')
+        for lower, upper in zip(self.lb, self.ub):
+            if lower &gt; upper:
+                raise Exception('upper bound should be larger than lower bound')
+
+    def init(self):
+        """
+        init population
+        """
+        for i in range(self.NP):
+            for j in range(self.D):
+                self.pop[i].v[j] = self.lb[j] + random.random()*(self.ub[j] - self.lb[j])
+            self.pop[i].f = self.evalute(self.pop[i])
+
+    def evalute(self, p):
+        """
+        evalute the member in enviorment
+        """
+        return self.f(p.v)
+
+    def findBest(self):
+        """
+        find member that have minimum fitness value from pool
+        """
+        if self.pType == 1:
+            return max(self.pop, key=lambda chrom:chrom.f)
+        else:
+            return min(self.pop, key=lambda chrom:chrom.f)
+
+    def generateRandomVector(self, i):
+        """
+        generate new vector
+        """
+        while True:
+            self.r1 = int(random.random() * self.NP)
+            if not (self.r1 == i):
+                break
+
+        while True:
+            self.r2 = int(random.random() * self.NP)
+            if not ((self.r2 == i) or (self.r2 == self.r1)):
+                break
+
+        while True:
+            self.r3 = int(random.random() * self.NP)
+            if not ((self.r3 == i) or (self.r3 == self.r1) or (self.r3 == self.r2)):
+                break
+
+        while True:
+            self.r4 = int(random.random() * self.NP)
+            if not ((self.r4 == i) or (self.r4 == self.r1) or (self.r4 == self.r2) or (self.r4 == self.r3)):
+                break
+
+        while True:
+            self.r5 = int(random.random() * self.NP)
+            if not ((self.r5 == i) or (self.r5 == self.r1) or (self.r5 == self.r2) or (self.r5 == self.r3) or (self.r5 == self.r4)):
+                break
+
+    def recombination(self, i):
+        """
+        use new vector, recombination the new one member to tmp
+        """
+        tmp = Chromosome(self.D)
+
+        if self.strategy == 1:
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+                L += 1
+                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif self.strategy == 2:
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+                L += 1
+                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 3):
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])
+                n = (n + 1) % self.D
+                L += 1
+                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 4):
+            tmp.assign(self.pop[i])
+
+            n = int(random.random() * self.D)
+
+            L = 0
+            while True:
+                tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+                L += 1
+                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 5):
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+                L += 1
+                if not ((random.random() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 6):
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            for L in range(self.D):
+                if ((random.random() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+
+        elif (self.strategy == 7):
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            for L in range(self.D):
+                if ((random.random() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+
+                n = (n + 1) % self.D
+
+        elif (self.strategy == 8):
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            for L in range(self.D):
+                if ((random.random() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])
+
+                n = (n + 1) % self.D
+
+        elif (self.strategy == 9):
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            for L in range(self.D):
+                if ((random.random() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+
+                n = (n + 1) % self.D
+
+        else:
+            tmp.assign(self.pop[i])
+            n = int(random.random() * self.D)
+            for L in range(self.D):
+                if ((random.random() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+        return tmp
+
+    def report(self):
+        """
+        report current generation status
+        """
+        if self.gen == 0:
+            print("DiffertialEvolution results - init pop")
+        elif self.gen == self.maxGen:
+            print("Final DiffertialEvolution results at", self.gen, "generations")
+        else:
+            print("DiffertialEvolution results after", self.gen, "generations")
+        print("Function : %.6f" % (self.currentbest.f))
+        for i, v in enumerate(self.currentbest.v, start=1):
+            print("Var", i, ":", v)
+
+    def overbound(self, member):
+        """
+        check the member's chromosome that is out of bound?
+        """
+        for i in range(self.D):
+            if member.v[i] &gt; self.ub[i] or member.v[i] &lt; self.lb[i]:
+                return True
+        return False
+
+    def run(self):
+        """
+        run the algorithm...
+        """
+        # initial step
+        # generation 0
+        self.gen = 0
+        # init the member's chromsome
+        self.init()
+        # find the best one(smallest fitness value)
+        tmp = self.findBest()
+        # copy to lastgenbest
+        self.lastgenbest.assign(tmp)
+        # copy to currentbest
+        self.currentbest.assign(tmp)
+        # report status
+        self.report()
+        # end initial step
+
+        # the evolution journey is beggin...
+        for self.gen in range(1, self.maxGen + 1):
+            for i in range(self.NP):
+                # generate new vector
+                self.generateRandomVector(i)
+                # use the vector recombine the member to temporary
+                tmp = self.recombination(i)
+                # check the one is out of bound?
+                if self.overbound(tmp):
+                    # if it is, then ignore
+                    continue
+                # is not out of bound, that mean it's quilify of enviorment
+                # then evalute the one
+                tmp.f = self.evalute(tmp)
+                # if temporary one is better than origin(fitness value is larger or smaller)
+                # pType is 1, the problem is maximization type
+                if self.pType == 1:
+                    if tmp.f &gt;= self.pop[i].f:
+                        # copy the temporary one to origin member
+                        self.pop[i].assign(tmp)
+                        # check the temporary one is better than the currentbest
+                        if tmp.f &gt; self.currentbest.f:
+                            # copy the temporary one to currentbest
+                            self.currentbest.assign(tmp)
+                else:
+                    if tmp.f &lt;= self.pop[i].f:
+                        # copy the temporary one to origin member
+                        self.pop[i].assign(tmp)
+                        # check the temporary one is better than the currentbest
+                        if tmp.f &lt; self.currentbest.f:
+                            # copy the temporary one to currentbest
+                            self.currentbest.assign(tmp)
+            # copy the currentbest to lastgenbest
+            self.lastgenbest.assign(self.currentbest)
+            # if report generation is set, report
+            if self.rpt != 0:
+                if self.gen % self.rpt == 0:
+                    self.report()
+        # the evolution journey is done, report the final status
+        self.report()
+
+#fittness function (cost function)
+def evaluate(designVariablel):
+    surface = 80.0
+    # if pType is 1, the penality is negative (maximization problem)
+    # if pType is 0, the penality is positive (minimization problem)
+    penality = -1000
+
+    z = (surface-designVariablel[0]*designVariablel[1])/(2.0*(designVariablel[0]\
+         +designVariablel[1]))
+    volume = designVariablel[0]*designVariablel[1]*z
+  
+    if(volume &lt;= 0):
+        return penality
+
+    # box length and width need to be larger than 0
+    if(designVariablel[0] &lt;= 0):
+        return penality
+
+    if(designVariablel[1] &lt;= 0):
+        return penality
+    return volume
+#volume = DiffertialEvolution((self,Func, max, strategy, D, NP, F, CR, lower, upper, maxGen, report)
+volume = DiffertialEvolution(evaluate, 1, 3, 2, 100, 0.6, 0.85, [0, 0], [50, 50], 100, 10)
+volume.run()
+</pre>
+<p>將上述 Python 程式轉為 Cython 格式:</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">#import random
+from cpython cimport bool
+#from array import array
+import numpy as np
+cimport numpy as np
+from libc.stdlib cimport rand, RAND_MAX, srand
+from libc.time cimport time
+
+# make true it is random everytime
+srand(time(NULL))
+
+cdef double randV():
+    return rand()*1.0 / RAND_MAX
+
+cdef class Chromosome(object):
+    """
+    just copy the idea of genetic algorithm, pretty similar..
+    """
+    cdef public int n
+    cdef public double f
+    cdef public np.ndarray v
+
+    def __cinit__(self, int n):
+        """
+        int n, dimension of question
+        """
+        # dimension
+        self.n = n
+        # the gene
+        self.v = np.zeros(n)
+        # the fitness value
+        self.f = 0
+
+    def assign(self, Chromosome obj):
+        """
+        Chromosome obj
+        copy all attribute from obj to itself
+        """
+        self.n = obj.n
+        self.v[:] = obj.v
+        self.f = obj.f
+
+
+cdef class DiffertialEvolution(object):
+
+    cdef:
+        int strategy, D, NP, maxGen, rpt, gen, r1, r2, r3, r4, r5
+        double F, CR
+        np.ndarray lb, ub, pop
+        object f
+        Chromosome lastgenbest, currentbest
+
+    def __cinit__(self, object Func, int strategy, int D, int NP, double F, double CR, object lower, object upper, int maxGen, int report):
+        # strategy 1~10, choice what strategy to generate new member in temporary
+        self.strategy = strategy
+        # dimesion of quesiton
+        self.D = D
+        # population size
+        # To start off NP = 10*D is a reasonable choice. Increase NP if misconvergence
+        self.NP = NP
+        # weight factor
+        # F is usually between 0.5 and 1 (in rare cases &gt; 1)
+        self.F = F
+        # crossover possible
+        # CR in [0,1]
+        self.CR = CR
+        # low bound
+        self.lb = np.array(lower[:])
+        # up bound
+        self.ub = np.array(upper[:])
+        # maximum generation
+        self.maxGen = maxGen
+        # how many generation report once
+        self.rpt = report
+        # object function, or enviorment
+        self.f = Func
+        # check parameter is set properly
+        self.checkParameter()
+
+        # generation pool, depend on population size
+        #self.pop = [Chromosome(self.D) for i in range(self.NP)]
+        self.pop = np.ndarray((NP,),dtype=np.object)
+        for i in range(NP):
+            self.pop[i] = Chromosome(self.D)
+        # last generation best member
+        self.lastgenbest = Chromosome(D)
+        # current best member
+        self.currentbest = Chromosome(D)
+        # the generation count
+        self.gen = 0
+        # the vector
+        self.r1 = 0
+        self.r2 = 0
+        self.r3 = 0
+        self.r4 = 0
+        self.r5 = 0
+
+    cdef void checkParameter(self):
+        """
+        check parameter is set properly
+        """
+        if (type(self.D) is not int) and self.D &lt;= 0:
+            raise Exception('D shoud be integer and larger than 0')
+        if (type(self.NP) is not int) and self.NP &lt;= 0:
+            raise Exception('NP shoud be integer and larger than 0')
+        if self.CR &lt; 0 or self.CR &gt; 1:
+            raise Exception('CR should be [0,1]')
+        if self.maxGen &lt;= 0:
+            raise Exception('generation should larger than 0')
+        if self.rpt &lt;= 0 or self.rpt &gt; self.maxGen:
+            raise Exception('report should be larger than 0 and less than max genration')
+        if self.strategy &lt; 1 or self.strategy &gt; 10:
+            raise Exception('strategy should be [1,10]')
+        for lower, upper in zip(self.lb, self.ub):
+            if lower &gt; upper:
+                raise Exception('upper bound should be larger than lower bound')
+
+    cdef void init(self):
+        """
+        init population
+        """
+        cdef int i, j
+
+        for i in range(self.NP):
+            for j in range(self.D):
+                self.pop[i].v[j] = self.lb[j] + randV()*(self.ub[j] - self.lb[j])
+            self.pop[i].f = self.evalute(self.pop[i])
+
+    cdef double evalute(self, Chromosome member):
+        """
+        evalute the member in enviorment
+        """
+        return self.f(member.v)
+
+    cdef Chromosome findBest(self):
+        """
+        find member that have minimum fitness value from pool
+        """
+        return min(self.pop, key=lambda chrom:chrom.f)
+
+    cdef void generateRandomVector(self, i):
+        """
+        generate new vector
+        """
+        while True:
+            self.r1 = int(randV() * self.NP)
+            if not (self.r1 == i):
+                break
+
+        while True:
+            self.r2 = int(randV() * self.NP)
+            if not ((self.r2 == i) or (self.r2 == self.r1)):
+                break
+
+        while True:
+            self.r3 = int(randV() * self.NP)
+            if not ((self.r3 == i) or (self.r3 == self.r1) or (self.r3 == self.r2)):
+                break
+
+        while True:
+            self.r4 = int(randV() * self.NP)
+            if not ((self.r4 == i) or (self.r4 == self.r1) or (self.r4 == self.r2) or (self.r4 == self.r3)):
+                break
+
+        while True:
+            self.r5 = int(randV() * self.NP)
+            if not ((self.r5 == i) or (self.r5 == self.r1) or (self.r5 == self.r2) or (self.r5 == self.r3) or (self.r5 == self.r4)):
+                break
+
+    cdef Chromosome recombination(self, int i):
+        """
+        use new vector, recombination the new one member to tmp
+        """
+        cdef Chromosome tmp
+        cdef int n, L
+
+        tmp = Chromosome(self.D)
+
+        if self.strategy == 1:
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+                L += 1
+                if not ((randV() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif self.strategy == 2:
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+                L += 1
+                if not ((randV() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 3):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])
+                n = (n + 1) % self.D
+                L += 1
+                if not ((randV() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 4):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+                L += 1
+                if not ((randV() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 5):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            L = 0
+            while True:
+                tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+                L += 1
+                if not ((randV() &lt; self.CR) and (L &lt; self.D)):
+                    break
+
+        elif (self.strategy == 6):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            for L in range(self.D):
+                if ((randV() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.lastgenbest.v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+
+        elif (self.strategy == 7):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            for L in range(self.D):
+                if ((randV() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.pop[self.r1].v[n] + self.F*(self.pop[self.r2].v[n] - self.pop[self.r3].v[n])
+                n = (n + 1) % self.D
+
+        elif (self.strategy == 8):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            for L in range(self.D):
+                if ((randV() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = tmp.v[n] + self.F*(self.lastgenbest.v[n] - tmp.v[n]) + self.F*(self.pop[self.r1].v[n] - self.pop[self.r2].v[n])
+                n = (n + 1) % self.D
+
+        elif (self.strategy == 9):
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            for L in range(self.D):
+                if ((randV() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.lastgenbest.v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+
+        else:
+            tmp.assign(self.pop[i])
+            n = int(randV() * self.D)
+            for L in range(self.D):
+                if ((randV() &lt; self.CR) or L == (self.D - 1)):
+                    tmp.v[n] = self.pop[self.r5].v[n] + (self.pop[self.r1].v[n] + self.pop[self.r2].v[n] - self.pop[self.r3].v[n] - self.pop[self.r4].v[n]) * self.F
+                n = (n + 1) % self.D
+        return tmp
+
+    cdef void report(self):
+        """
+        report current generation status
+        """
+        cdef int i
+        cdef double v
+
+        if self.gen == 0:
+            print("DiffertialEvolution results - init pop")
+        elif self.gen == self.maxGen:
+            print("Final DiffertialEvolution results at %d generations"%(self.gen,))
+        else:
+            print("DiffertialEvolution results after %d generations"%(self.gen,))
+        print("Function : %.6f" % (self.currentbest.f))
+        for i, v in enumerate(self.currentbest.v.flat, start=1):
+            print("Var %d : %.4f"%(i, v))
+
+    cdef bool overbound(self, Chromosome member):
+        """
+        check the member's chromosome that is out of bound?
+        """
+        cdef int i
+
+        for i in range(self.D):
+            if member.v[i] &gt; self.ub[i] or member.v[i] &lt; self.lb[i]:
+                return True
+        return False
+
+    cdef void run(self):
+        """
+        run the algorithm...
+        """
+        cdef Chromosome tmp
+        cdef int i
+
+        # initial step
+        # generation 0
+        self.gen = 0
+        # init the member's chromsome
+        self.init()
+        # find the best one(smallest fitness value)
+        tmp = self.findBest()
+        # copy to lastgenbest
+        self.lastgenbest.assign(tmp)
+        # copy to currentbest
+        self.currentbest.assign(tmp)
+        # report status
+        self.report()
+        # end initial step
+
+        # the evolution journey is beggin...
+        for self.gen in range(1, self.maxGen + 1):
+            for i in range(self.NP):
+                # generate new vector
+                self.generateRandomVector(i)
+                # use the vector recombine the member to temporary
+                tmp = self.recombination(i)
+                # check the one is out of bound?
+                if self.overbound(tmp):
+                    # if it is, then abandon it
+                    continue
+                # is not out of bound, that mean it's quilify of enviorment
+                # then evalute the one
+                tmp.f = self.evalute(tmp)
+                # if temporary one is better than origin(fitness value is smaller)
+                if tmp.f &lt;= self.pop[i].f:
+                    # copy the temporary one to origin member
+                    self.pop[i].assign(tmp)
+                    # check the temporary one is better than the currentbest
+                    if tmp.f &lt; self.currentbest.f:
+                        # copy the temporary one to currentbest
+                        self.currentbest.assign(tmp)
+            # copy the currentbest to lastgenbest
+            self.lastgenbest.assign(self.currentbest)
+            # if report generation is set, report
+            if self.rpt != 0:
+                if self.gen % self.rpt == 0:
+                    self.report()
+        # the evolution journey is done, report the final status
+        self.report()</pre>
+<p>使用 Real-coded Genetic algorithm 解題:</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">import time
+import math
+
+
+class Chromosome(object):
+
+    def __init__(self, n=None):
+        self.np = n if n &gt; 0 else 2
+        self.f = 0.0
+        self.v = [0.0] * n
+
+    def cp(self, obj):
+        """
+        copy all atribute from another chromsome object
+        """
+        self.np = obj.np
+        self.f = obj.f
+        self.v = obj.v[:]
+
+    def get_v(self, i):
+        return self.v[i]
+
+    def is_self(self, obj):
+        """
+        check the object is self?
+        """
+        return obj is self
+
+    def assign(self, obj):
+        if not self.is_self(obj):
+            self.cp(obj)
+
+
+class Genetic(object):
+
+    def __init__(self, func, pType, nParm, nPop, pCross, pMute, pWin, bDelta, upper, lower):
+        """
+        init(function func)
+        """
+        self.func=func
+        self.pType = pType
+        self.nParm=nParm
+        self.nPop=nPop
+        self.pCross=pCross
+        self.pMute=pMute
+        self.pWin=pWin
+        self.bDelta=bDelta
+
+        self.chrom = [Chromosome(nParm) for i in range(nPop)]
+        self.newChrom = [Chromosome(nParm) for i in range(nPop)]
+        self.babyChrom = [Chromosome(nParm) for i in range(3)]
+        self.chromElite = [Chromosome(nParm)]
+        self.chromBest = [Chromosome(nParm)]
+        self.maxLimit = upper[:]
+        self.minLimit = lower[:]
+
+        self.maxGen = None
+        self.gen = None
+
+        self.seed = 0.0
+        self.iseed = 470211272.0
+        self.mask = 2147483647
+
+    def check(self, i, v):
+        """
+        If a variable is out of bound,
+        replace it with a random value
+        """
+        if (v &gt; self.maxLimit[i]) or (v &lt; self.minLimit[i]):
+            return self.randVal(self.minLimit[i], self.maxLimit[i])
+        return v
+
+    def crossOver(self):
+        for i in range(0, self.nPop-1, 2):
+            # crossover
+            if(self.rnd() &lt; self.pCross):
+                for s in range(self.nParm):
+                    # first baby, half father half mother
+                    self.babyChrom[0].v[s] = 0.5 * self.chrom[i].v[s] + 0.5*self.chrom[i+1].v[s];
+                    # second baby, three quaters of fater and quater of mother
+                    self.babyChrom[1].v[s] = self.check(s, 1.5 * self.chrom[i].v[s] - 0.5*self.chrom[i+1].v[s])
+                    # third baby, quater of fater and three quaters of mother
+                    self.babyChrom[2].v[s] = self.check(s,-0.5 * self.chrom[i].v[s] + 1.5*self.chrom[i+1].v[s]);
+
+                for j in range(3):
+                    self.babyChrom[j].f = self.func(self.babyChrom[j].v)
+                # maximization
+                if self.pType == 1:
+                    
+                    if self.babyChrom[1].f &gt; self.babyChrom[0].f:
+                        self.babyChrom[0], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[0]
+
+                    if self.babyChrom[2].f &gt; self.babyChrom[0].f:
+                        self.babyChrom[2], self.babyChrom[0] = self.babyChrom[0], self.babyChrom[2]
+
+                    if self.babyChrom[2].f &gt; self.babyChrom[1].f:
+                        self.babyChrom[2], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[2]
+
+                else:
+                    
+                    if self.babyChrom[1].f &lt; self.babyChrom[0].f:
+                        self.babyChrom[0], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[0]
+
+                    if self.babyChrom[2].f &lt; self.babyChrom[0].f:
+                        self.babyChrom[2], self.babyChrom[0] = self.babyChrom[0], self.babyChrom[2]
+
+                    if self.babyChrom[2].f &lt; self.babyChrom[1].f:
+                        self.babyChrom[2], self.babyChrom[1] = self.babyChrom[1], self.babyChrom[2]
+
+                # replace first two baby to parent, another one will be
+                self.chrom[i].assign(self.babyChrom[0])
+                self.chrom[i+1].assign(self.babyChrom[1])
+
+    def delta(self, y):
+        r = float(self.gen) / self.maxGen;
+        return y*self.rnd()*math.pow(1.0-r, self.bDelta)
+
+    def fitness(self):
+        for j in range(self.nPop):
+            self.chrom[j].f = self.func(self.chrom[j].v)
+
+        self.chromBest[0].assign(self.chrom[0])
+
+        for j in range(self.nPop):
+            if self.pType == 1:
+                if(self.chrom[j].f &gt; self.chromBest[0].f):
+                    self.chromBest[0].assign(self.chrom[j])
+            else:
+                if(self.chrom[j].f &lt; self.chromBest[0].f):
+                    self.chromBest[0].assign(self.chrom[j])
+        if self.pType == 1:
+            if(self.chromBest[0].f &gt; self.chromElite[0].f):
+                self.chromElite[0].assign(self.chromBest[0])
+        else:
+            if(self.chromBest[0].f &lt; self.chromElite[0].f):
+                self.chromElite[0].assign(self.chromBest[0])
+
+    def initialPop(self):
+        for j in range(self.nPop):
+            for i in range(self.nParm):
+                self.chrom[j].v[i] = self.randVal(self.minLimit[i], self.maxLimit[i])
+
+    def mutate(self):
+        for i in range(self.nPop):
+            if self.rnd() &lt; self.pMute:
+                s = self.random(self.nParm)
+                if (self.random(2) == 0):
+                    self.chrom[i].v[s] += self.delta(self.maxLimit[s]-self.chrom[i].v[s])
+                else:
+                    self.chrom[i].v[s] -= self.delta(self.chrom[i].v[s]-self.minLimit[s])
+
+    def report(self):
+        if self.gen == 0:
+            print("Genetik results - Initial population")
+        elif self.gen == self.maxGen:
+            print("Final Genetik results at", self.gen, "generations")
+        else:
+            print("Genetik results after", self.gen, "generations")
+
+        print("Function : %.6f" % (self.chromElite[0].f))
+        for i, p in enumerate(self.chromElite[0].v):
+            print("Var", i+1, ":", p)
+
+    def select(self):
+        """
+        roulette wheel selection
+        """
+        for i in range(self.nPop):
+            j = self.random(self.nPop)
+            k = self.random(self.nPop)
+            self.newChrom[i].assign(self.chrom[j])
+            if self.pType == 1:
+                if(self.chrom[k].f &gt; self.chrom[j].f) and (self.rnd() &gt; self.pWin):
+                    self.newChrom[i].assign(self.chrom[k])
+            else:
+                if(self.chrom[k].f &lt; self.chrom[j].f) and (self.rnd() &lt; self.pWin):
+                    self.newChrom[i].assign(self.chrom[k])
+        # in this stage, newChrom is select finish
+        # now replace origin chrom
+        for i in range(self.nPop):
+            self.chrom[i].assign(self.newChrom[i])
+
+        # select random one chrom to be best chrom, make best chrom still exist
+        j = self.random(self.nPop);
+        self.chrom[j].assign(self.chromElite[0])
+
+    def run(self, mxg, rp):
+        """
+        // **** Init and run GA for maxGen times
+        // **** mxg : maximum generation
+        // **** rp  : report cycle, 0 for final report or
+        // ****       report each mxg modulo rp
+        """
+        self.maxGen = mxg
+        self.rpt = rp
+
+        self.randomize()
+        self.initialPop()
+        self.chrom[0].f = self.func(self.chrom[0].v)
+        self.chromElite[0].assign(self.chrom[0])
+
+        self.gen = 0
+        self.fitness()
+        self.report()
+
+        for self.gen in range(1, self.maxGen + 1):
+            self.select()
+            self.crossOver()
+            self.mutate()
+            self.fitness()
+            if rp != 0:
+                if self.gen % self.rpt == 0:
+                    self.report()
+        self.report()
+
+    def newSeed(self):
+        if(self.seed == 0.0):
+            self.seed=self.iseed
+        else:
+            self.seed *= 16807.0
+            self.seed = math.fmod(self.seed, self.mask)
+
+    def rnd(self):
+        self.newSeed()
+        return self.seed/self.mask
+
+    def randomize(self):
+        self.seed = time.time()
+
+    def random(self, k):
+        return int(self.rnd()*k)
+
+    def randVal(self, low, high):
+        number_types = (int, float)
+        if isinstance(low, number_types) and isinstance(high, number_types):
+            return self.rnd()*(high-low)+low
+        raise ValueError
+        
+#fittness function (cost function)
+def evaluate(designVariablel):
+    surface = 80.0
+    # if pType is 1, the penality is negative (maximization problem)
+    # if pType is 0, the penality is positive (minimization problem)
+    penality = -1000
+
+    z = (surface-designVariablel[0]*designVariablel[1])/(2.0*(designVariablel[0]\
+         +designVariablel[1]))
+    volume = designVariablel[0]*designVariablel[1]*z
+  
+    if(volume &lt;= 0):
+        return penality
+
+    # box length and width need to be larger than 0
+    if(designVariablel[0] &lt;= 0):
+        return penality
+
+    if(designVariablel[1] &lt;= 0):
+        return penality
+    #return 1+1/(volume*volume)
+    return volume
+
+#volume = Genetic(self, func, pType, nParm, nPop, pCross, pMute, pWin, bDelta, upper, lower):
+volume = Genetic(evaluate, 1, 2, 1000, 0.95, 0.05, 0.95, 5, [0, 0], [50, 50])
+volume.run(1000, 50)
+</pre>
+<p></p><h2>雲端 CAD</h2>
 <p><span>Dec. 26 2015</span></p>
 <h4><span>Onshape</span></h4>
 <p>屬於二十一世紀的電腦輔助機械設計軟體:<span>&nbsp;</span><a href="http://www.onshape.com/">http://www.onshape.com</a></p>
@@ -1412,42 +3027,7 @@ for i in range(len(result)):
 <li><a href="https://www.onshape.com/videos/lets-import-a-part">https://www.onshape.com/videos/lets-import-a-part</a></li>
 <li><a href="https://www.onshape.com/videos/documents-and-tabs">https://www.onshape.com/videos/documents-and-tabs</a></li>
 </ul>
-<h2>輔助設計套件</h2>
-<p>MCAD 套件</p>
-<p><a href="http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html">http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html</a>&nbsp;</p>
-<p>一般常見的機械電腦輔助設計套件包括法國<span>&nbsp;</span><a href="https://www.3ds.com/">Dassault</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.3ds.com/products-services/solidworks/">SolidWorks</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.3ds.com/products-services/catia/">Catia</a>, 美國<span>&nbsp;</span><a href="https://www.autodesk.com.tw/">AutoDesk</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.autodesk.com.tw/products/autocad/">AutoCAD</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Inventor</a>, 德國<span>&nbsp;</span><a href="https://www.siemens.com/tw/zh/home.html">Siemens</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/en/products/solid-edge/">Solid Edge</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/zh/products/nx/index.shtml">NX</a>, 美國<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/">PTC</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad">Creo</a>, 以及 2015 年推出的<span>&nbsp;</span><a href="https://www.onshape.com/">Onshape</a></p>
-<p>其他 MCAD: 俄羅斯的<span>&nbsp;</span><a href="http://www.tflex.com/resources/tflexcadst/download/">T-Flex</a></p>
-<p>如何進行電腦輔助機械設計專題</p>
-<p>1. 文獻回顧 (Literature Review) 階段 - 了解現存既有的研究成果, 確立專題定位與目標</p>
-<p>利用關鍵字搜尋相關文獻, 針對文獻回顧與探討, 初步定位專案性質以及從事專案的目標.</p>
-<p>例如, 關鍵字:<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=marble+machine+construction+set">marble machine construction set</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=linkage+synthesis">linkage synthesis</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+mechatronics">arduino mechatronics</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+servo+control">arduino servo control</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=lifter+linkage">lifter linkage</a>,<span>&nbsp;</span><a href="https://mde1a1.kmol.info/2017fall/raw/doing+a+literature+review.pdf?name=566d6dab70c1a7e7458a2c10c667416fea048170">Doing a Literature Review</a></p>
-<p>2. 整理可用工具, 擬想何謂機械?何謂設計?何謂電腦輔助?擬想所要解決的問題, 準備開始進行電腦輔助機械設計專題</p>
-<p>機械是一種功能明確的器物, 內容包含固體、流體與軟體元件, 彼此精巧配置結合, 可展現特定功能</p>
-<p>設計是一種表達, 而且是可以讓人依循, 逐步按照指示, 完成設計者預想的結果, 且表達方法包含文字、口語、2D、3D、數學與實體方法.</p>
-<p>文字結合 2D、3D、數學表達方法 - 設計專題報告</p>
-<p>利用口語簡報設計專題內容 - 設計專題報告影片</p>
-<p>電腦輔助 - 利用電腦的功能協助設計進行</p>
-<p>電腦功能 - 設計組態管理、運算、模擬、網路資訊傳輸、展示、協同</p>
-<p>例如:</p>
-<p>零組件繪圖工具:<span>&nbsp;</span><a href="http://solvespace.com/">Solvespace</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad/creo">PTC Creo Parametric</a><span>&nbsp;</span>(可從區網下載可攜網路認證版本) ,<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Autodesk Inventor</a><span>&nbsp;</span>(可自行申請免費學生版本或安裝系上提供之網路認證版本),<span>&nbsp;</span><a href="http://www.solidworks.com.cn/">Dassault Solidworks</a><span>&nbsp;</span>(可安裝學校提供之網路認證版本).</p>
-<p>協同工具:<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="https://a360.autodesk.com/">A360</a><span>&nbsp;</span>(自行申請帳號)</p>
-<p>模擬工具:<span>&nbsp;</span><a href="http://www.coppeliarobotics.com/">V-rep</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.blender.org/">Blender</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.tinkercad.com/">Tinkercad</a><span>&nbsp;</span>(自行申請帳號)</p>
-<p>控制與致動工具:<span>&nbsp;</span><a href="https://www.arduino.cc/">Arduino</a><span>&nbsp;</span>(包含在工具箱中),<span>&nbsp;</span><a href="http://www.instructables.com/id/Arduino-Servo-Motors/">Servo Motor</a><span>&nbsp;</span>(包含在工具箱中)</p>
-<p>3D 列印工具:<span>&nbsp;</span><a href="http://atom3dp.com/">Delta Printer</a><span>&nbsp;</span>(由系上實習設備提供)</p>
-<p>3. 根據專題定位與目標, 確定所要解決的問題項目, 逐一採模組式, 以協同流程, 透過自學、執行與檢討想像, 由簡入繁, 持續改進各模組的內容與功能, 在可用時間內, 解決各種問題, 終至完成專題, 達成目標.</p>
-<p>鋼球循環運動系統設計</p>
-<p>機構設計 - 軌道設計、鋼球提升與傳動系統設計、其他零組件設計</p>
-<p>致動與控制系統設計 - 電路設計、伺服馬達致動程式設計</p>
-<p>監控程式設計 - 以視窗程式啟動系統運作、傳回鋼球通過控制點訊息、計算運行距離與速度</p>
-<p>marble lift mechanism</p>
-<p>四連桿浮動桿通過三個位置的尺寸合成設計</p>
-<p>六連桿尺寸合成</p>
-<p>八連桿尺寸合成</p>
-<p><a href="http://www.eddiesmind.com/basic-lifting-mechanisms.html">http://www.eddiesmind.com/basic-lifting-mechanisms.html</a></p>
-<p>Linkage:<span>&nbsp;</span><a href="http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/">http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/</a><span>&nbsp;</span>(<a href="https://github.com/rectorsquid/Linkage">Source codes</a>)</p>
-<p>LinkageDesigner (an add-on package to Wolfram's Mathematica):<span>&nbsp;</span><a href="http://www.linkagedesigner.com/">http://www.linkagedesigner.com/</a>,<span>&nbsp;</span><a href="https://www.wolfram.com/products/applications/linkagedesigner/">https://www.wolfram.com/products/applications/linkagedesigner/</a></p>
-<p><a href="https://github.com/KmolYuan/Pyslvs-PyQt5">https://github.com/KmolYuan/Pyslvs-PyQt5</a></p>
-<h2>Kinematics</h2>
+<h2>輔助設計套件</h2><h4>常見 MCAD 套件</h4><p><a href="http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html">http://lab.kmol.info/2017fall/blog/kmol-2017-fall-cadp-what-is-computer-aided-design.html</a>&nbsp;</p><p>一般常見的機械電腦輔助設計套件包括法國<span>&nbsp;</span><a href="https://www.3ds.com/">Dassault</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.3ds.com/products-services/solidworks/">SolidWorks</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.3ds.com/products-services/catia/">Catia</a>, 美國<span>&nbsp;</span><a href="https://www.autodesk.com.tw/">AutoDesk</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.autodesk.com.tw/products/autocad/">AutoCAD</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Inventor</a>, 德國<span>&nbsp;</span><a href="https://www.siemens.com/tw/zh/home.html">Siemens</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/en/products/solid-edge/">Solid Edge</a><span>&nbsp;</span>與<span>&nbsp;</span><a href="https://www.plm.automation.siemens.com/zh/products/nx/index.shtml">NX</a>, 美國<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/">PTC</a><span>&nbsp;</span>公司的<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad">Creo</a>, 以及 2015 年推出的<span>&nbsp;</span><a href="https://www.onshape.com/">Onshape</a></p><p>其他 MCAD: 俄羅斯的<span>&nbsp;</span><a href="http://www.tflex.com/resources/tflexcadst/download/">T-Flex</a>, 美國的 <a href="https://altairhyperworks.com/">Hyperworks</a>&nbsp;</p><h4>免費學生 MCAD/E 套件</h4><p><a href="https://www.onshape.com/products/education?hsCtaTracking=28006f2c-d5c6-46ad-9e1e-32cd73f381d6%7C9ebb58b7-e237-493e-b77d-a789ad661024">Onshape 免費教育版</a>, <a href="https://www.onshape.com/edu/college-curriculum">Onshape 教育課程</a></p><p><a href="https://www.autodesk.com/education/free-software/featured">AutoDesk 免費教育版</a> (包括 <a href="https://www.autodesk.com/education/free-software/inventor-professional">Inventor</a>&nbsp;,&nbsp;<a href="https://www.autodesk.com/education/free-software/autocad">AutoCAD</a>&nbsp;與 <a href="https://www.autodesk.com/products/fusion-360/students-teachers-educators">Fusion 360</a>)</p><p><a href="https://www.ptc.com/en/academic-program/products/free-software">PTC Creo student 免費版本</a></p><p><a href="https://www.plm.automation.siemens.com/plmapp/education/solid-edge/en_us/free-software/student">Solid Edge student 免費版本</a></p><p><a href="https://altairuniversity.com/free-hyperworks-2017-student-edition/">free Hyperworks student edition</a></p><p><a href="https://academy.3ds.com/en/software/abaqus-student-edition">Abaqus 免費學生版</a></p><p><a href="https://www.ansys.com/academic/free-student-products">Ansys 免費學生版</a></p><p><a href="https://www.simscale.com/product/pricing/">Simscale 免費社群帳號</a></p><h4>如何進行電腦輔助機械設計專題</h4><p>1. 文獻回顧 (Literature Review) 階段 - 了解現存既有的研究成果, 確立專題定位與目標</p><p>利用關鍵字搜尋相關文獻, 針對文獻回顧與探討, 初步定位專案性質以及從事專案的目標.</p><p>例如, 關鍵字:<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=marble+machine+construction+set">marble machine construction set</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=linkage+synthesis">linkage synthesis</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+mechatronics">arduino mechatronics</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=arduino+servo+control">arduino servo control</a>,<span>&nbsp;</span><a href="https://www.google.com.tw/search?q=lifter+linkage">lifter linkage</a>,<span>&nbsp;</span><a href="https://mde1a1.kmol.info/2017fall/raw/doing+a+literature+review.pdf?name=566d6dab70c1a7e7458a2c10c667416fea048170">Doing a Literature Review</a></p><p>2. 整理可用工具, 擬想何謂機械?何謂設計?何謂電腦輔助?擬想所要解決的問題, 準備開始進行電腦輔助機械設計專題</p><p>機械是一種功能明確的器物, 內容包含固體、流體與軟體元件, 彼此精巧配置結合, 可展現特定功能</p><p>設計是一種表達, 而且是可以讓人依循, 逐步按照指示, 完成設計者預想的結果, 且表達方法包含文字、口語、2D、3D、數學與實體方法.</p><p>文字結合 2D、3D、數學表達方法 - 設計專題報告</p><p>利用口語簡報設計專題內容 - 設計專題報告影片</p><p>電腦輔助 - 利用電腦的功能協助設計進行</p><p>電腦功能 - 設計組態管理、運算、模擬、網路資訊傳輸、展示、協同</p><p>例如:</p><p>零組件繪圖工具:<span>&nbsp;</span><a href="http://solvespace.com/">Solvespace</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="http://www.ptc-taiwan.com/cad/creo">PTC Creo Parametric</a><span>&nbsp;</span>(可從區網下載可攜網路認證版本) ,<span>&nbsp;</span><a href="https://www.autodesk.com/products/inventor/overview">Autodesk Inventor</a><span>&nbsp;</span>(可自行申請免費學生版本或安裝系上提供之網路認證版本),<span>&nbsp;</span><a href="http://www.solidworks.com.cn/">Dassault Solidworks</a><span>&nbsp;</span>(可安裝學校提供之網路認證版本).</p><p>協同工具:<span>&nbsp;</span><a href="http://www.onshape.com/">Onshape</a><span>&nbsp;</span>(自行申請帳號),<span>&nbsp;</span><a href="https://a360.autodesk.com/">A360</a><span>&nbsp;</span>(自行申請帳號)</p><p>模擬工具:<span>&nbsp;</span><a href="http://www.coppeliarobotics.com/">V-rep</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.blender.org/">Blender</a><span>&nbsp;</span>(包含在隨身系統),<span>&nbsp;</span><a href="https://www.tinkercad.com/">Tinkercad</a><span>&nbsp;</span>(自行申請帳號)</p><p>控制與致動工具:<span>&nbsp;</span><a href="https://www.arduino.cc/">Arduino</a><span>&nbsp;</span>(包含在工具箱中),<span>&nbsp;</span><a href="http://www.instructables.com/id/Arduino-Servo-Motors/">Servo Motor</a><span>&nbsp;</span>(包含在工具箱中)</p><p>3D 列印工具:<span>&nbsp;</span><a href="http://atom3dp.com/">Delta Printer</a><span>&nbsp;</span>(由系上實習設備提供)</p><p>3. 根據專題定位與目標, 確定所要解決的問題項目, 逐一採模組式, 以協同流程, 透過自學、執行與檢討想像, 由簡入繁, 持續改進各模組的內容與功能, 在可用時間內, 解決各種問題, 終至完成專題, 達成目標.</p><p>鋼球循環運動系統設計</p><p>機構設計 - 軌道設計、鋼球提升與傳動系統設計、其他零組件設計</p><p>致動與控制系統設計 - 電路設計、伺服馬達致動程式設計</p><p>監控程式設計 - 以視窗程式啟動系統運作、傳回鋼球通過控制點訊息、計算運行距離與速度</p><p>marble lift mechanism</p><p>四連桿浮動桿通過三個位置的尺寸合成設計</p><p>六連桿尺寸合成</p><p>八連桿尺寸合成</p><p><a href="http://www.eddiesmind.com/basic-lifting-mechanisms.html">http://www.eddiesmind.com/basic-lifting-mechanisms.html</a></p><p>Linkage:<span>&nbsp;</span><a href="http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/">http://blog.rectorsquid.com/linkage-mechanism-designer-and-simulator/</a><span>&nbsp;</span>(<a href="https://github.com/rectorsquid/Linkage">Source codes</a>)</p><p>LinkageDesigner (an add-on package to Wolfram's Mathematica):<span>&nbsp;</span><a href="http://www.linkagedesigner.com/">http://www.linkagedesigner.com/</a>,<span>&nbsp;</span><a href="https://www.wolfram.com/products/applications/linkagedesigner/">https://www.wolfram.com/products/applications/linkagedesigner/</a></p><p><a href="https://github.com/KmolYuan/Pyslvs-PyQt5">https://github.com/KmolYuan/Pyslvs-PyQt5</a></p><h2>Kinematics</h2>
 <p>2013&nbsp; 21st Century Kinematics:</p>
 <p><a href="https://link.springer.com/book/10.1007/978-1-4471-4510-3">https://link.springer.com/book/10.1007/978-1-4471-4510-3</a>&nbsp;</p><h1>分組專題</h1>
 <p>分組專題報告</p>
