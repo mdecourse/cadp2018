@@ -18,12 +18,12 @@ import urllib.parse
 # use cgi.escape() to resemble php htmlspecialchars()
 # use cgi.escape() or html.escape to generate data for textarea tag, otherwise Editor can not deal with some Javascript code.
 import cgi
-# get the current directory of the file
-_curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
 import sys
 # for new parse_content function
 from bs4 import BeautifulSoup
 
+# get the current directory of the file
+_curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
 sys.path.append(_curdir)
 
 # 由 init.py 中的 uwsgi = False 或 True 決定在 uwsgi 模式或近端模式執行
@@ -61,15 +61,9 @@ app.config['download_dir'] = download_dir
 # set the secret key.  keep this really secret:
 app.secret_key = 'A0Zr9@8j/3yX R~XHH!jmN]LWX/,?R@T'
 
-
-
-
-
-
-
-
 # 子目錄中註冊藍圖位置
 #app.register_blueprint(users.g1.user1.g1app)
+
 
 @app.route('/checkLogin', methods=['POST'])
 def checkLogin():
@@ -81,7 +75,8 @@ def checkLogin():
         session['admin'] = 1
         return redirect('/edit_page')
     return redirect('/')
-    
+
+ 
 @app.route('/delete_file', methods=['POST'])
 def delete_file():
     """Delete user uploaded files."""
@@ -144,6 +139,7 @@ def doDelete():
                directory + "</nav><section><h1>Download List</h1>" + \
                outstring + "<br/><br /></body></html>"
 
+
 @app.route('/doSearch', methods=['POST'])
 def doSearch():
     """Action to search content.htm using keyword"""
@@ -176,7 +172,6 @@ def download():
     # for image files
         return send_from_directory(image_dir, filename=filename)
     
-
 
 #@app.route('/download_list', defaults={'edit':1})
 #@app.route('/download_list/<path:edit>')
@@ -339,11 +334,13 @@ def downloadlist_access_list(files, starti, endi):
                               "</a> (" + str(fileSize) + ")<br />"
     return outstring
 
+
 # downloads 方法主要將位於 downloads 目錄下的檔案送回瀏覽器
 @app.route('/downloads/<path:path>')
 def downloads(path):
     """Send files in downloads directory."""
     return send_from_directory(_curdir+"/downloads/", path)
+
 
 # 與 file_selector 搭配的取檔程式
 def downloadselect_access_list(files, starti, endi):
@@ -357,6 +354,7 @@ def downloadselect_access_list(files, starti, endi):
                           files[index] + '''",0); return false;'>''' + files[index] + \
                           '''</a> (''' + str(sizeof_fmt(fileSize)) + ''')<br />'''
     return outstring
+
 
 @app.route('/edit_config', defaults={'edit': 1})
 @app.route('/edit_config/<path:edit>')
@@ -380,6 +378,8 @@ def edit_config(edit):
                  <input type='hidden' name='password2' value='"+password+"'> \
                  <input type='submit' value='send'></form> \
                  </section></div></body></html>"
+
+
 # edit all page content
 @app.route('/edit_page', defaults={'edit': 1})
 @app.route('/edit_page/<path:edit>')
@@ -394,9 +394,12 @@ def edit_page(edit):
         pagedata =file_get_contents(config_dir + "content.htm")
         outstring = tinymce_editor(directory, cgi.escape(pagedata))
         return outstring
-            
+
+
 def editorfoot():
     return '''<body>'''
+
+
 def editorhead():
     return '''
     <br />
@@ -449,16 +452,22 @@ function cmsFilePicker(callback, value, meta) {
 };
 </script>
 '''
+
+
 @app.route('/error_log')
 def error_log(self, info="Error"):
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     return set_css() + "<div class='container'><nav>" + \
              directory + "</nav><section><h1>ERROR</h1>" + info + "</section></div></body></html>"
+
+
 def file_get_contents(filename):
     # open file in utf-8 and return file content
     with open(filename, encoding="utf-8") as file:
         return file.read()
+
+
 # 與 file_selector 配合, 用於 Tinymce4 編輯器的檔案選擇
 def file_lister(directory, type=None, page=1, item_per_page=10):
     files = os.listdir(directory)
@@ -572,6 +581,7 @@ def file_lister(directory, type=None, page=1, item_per_page=10):
     else:
         return outstring+"<br /><br /><a href='imageuploadform'>image upload</a>"
 
+
 # 配合 Tinymce4 讓使用者透過 html editor 引用所上傳的 files 與 images
 @app.route('/file_selector', methods=['GET'])
 def file_selector():
@@ -600,6 +610,8 @@ def file_selector():
             return file_lister(download_dir, type, page, item_per_page)
         elif type == "image":
             return file_lister(image_dir, type, page, item_per_page)
+
+
 def file_selector_script():
     return '''
 <script language="javascript" type="text/javascript">
@@ -616,6 +628,8 @@ function setLink (url, objVals) {
 }
 </script>
 '''
+
+
 @app.route('/fileaxupload', methods=['POST'])
 # ajax jquery chunked file upload for flask
 def fileaxupload():
@@ -634,8 +648,7 @@ def fileaxupload():
     else:
         return redirect("/login")
 
-    
-    
+
 @app.route('/fileuploadform', defaults={'edit':1})
 @app.route('/fileuploadform/<path:edit>')
 def fileuploadform(edit):
@@ -667,6 +680,8 @@ return 'downloads/';
 '''
     else:
         return redirect("/login")
+
+
 @app.route('/flvplayer')
 # 需要檢視能否取得 filepath 變數
 def flvplayer(filepath=None):
@@ -680,38 +695,51 @@ def flvplayer(filepath=None):
 </object>
 '''
     return outstring
+
+
 @app.route('/generate_pages')
 def generate_pages():
+    # 必須決定如何處理重複標題頁面的轉檔
     import os
     # 確定程式檔案所在目錄, 在 Windows 有最後的反斜線
     _curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
+    # 根據 content.htm 內容, 逐一產生各頁面檔案
+    # 在此也要同時配合 render_menu2, 產生對應的 anchor 連結
+    head, level, page = parse_content()
+    # 處理重複標題 head 數列， 再重複標題按照次序加上 1, 2, 3...
+    newhead = []
+    for i, v in enumerate(head):
+        # 各重複標題總數
+        totalcount = head.count(v)
+        # 目前重複標題出現總數
+        count = head[:i].count(v)
+        # 針對重複標題者, 附加目前重複標題出現數 +1, 未重複採原標題
+        newhead.append(v + str(count + 1) if totalcount > 1 else v)
     # 刪除 content 目錄中所有 html 檔案
     filelist = [ f for f in os.listdir(_curdir + "\\content\\") if f.endswith(".html") ]
     for f in filelist:
         os.remove(os.path.join(_curdir + "\\content\\", f))
-
     # 這裡需要建立專門寫出 html 的 write_page
     # index.html
     file = open(_curdir + "\\content\\index.html", "w", encoding="utf-8")
-    file.write(get_page2(None, 0))
+    file.write(get_page2(None, newhead, 0))
     file.close()
     # sitemap
     file = open(_curdir + "\\content\\sitemap.html", "w", encoding="utf-8")
-    file.write(sitemap2())
+    # sitemap2 需要 newhead
+    file.write(sitemap2(newhead))
     file.close()
-    # 根據 content.htm 內容, 逐一產生各頁面檔案
-    # 在此也要同時配合 render_menu2, 產生對應的 anchor 連結
-    head, level, page = parse_content()
-    for i in range(len(head)):
+    # 以下轉檔, 改用 newhead 數列
+    for i in range(len(newhead)):
         # 在此必須要將頁面中的 /images/ 字串換為 images/, /downloads/ 換為 downloads/
         # 因為 Flask 中靠 /images/ 取檔案, 但是一般 html 則採相對目錄取檔案
         # 此一字串置換在 get_page2 中進行
-        file = open(_curdir + "\\content\\" + head[i] + ".html", "w", encoding="utf-8")
-        file.write(get_page2(head[i], 0))
+        file = open(_curdir + "\\content\\" + newhead[i] + ".html", "w", encoding="utf-8")
+        # 增加以 newhead 作為輸入
+        file.write(get_page2(newhead[i], newhead, 0))
         file.close()
     # generate each page html under content directory
     return "已經將網站轉為靜態網頁. <a href='/'>Home</a>"
-
 # seperate page need heading and edit variables, if edit=1, system will enter edit mode
 # single page edit will use ssavePage to save content, it means seperate save page
 @app.route('/get_page')
@@ -720,7 +748,7 @@ def generate_pages():
 def get_page(heading, edit):
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
-    if heading == None:
+    if heading is None:
         heading = head[0]
     # 因為同一 heading 可能有多頁, 因此不可使用 head.index(heading) 搜尋 page_order
     page_order_list, page_content_list = search_content(head, page, heading)
@@ -780,6 +808,8 @@ def get_page(heading, edit):
             #pagedata = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+search_content(head, page, heading)
             #outstring = last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata), page_order)
                 return outstring
+
+
 # seperate page need heading and edit variables, if edit=1, system will enter edit mode
 # single page edit will use ssavePage to save content, it means seperate save page
 '''
@@ -787,15 +817,13 @@ def get_page(heading, edit):
 @app.route('/get_page2/<heading>', defaults={'edit': 0})
 @app.route('/get_page2/<heading>/<int:edit>')
 '''
-def get_page2(heading, edit):
-    head, level, page = parse_content()
-    
+def get_page2(heading, head, edit):
+    not_used_head, level, page = parse_content()
     # 直接在此將 /images/ 換為 ./../images/, /downloads/ 換為 ./../downloads/, 以 content 為基準的相對目錄設定
     page = [w.replace('/images/', './../images/') for w in page]
     page = [w.replace('/downloads/', './../downloads/') for w in page]
-    
     directory = render_menu2(head, level, page)
-    if heading == None:
+    if heading is None:
         heading = head[0]
     # 因為同一 heading 可能有多頁, 因此不可使用 head.index(heading) 搜尋 page_order
     page_order_list, page_content_list = search_content(head, page, heading)
@@ -855,6 +883,8 @@ def get_page2(heading, edit):
             #pagedata = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+search_content(head, page, heading)
             #outstring = last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata), page_order)
                 return outstring
+
+
 @app.route('/image_delete_file', methods=['POST'])
 def image_delete_file():
     if not isAdmin():
@@ -862,7 +892,7 @@ def image_delete_file():
     filename = request.form['filename']
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
-    if filename == None:
+    if filename is None:
         outstring = "no file selected!"
         return set_css() + "<div class='container'><nav>" + \
                  directory + "</nav><section><h1>Delete Error</h1>" + \
@@ -883,6 +913,8 @@ def image_delete_file():
     return set_css() + "<div class='container'><nav>"+ \
              directory + "</nav><section><h1>Download List</h1>" + \
              outstring + "<br/><br /></body></html>"
+
+
 @app.route('/image_doDelete', methods=['POST'])
 def image_doDelete():
     if not isAdmin():
@@ -912,6 +944,7 @@ def image_doDelete():
     return set_css() + "<div class='container'><nav>"+ \
              directory + "</nav><section><h1>Image List</h1>" + \
              outstring + "<br/><br /></body></html>"
+
 
 @app.route('/image_list', defaults={'edit':1})
 @app.route('/image_list/<path:edit>')
@@ -1018,6 +1051,7 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
              directory + "</nav><section><h1>Image List</h1>" + \
              outstring + "<br/><br /></body></html>"
 
+
 @app.route('/imageaxupload', methods=['POST'])
 # ajax jquery chunked file upload for flask
 def imageaxupload():
@@ -1036,8 +1070,7 @@ def imageaxupload():
     else:
         return redirect("/login")
 
-    
-    
+
 def imagelist_access_list(files, starti, endi):
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
@@ -1055,6 +1088,7 @@ def imagelist_access_list(files, starti, endi):
                               files[index] + '\',\'images\', \'catalogmode\',\'scrollbars\')">' + \
                               files[index] + '</a> (' + str(fileSize) + ')<br />'
     return outstring
+
 
 # 與 file_selector 搭配的取影像檔程式
 def imageselect_access_list(files, starti, endi):
@@ -1089,6 +1123,7 @@ a.xhfbfile:hover{
                           (''' + str(sizeof_fmt(fileSize)) + ''')<br />'''
     return outstring
 
+
 @app.route('/imageuploadform', defaults={'edit': 1})
 @app.route('/imageuploadform/<path:edit>')
 def imageuploadform(edit):
@@ -1121,6 +1156,8 @@ return 'images/';
 '''
     else:
         return redirect("/login")
+
+
 @app.route('/')
 def index():
     head, level, page = parse_content()
@@ -1128,7 +1165,7 @@ def index():
     return redirect("/get_page/" + urllib.parse.quote_plus(head[0]))
     # the following will never execute
     directory = render_menu(head, level, page)
-    if heading == None:
+    if heading is None:
         heading = head[0]
     # 因為同一 heading 可能有多頁, 因此不可使用 head.index(heading) 搜尋 page_order
     page_order_list, page_content_list = search_content(head, page, heading)
@@ -1160,15 +1197,18 @@ def isAdmin():
             return True
     else:
         return False
+
+
 # use to check directory variable data
 @app.route('/listdir')
 def listdir():
     return download_dir + "," + config_dir
 
+
 @app.route('/load_list')
 def load_list(item_per_page=5, page=1, filedir=None, keyword=None):
     files = os.listdir(config_dir+filedir+"_programs/")
-    if keyword == None:
+    if keyword is None:
         pass
     else:
         session['search_keyword'] = keyword
@@ -1277,6 +1317,7 @@ function keywordSearch(){
 
     return outstring
 
+
 def loadlist_access_list(files, starti, endi, filedir):
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
@@ -1308,6 +1349,8 @@ def loadlist_access_list(files, starti, endi, filedir):
             outstring += "<input type='checkbox' name='filename' value='" + files[index] + \
                              "'><a href='/" + filedir + "_programs/" + files[index] + "'>" + files[index] + "</a> (" + str(fileSize) + ")<br />"
     return outstring
+
+
 @app.route('/login')
 def login():
     """login routine"""
@@ -1321,11 +1364,15 @@ def login():
     </section></div></body></html>"
     else:
         return redirect('/edit_page')
+
+
 @app.route('/logout')
 def logout():
     session.pop('admin' , None)
     flash('已經登出!')
     return redirect(url_for('login'))
+
+
 def parse_config():
     if not os.path.isfile(config_dir+"config"):
         # create config file if there is no config file
@@ -1340,6 +1387,8 @@ def parse_config():
     site_title = config_data[0].split(":")[1]
     password = config_data[1].split(":")[1]
     return site_title, password
+
+
 def parse_content():
     """use bs4 and re module functions to parse content.htm"""
     #from pybean import Store, SQLiteWriter
@@ -1383,9 +1432,10 @@ def parse_content():
     # get the page content to split subject using each h tag
     # i = 0
     temp_data = subject.split(str(htag[0]))
-    # cut the first htag out
-    subject = temp_data[1]
-
+    if len(temp_data) > 2:
+        subject = str(htag[0]).join(temp_data[1:])
+    else:
+        subject = temp_data[1]
     if n >1:
             # i from 1 to i-1
             for i in range(1, len(htag)):
@@ -1395,7 +1445,10 @@ def parse_content():
                 # the number of h1, h2 or h3 is the level of page menu
                 level_list.append(htag[i-1].name[1])
                 temp_data = subject.split(str(htag[i]))
-                subject = temp_data[1]
+                if len(temp_data) > 2:
+                    subject = str(htag[i]).join(temp_data[1:])
+                else:
+                    subject = temp_data[1]
                 # cut the other page content out of htag from 1 to i-1
                 cut = temp_data[0]
                 # add the page content
@@ -1413,6 +1466,8 @@ def parse_content():
     # the last page content
     page_list.append(cut)
     return head_list, level_list, page_list
+
+
 def render_menu(head, level, page, sitemap=0):
     directory = ""
     current_level = level[0]
@@ -1445,6 +1500,8 @@ def render_menu(head, level, page, sitemap=0):
         current_level = level[index]
     directory += "</li></ul>"
     return directory
+
+
 def render_menu2(head, level, page, sitemap=0):
     """render menu for static site"""
     directory = ""
@@ -1487,6 +1544,8 @@ def render_menu2(head, level, page, sitemap=0):
         current_level = level[index]
     directory += "</li></ul>"
     return directory
+
+
 # reveal 方法主要將位於 reveal 目錄下的檔案送回瀏覽器
 '''
 目前在 CMSimfly 管理模式下已經無需透過 Flask送回 reveal 與 Pelican blog 資料
@@ -1495,6 +1554,8 @@ def render_menu2(head, level, page, sitemap=0):
 @app.route('/reveal/<path:path>')
 def reveal(path):
   return send_from_directory(_curdir+"/reveal/", path)
+
+
 # blog 方法主要將位於 blog目錄下的檔案送回瀏覽器
 '''
 目前在 CMSimfly 管理模式下已經無需透過 Flask 送回 reveal 與 Pelican blog 資料
@@ -1504,6 +1565,7 @@ def reveal(path):
 def blog(path):
   return send_from_directory(_curdir+"/blog/", path)
 
+
 @app.route('/saveConfig', methods=['POST'])
 def saveConfig():
     if not isAdmin():
@@ -1511,12 +1573,12 @@ def saveConfig():
     site_title = request.form['site_title']
     password = request.form['password']
     password2 = request.form['password2']
-    if site_title == None or password == None:
+    if site_title is None or password is None:
         return error_log("no content to save!")
     old_site_title, old_password = parse_config()
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
-    if site_title == None or password == None or password2 != old_password or password == '':
+    if site_title is None or password is None or password2 != old_password or password == '':
         return set_css() + "<div class='container'><nav>" + \
                 directory + "</nav><section><h1>Error!</h1><a href='/'>Home</a></body></html>"
     else:
@@ -1529,13 +1591,15 @@ def saveConfig():
         file.close()
         return set_css() + "<div class='container'><nav>" + \
                  directory + "</nav><section><h1>config file saved</h1><a href='/'>Home</a></body></html>"
+
+
 @app.route('/savePage', methods=['POST'])
 def savePage():
     page_content = request.form['page_content']
     # check if administrator
     if not isAdmin():
         return redirect("/login")
-    if page_content == None:
+    if page_content is None:
         return error_log("no content to save!")
     # we need to check if page heading is duplicated
     file = open(config_dir+"content.htm", "w", encoding="utf-8")
@@ -1555,6 +1619,8 @@ def savePage():
     file.close()
     '''
     return redirect("/edit_page")
+
+
 # use head title to search page content
 '''
 # search_content(head, page, search)
@@ -1575,13 +1641,15 @@ for i in range(len(search_result)):
     # 從 page[次序] 印出頁面內容
 # 準備傳回 page_order 與 page_content 等兩個數列
 '''
+
+
 def search_content(head, page, search):
     """search content"""
     ''' 舊內容
     return page[head.index(search)]
     '''
     find = lambda searchList, elem: [[i for i, x in enumerate(searchList) if x == e] for e in elem]
-    search_result = find(head,[search])[0]
+    search_result = find(head, [search])[0]
     page_order = []
     page_content = []
     for i in range(len(search_result)):
@@ -1593,6 +1661,8 @@ def search_content(head, page, search):
         # 從 page[次序] 印出頁面內容
     # 準備傳回 page_order 與 page_content 等兩個數列
     return page_order, page_content
+
+
 @app.route('/search_form', defaults={'edit': 1})
 @app.route('/search_form/<path:edit>')
 def search_form(edit):
@@ -1608,11 +1678,14 @@ def search_form(edit):
                  </section></div></body></html>"
     else:
         return redirect("/login")
+
+
 # setup static directory
 @app.route('/static/<path:path>')
 def send_file(path):
     """send file function"""
     return app.send_static_file(static_dir + path)
+
 
 # setup static directory
 #@app.route('/images/<path:path>')
@@ -1620,11 +1693,14 @@ def send_file(path):
 def send_images(path):
     """send image files"""
     return send_from_directory(_curdir + "/images/", path)
+
+
 # setup static directory
 @app.route('/static/')
 def send_static():
     """send static files"""
     return app.send_static_file('index.html')
+
 
 # set_admin_css for administrator
 def set_admin_css():
@@ -1632,7 +1708,7 @@ def set_admin_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>電腦輔助設計教材</title> \
+<title>電腦輔助設計實習教材</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 ''' + syntaxhighlight()
 
@@ -1676,12 +1752,14 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 </confmenu></header>
 '''
     return outstring
+
+
 def set_css():
     """set css for dynamic site"""
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>電腦輔助設計教材</title> \
+<title>電腦輔助設計實習教材</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 ''' + syntaxhighlight()
 
@@ -1731,12 +1809,14 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 </confmenu></header>
 '''
     return outstring
+
+
 def set_css2():
     """set css for static site"""
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>電腦輔助設計教材</title> \
+<title>電腦輔助設計實習教材</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
 ''' + syntaxhighlight2()
 
@@ -1771,6 +1851,8 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 </confmenu></header>
 '''
     return outstring
+
+
 def set_footer():
     """footer for page"""
     return "<footer> \
@@ -1782,25 +1864,31 @@ def set_footer():
         <br />Powered by <a href='http://cmsimple.cycu.org'>CMSimply</a> \
         </footer> \
         </body></html>"
-@app.route('/sitemap', defaults={'edit':1})
+
+
+@app.route('/sitemap', defaults={'edit': 1})
 @app.route('/sitemap/<path:edit>')
 def sitemap(edit):
     """sitemap for dynamic site"""
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
     sitemap = render_menu(head, level, page, sitemap=1)
-    return set_css() + "<div class='container'><nav>"+ directory + \
+    return set_css() + "<div class='container'><nav>" + directory + \
              "</nav><section><h1>Site Map</h1>" + sitemap + \
              "</section></div></body></html>"
-def sitemap2():
+
+
+def sitemap2(head):
     """sitemap for static content generation"""
     edit = 0
-    head, level, page = parse_content()
+    not_used_head, level, page = parse_content()
     directory = render_menu2(head, level, page)
     sitemap = render_menu2(head, level, page, sitemap=1)
     return set_css2() + "<div class='container'><nav>" + directory + \
              "</nav><section><h1>Site Map</h1>" + sitemap + \
              "</section></div></body></html>"
+
+
 def sizeof_fmt(num):
     """size formate"""
     for x in ['bytes','KB','MB','GB']:
@@ -1808,6 +1896,8 @@ def sizeof_fmt(num):
             return "%3.1f%s" % (num, x)
         num /= 1024.0
     return "%3.1f%s" % (num, 'TB')
+
+
 @app.route('/ssavePage', methods=['POST'])
 def ssavePage():
     """seperate save page function"""
@@ -1815,7 +1905,7 @@ def ssavePage():
     page_order = request.form['page_order']
     if not isAdmin():
         return redirect("/login")
-    if page_content == None:
+    if page_content is None:
         return error_log("no content to save!")
     # 請注意, 若啟用 fullpage plugin 這裡的 page_content tinymce4 會自動加上 html 頭尾標註
     page_content = page_content.replace("\n","")
@@ -1838,7 +1928,7 @@ def ssavePage():
     # for debug
     # print(original_head_title, head[int(page_order)])
     # 嘗試避免因最後一個標題刪除儲存後產生 internal error 問題
-    if original_head_title == None:
+    if original_head_title is None:
         return redirect("/")
     if original_head_title == head[int(page_order)]:
         #edit_url = "/get_page/"+urllib.parse.quote_plus(head[int(page_order)])+"&edit=1"
@@ -1847,6 +1937,8 @@ def ssavePage():
         return redirect(edit_url)
     else:
         return redirect("/")
+
+
 def syntaxhighlight():
     return '''
 <script type="text/javascript" src="/static/syntaxhighlighter/shCore.js"></script>
@@ -1896,6 +1988,8 @@ def syntaxhighlight():
 <script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
 -->
 '''
+
+
 def syntaxhighlight2():
     return '''
 <script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"></script>
@@ -1945,11 +2039,13 @@ init_mathjax();
 <script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
 -->
 '''
+
+
 def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
     sitecontent =file_get_contents(config_dir + "content.htm")
     editor = set_admin_css() + editorhead() + '''</head>''' + editorfoot()
     # edit all pages
-    if page_order == None:
+    if page_order is None:
         outstring = editor + "<div class='container'><nav>" + \
                         menu_input + "</nav><section><form method='post' action='savePage'> \
                         <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" +  \
@@ -1963,9 +2059,12 @@ def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
                         <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" + \
                         editor_content + "</textarea><input type='hidden' name='page_order' value='" + \
                         str(page_order) + "'><input type='submit' value='save'>"
-        outstring += '''<input type=button onClick="location.href='/get_page/''' + head[page_order] + \
-                          ''''" value='viewpage'></form></section></body></html>'''
+        outstring += '''<input type=button onClick="location.href='/get_page/''' + \
+                    head[page_order] + \
+                    ''''" value='viewpage'></form></section></body></html>'''
     return outstring
+
+
 def unique(items):
     """make items element unique"""
     found = set([])
@@ -1980,11 +2079,7 @@ def unique(items):
             count[item] += 1
             keep.append(str(item)+"_"+str(count[item]))
     return keep
+
+
 if __name__ == "__main__":
     app.run()
-
-
-
-
-
-
