@@ -1470,38 +1470,55 @@ def parse_content():
 
 def render_menu(head, level, page, sitemap=0):
     directory = ""
+    # 從 level 數列第一個元素作為開端
     current_level = level[0]
+    # 若是 sitemap 則僅列出樹狀架構而沒有套用 css3menu 架構
     if sitemap:
         directory += "<ul>"
     else:
         directory += "<ul id='css3menu1' class='topmenu'>"
+    # 逐一配合 level 數列中的各標題階次, 一一建立對應的表單或 sitemap
     for index in range(len(head)):
-        if level[index] > current_level:
+        # 用 this_level 取出迴圈中逐一處理的頁面對應層級, 注意取出值為 str
+        this_level = level[index]
+        # 若處理中的層級比上一層級高超過一層, 則將處理層級升級 (處理 h1 後直接接 h3 情況)
+        if (int(this_level) - int(current_level)) > 1:
+            #this_level = str(int(this_level) - 1)
+            # 考慮若納入 h4 也作為標題標註, 相鄰層級可能大於一層, 因此直接用上一層級 + 1
+            this_level = str(int(current_level) + 1)
+        # 若處理的階次比目前已經處理的階次大, 表示位階較低
+        # 其實當 level[0] 完全不會報告此一區塊
+        # 從正在處理的標題階次與前一個元素比對, 若階次低, 則要加入另一區段的 unordered list 標頭
+        # 兩者皆為 str 會轉為整數後比較
+        if this_level > current_level:
             directory += "<ul>"
             directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
-        elif level[index] == current_level:
-            if level[index] == 1:
+        # 假如正在處理的標題與前一個元素同位階, 則必須再判定是否為另一個 h1 的樹狀頭
+        elif this_level == current_level:
+            # 若正在處理的標題確實為樹狀頭, 則標上樹狀頭開始標註
+            if this_level == 1:
+                # 這裡還是需要判定是在建立 sitemap 模式或者選單模式
                 if sitemap:
                     directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index]+"</a>"
                 else:
                     directory += "<li class='topmenu'><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
+            #  假如不是樹狀頭, 則只列出對應的 list
             else:
                 directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
+        # 假如正處理的元素比上一個元素位階更高, 必須要先關掉前面的低位階區段
         else:
             directory += "</li>"*(int(current_level) - int(level[index]))
             directory += "</ul>"*(int(current_level) - int(level[index]))
-            if level[index] == 1:
+            if this_level == 1:
                 if sitemap:
                     directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
                 else:
                     directory += "<li class='topmenu'><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
             else:
                 directory += "<li><a href='/get_page/" + head[index] + "'>" + head[index] + "</a>"
-        current_level = level[index]
+        current_level = this_level
     directory += "</li></ul>"
     return directory
-
-
 def render_menu2(head, level, page, sitemap=0):
     """render menu for static site"""
     directory = ""
@@ -1511,13 +1528,18 @@ def render_menu2(head, level, page, sitemap=0):
     else:
         directory += "<ul id='css3menu1' class='topmenu'>"
     for index in range(len(head)):
-        if level[index] > current_level:
+        this_level = level[index]
+        # 若處理中的層級比上一層級高超過一層, 則將處理層級升級 (處理 h1 後直接接 h3 情況)
+        if (int(this_level) - int(current_level)) > 1:
+            #this_level = str(int(this_level) - 1)
+            this_level = str(int(current_level) + 1)
+        if this_level > current_level:
             directory += "<ul>"
             #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
             # 改為連結到 content/標題.html
             directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
-        elif level[index] == current_level:
-            if level[index] == 1:
+        elif this_level == current_level:
+            if this_level == 1:
                 if sitemap:
                     # 改為連結到 content/標題.html
                     #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
@@ -1531,7 +1553,7 @@ def render_menu2(head, level, page, sitemap=0):
         else:
             directory += "</li>"*(int(current_level) - int(level[index]))
             directory += "</ul>"*(int(current_level) - int(level[index]))
-            if level[index] == 1:
+            if this_level == 1:
                 if sitemap:
                     #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
                     directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
@@ -1541,11 +1563,9 @@ def render_menu2(head, level, page, sitemap=0):
             else:
                 #directory += "<li><a href='/get_page/"+head[index]+"'>"+head[index]+"</a>"
                 directory += "<li><a href='" + head[index] + ".html'>" + head[index] + "</a>"
-        current_level = level[index]
+        current_level = this_level
     directory += "</li></ul>"
     return directory
-
-
 # reveal 方法主要將位於 reveal 目錄下的檔案送回瀏覽器
 '''
 目前在 CMSimfly 管理模式下已經無需透過 Flask送回 reveal 與 Pelican blog 資料

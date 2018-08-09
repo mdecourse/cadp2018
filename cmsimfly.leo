@@ -554,38 +554,55 @@ def get_page(heading, edit):
 </t>
 <t tx="amd.20160714231359.1">def render_menu(head, level, page, sitemap=0):
     directory = ""
+    # 從 level 數列第一個元素作為開端
     current_level = level[0]
+    # 若是 sitemap 則僅列出樹狀架構而沒有套用 css3menu 架構
     if sitemap:
         directory += "&lt;ul&gt;"
     else:
         directory += "&lt;ul id='css3menu1' class='topmenu'&gt;"
+    # 逐一配合 level 數列中的各標題階次, 一一建立對應的表單或 sitemap
     for index in range(len(head)):
-        if level[index] &gt; current_level:
+        # 用 this_level 取出迴圈中逐一處理的頁面對應層級, 注意取出值為 str
+        this_level = level[index]
+        # 若處理中的層級比上一層級高超過一層, 則將處理層級升級 (處理 h1 後直接接 h3 情況)
+        if (int(this_level) - int(current_level)) &gt; 1:
+            #this_level = str(int(this_level) - 1)
+            # 考慮若納入 h4 也作為標題標註, 相鄰層級可能大於一層, 因此直接用上一層級 + 1
+            this_level = str(int(current_level) + 1)
+        # 若處理的階次比目前已經處理的階次大, 表示位階較低
+        # 其實當 level[0] 完全不會報告此一區塊
+        # 從正在處理的標題階次與前一個元素比對, 若階次低, 則要加入另一區段的 unordered list 標頭
+        # 兩者皆為 str 會轉為整數後比較
+        if this_level &gt; current_level:
             directory += "&lt;ul&gt;"
             directory += "&lt;li&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index] + "&lt;/a&gt;"
-        elif level[index] == current_level:
-            if level[index] == 1:
+        # 假如正在處理的標題與前一個元素同位階, 則必須再判定是否為另一個 h1 的樹狀頭
+        elif this_level == current_level:
+            # 若正在處理的標題確實為樹狀頭, 則標上樹狀頭開始標註
+            if this_level == 1:
+                # 這裡還是需要判定是在建立 sitemap 模式或者選單模式
                 if sitemap:
                     directory += "&lt;li&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index]+"&lt;/a&gt;"
                 else:
                     directory += "&lt;li class='topmenu'&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index] + "&lt;/a&gt;"
+            #  假如不是樹狀頭, 則只列出對應的 list
             else:
                 directory += "&lt;li&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index] + "&lt;/a&gt;"
+        # 假如正處理的元素比上一個元素位階更高, 必須要先關掉前面的低位階區段
         else:
             directory += "&lt;/li&gt;"*(int(current_level) - int(level[index]))
             directory += "&lt;/ul&gt;"*(int(current_level) - int(level[index]))
-            if level[index] == 1:
+            if this_level == 1:
                 if sitemap:
                     directory += "&lt;li&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index] + "&lt;/a&gt;"
                 else:
                     directory += "&lt;li class='topmenu'&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index] + "&lt;/a&gt;"
             else:
                 directory += "&lt;li&gt;&lt;a href='/get_page/" + head[index] + "'&gt;" + head[index] + "&lt;/a&gt;"
-        current_level = level[index]
+        current_level = this_level
     directory += "&lt;/li&gt;&lt;/ul&gt;"
     return directory
-
-
 </t>
 <t tx="amd.20160714231440.1"># use head title to search page content
 '''
@@ -2476,13 +2493,18 @@ def sitemap2(head):
     else:
         directory += "&lt;ul id='css3menu1' class='topmenu'&gt;"
     for index in range(len(head)):
-        if level[index] &gt; current_level:
+        this_level = level[index]
+        # 若處理中的層級比上一層級高超過一層, 則將處理層級升級 (處理 h1 後直接接 h3 情況)
+        if (int(this_level) - int(current_level)) &gt; 1:
+            #this_level = str(int(this_level) - 1)
+            this_level = str(int(current_level) + 1)
+        if this_level &gt; current_level:
             directory += "&lt;ul&gt;"
             #directory += "&lt;li&gt;&lt;a href='/get_page/"+head[index]+"'&gt;"+head[index]+"&lt;/a&gt;"
             # 改為連結到 content/標題.html
             directory += "&lt;li&gt;&lt;a href='" + head[index] + ".html'&gt;" + head[index] + "&lt;/a&gt;"
-        elif level[index] == current_level:
-            if level[index] == 1:
+        elif this_level == current_level:
+            if this_level == 1:
                 if sitemap:
                     # 改為連結到 content/標題.html
                     #directory += "&lt;li&gt;&lt;a href='/get_page/"+head[index]+"'&gt;"+head[index]+"&lt;/a&gt;"
@@ -2496,7 +2518,7 @@ def sitemap2(head):
         else:
             directory += "&lt;/li&gt;"*(int(current_level) - int(level[index]))
             directory += "&lt;/ul&gt;"*(int(current_level) - int(level[index]))
-            if level[index] == 1:
+            if this_level == 1:
                 if sitemap:
                     #directory += "&lt;li&gt;&lt;a href='/get_page/"+head[index]+"'&gt;"+head[index]+"&lt;/a&gt;"
                     directory += "&lt;li&gt;&lt;a href='" + head[index] + ".html'&gt;" + head[index] + "&lt;/a&gt;"
@@ -2506,11 +2528,9 @@ def sitemap2(head):
             else:
                 #directory += "&lt;li&gt;&lt;a href='/get_page/"+head[index]+"'&gt;"+head[index]+"&lt;/a&gt;"
                 directory += "&lt;li&gt;&lt;a href='" + head[index] + ".html'&gt;" + head[index] + "&lt;/a&gt;"
-        current_level = level[index]
+        current_level = this_level
     directory += "&lt;/li&gt;&lt;/ul&gt;"
     return directory
-
-
 </t>
 <t tx="leo.20180630203825.1">def set_css2():
     """set css for static site"""
