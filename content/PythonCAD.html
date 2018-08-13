@@ -1,0 +1,572 @@
+<!doctype html>
+<html><head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<title>電腦輔助設計實習教材</title> <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
+
+<script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"></script>
+<script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"></script>
+<link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+
+<!-- for LaTeX equations 暫時不用
+<script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"></script>
+<script type="text/javascript">
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+</script>
+-->
+<!-- 暫時不用
+<script src="./../static/fengari-web.js"></script>
+<script type="text/javascript" src="./../static/Cango-13v08-min.js"></script>
+<script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"></script>
+<script type="text/javascript" src="./../static/gearUtils-05.js"></script>
+-->
+<!-- for Brython 暫時不用
+<script src="https://scrum-3.github.io/web/brython/brython.js"></script>
+<script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
+-->
+
+<script src="./../static/jquery.js"></script>
+<script type="text/javascript">
+$(function(){
+    $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
+    $("ul.topmenu > li ul li:has(ul) > a").append('<div class="arrow-right"></div>');
+});
+</script>
+
+</head><header><h1>2018 電腦輔助設計實習教材</h1> <confmenu>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="sitemap.html">Site Map</a></li>
+<li><a href="./../reveal/index.html">reveal</a></li>
+<li><a href="./../blog/index.html">blog</a></li>
+
+</ul>
+</confmenu></header>
+<div class='container'><nav><ul id='css3menu1' class='topmenu'><li><a href='簡介.html'>簡介</a><ul><li><a href='最佳化設計.html'>最佳化設計</a><li><a href='雲端 CAD.html'>雲端 CAD</a><li><a href='大學.html'>大學</a></li></ul><li><a href='工具.html'>工具</a><ul><li><a href='Solvespace.html'>Solvespace</a><ul><li><a href='程式庫範例.html'>程式庫範例</a></li></ul><li><a href='Onshape.html'>Onshape</a><li><a href='Solidworks.html'>Solidworks</a><li><a href='V-rep.html'>V-rep</a><li><a href='Git.html'>Git</a><li><a href='Leo Editor.html'>Leo Editor</a><li><a href='SCiTE.html'>SCiTE</a><li><a href='TinyCC.html'>TinyCC</a><li><a href='CMSimfly.html'>CMSimfly</a></li></ul><li><a href='實習操作.html'>實習操作</a><li><a href='應用範例.html'>應用範例</a><ul><li><a href='Tinkercad.html'>Tinkercad</a><li><a href='解讀網頁內容.html'>解讀網頁內容</a><li><a href='輔助設計套件.html'>輔助設計套件</a><li><a href='Kinematics.html'>Kinematics</a><li><a href='PythonCAD.html'>PythonCAD</a></li></ul><li><a href='分組專題.html'>分組專題</a><ul><li><a href='3D 列印機.html'>3D 列印機</a><li><a href='行走機構.html'>行走機構</a><li><a href='鋼球運動系統.html'>鋼球運動系統</a><li><a href='機械手臂.html'>機械手臂</a><li><a href='虛實手足球.html'>虛實手足球</a><li><a href='機械計時器.html'>機械計時器</a><li><a href='摺疊自行車.html'>摺疊自行車</a><li><a href='方程式賽車.html'>方程式賽車</a></li></ul></nav><section>Kinematics << <a href='Kinematics.html'>Previous</a> <a href='分組專題.html'>Next</a> >> 分組專題<br /><h1>PythonCAD</h1>
+<p>R37 使用 PyGTK</p>
+<p>R38 使用 PyQt</p>
+<p><a href="http://download2.polytechnic.edu.na/pub4/sourceforge/p/project/py/pythoncad/">http://download2.polytechnic.edu.na/pub4/sourceforge/p/project/py/pythoncad/</a>&nbsp;</p>
+<p>以下版本使用 Python3 與 PyQt5:</p>
+<p><a href="https://github.com/chiamingyen/PythonCAD_py3">https://github.com/chiamingyen/PythonCAD_py3</a>&nbsp;</p>
+<p>以下資料為 R37 對應版本參考用:</p>
+<p>This introduces you into the basic concepts of a CAD system.</p>
+<h4>Entities</h4>
+<p>Entities are graphical objects in a CAD system. Typical entities which are supported by most CAD systems are: points, lines and circular and elliptical arcs. More complex and CAD specific entities include polylines, texts, dimensioning, hatches and splines. Attributes</p>
+<p>Every entity has certain attributes such as its color, line type and line width.</p>
+<h4>Layers</h4>
+<p>A basic concept of computer aided drafting is the use of layers to organize a drawing. Every entity of a drawing is on exactly one layer and a layer can contain lots of entities. Typically entities with a common 'function' or common attributes are put on the same layer. E.g. you might want to put all axes in a drawing on a layer named 'axes' (see Figure 1). Layers can have attributes (color, line width, line style). Each entity can have its own attributes or have its attributes defined by the layer it is placed on. In the latter case you can change for example the color of all 'axes' entities by changing the color of the layer 'axes'.</p>
+<p>In manual drafting, a similar approach was used. Different building systems, such as wiring and air conditioning were often drawn on separate transparent sheet of paper. These sheets were then overlaid on one another to produce final drawings.</p>
+<h4>Blocks</h4>
+<p>A Block is a group of entities. Blocks can be inserted into the same graphic more than once with different Attributes and different locations, scaling factors and rotation angles (see Figure 2). Such an instance of a block is usually called an Insert. Inserts have attributes just like entities and layers. An Entity that is part of an Insert can have its own attributes or share the attributes of the Insert. Once created, Inserts are still linked to the Block they instantiate. The power of inserts is, that you can modify the Block once and all Inserts will be updated accordingly.</p>
+<h4>Drafting in CAD</h4>
+<p>In many ways, CAD is similar to traditional drafting. When drawing a plan or a view of an object on a paper, you would use tools such as a ruler to draw lines. In CAD systems there is a variety of tools available to achieve the same goal. The big advantage of a CAD system is the fact that you can change every entity of your drawing easily after you've created it. This might be the most difficult thing to learn when moving from paper to CAD. When working with a CAD system you will very often create lines that won't be on the final printout or which don't have the correct length and need to be trimmed later (see Figure 3). A common mistake of CAD beginners is wanting to create the final drawing right away.</p>
+<h4>Coordinate Systems</h4>
+<p>A good understanding of how coordinates work is absolutely crucial if you are to make the best use of any CAD program. If you're not familiar with coordinates it's highly recommended that you take some time to familiarize yourself with the basic concepts.</p>
+<h4>Origin</h4>
+<p>The origin of the drawing is the point where the X and Y axis cross each other. It's the absolute zero of the drawing. In addition to the origin there's a relative zero point. This is a helpful spot that changes it's position depending on the current user interactions. The relative zero point can also be moved around by the user.</p>
+<p>Cartesian Coordinates</p>
+<p>The Cartesian coordinate system is the standard coordinate system. It was named after the French philosopher Ren&eacute; Descartes (1596-1650). The position of a point is described by its distance from two axes, X and Y. It is commonly denoted by x, y where x and y are the distances. Positive X direction is left while positive y direction is up.</p>
+<p>Cartesian coordinates can also originate in a position different from the origin. In that case we talk about 'relative coordinates'.</p>
+<h4>Polar Coordinates</h4>
+<p>Polar coordinates use a distance and an angle to describe the position of a point.</p>
+<p>Just like Cartesian coordinates, polar coordinates can also originate in a position different from the origin.</p>
+<h4>Object and Grid Snapping</h4>
+<p>To specify a coordinate, you can use the snap feature which allows you to precisely select grid points or significant points on existing objects: endpoints or midpoints of lines, etc.</p>
+<h4>Basic Editing</h4>
+<p>Entities can be inserted, selected, and, once selected, can be deleted, transformed or duplicated. To insert an entity means to draw it by selecting the appropriate drawing tool, such as line, arc, etc., and by locating points that define the object to be drawn, such as the endpoints of a line.</p>
+<h4>Entity Selection</h4>
+<p>An entity must be selected before it can be deleted, duplicated, or transformed. Entity selection is one of the most basic of CAD operations. There are a wide variety of selection tools to quickly select groups of entities, entities within a range, connected entities, etc.</p>
+<h4>Deletion</h4>
+<p>Deleting an entity means to remove it from the drawing.</p>
+<h4>Modifications</h4>
+<p>Basic modifications of a CAD systems include translation, rotation, reflection, and scaling. As well as these operations which don't alter the characteristic geometry of selected entities, there are some that do. You can break, trim, extend or stretch existing entities.</p>
+<h4>Dimensions</h4>
+<p>The required sizes of features are conveyed through use of dimensions. Distances may be indicated with either of two standardized forms of dimension: linear and ordinate.</p>
+<p>With linear dimensions, two parallel lines, called &ldquo;extension lines,&rdquo; spaced at the distance between two features, are shown at each of the features. A line perpendicular to the extension lines, called a &ldquo;dimension line,&rdquo; with arrows at its endpoints, is shown between, and terminating at, the extension lines. The distance is indicated numerically at the midpoint of the dimension line, either adjacent to it, or in a gap provided for it.<br> <br>With ordinate dimensions, one horizontal and one vertical extension line establish an origin for the entire view. The origin is identified with zeroes placed at the ends of these extension lines. Distances along the x- and y-axes to other features are specified using other extension lines, with the distances indicated numerically at their ends.<br> <br>Sizes of circular features are indicated using either diametral or radial dimensions. Radial dimensions use an &ldquo;R&rdquo; followed by the value for the radius; Diametral dimensions use a circle with forward-leaning diagonal line through it, called the diameter symbol, followed by the value for the diameter.</p>
+<p>A radially-aligned line with arrowhead pointing to the circular feature, called a leader, is used in conjunction with both diametral and radial dimensions. All types of dimensions are typically composed of two parts: the nominal value, which is the &ldquo;ideal&rdquo; size of the feature, and the tolerance, which specifies the amount that the value may vary above and below the nominal. Architectural Dimensions</p>
+<h4>Viewing in CAD</h4>
+<p>Unlike in manual drafting, there is no need in CAD to determine in advance the sheet size and drawing scale. There is no drawing scale: all sizes and distances are specified using their full-scale values. A 10 meter object is drawn as a 10 meter object. Only at the printing stage, the drawing scale needs to be determined based on sheet size and drawing size.</p>
+<p>On the screen, the user can adjust the currently visible area of the drawing by zooming in to view more detail or zooming out to view a wider extent. Another important viewing operation in CAD is panning. To see another portion of the drawing without changing the display scale, a user pans to it by &ldquo;moving&rdquo; a rectangular display window until it's over the desired spot.</p>
+<p>From R38 version the command are changed this new list describe how to use it and what they do</p>
+<ul>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:segment" class="wikilink2" title="r38command:segment" rel="nofollow">SEGMENT</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:arc" class="wikilink2" title="r38command:arc" rel="nofollow">ARC</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:circle" class="wikilink2" title="r38command:circle" rel="nofollow">CIRCLE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:point" class="wikilink2" title="r38command:point" rel="nofollow">POINT</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:ellipse" class="wikilink2" title="r38command:ellipse" rel="nofollow">ELLIPSE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:polyline" class="wikilink2" title="r38command:polyline" rel="nofollow">POLYLINE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:cline" class="wikilink2" title="r38command:cline" rel="nofollow">CLINE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:ccircle" class="wikilink2" title="r38command:ccircle" rel="nofollow">CCIRCLE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:text" class="wikilink2" title="r38command:text" rel="nofollow">TEXT</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:chamfer" class="wikilink2" title="r38command:chamfer" rel="nofollow">CHAMFER</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:fillet" class="wikilink2" title="r38command:fillet" rel="nofollow">FILLET</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:bisector" class="wikilink2" title="r38command:bisector" rel="nofollow">BISECTOR</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:rectangle" class="wikilink2" title="r38command:rectangle" rel="nofollow">RECTANGLE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:polygon" class="wikilink2" title="r38command:polygon" rel="nofollow">POLYGON</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:copy" class="wikilink2" title="r38command:copy" rel="nofollow">COPY</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38commande:move" class="wikilink2" title="r38commande:move" rel="nofollow">MOVE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:mirror" class="wikilink2" title="r38command:mirror" rel="nofollow">MIRROR</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:rotate" class="wikilink2" title="r38command:rotate" rel="nofollow">ROTATE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:trim" class="wikilink2" title="r38command:trim" rel="nofollow">TRIM</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:delete" class="wikilink2" title="r38command:delete" rel="nofollow">DELETE</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:dimension" class="wikilink2" title="r38command:dimension" rel="nofollow">DIMENSION</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=r38command:property" class="wikilink1" title="r38command:property">PROPERTY</a></div>
+</li>
+</ul>
+<h4><span style="background-color: #d5d5d5;">Command</span></h4>
+<h4>Command Line Staff Only R38</h4>
+<div class="level2">
+<p>If the CAD is waiting for a point you can use the following form to input the point from a command line:</p>
+<ul>
+<li class="level1">
+<div class="li">absolute coords 10,10</div>
+</li>
+<li class="level1">
+<div class="li">relative coords 10;10</div>
+</li>
+<li class="level1">
+<div class="li">relative coords angle&gt;lenght</div>
+</li>
+</ul>
+<p>Unit Mesure: PythonCAD use the mm radiants as input value .. if you whant to input a different unit measure you can use the sympy syntax as follow. the unit measure converter is retrieved by using the u letter .. es:</p>
+<ul>
+<li class="level1">
+<div class="li">10*u.ft &rarr; translate 10 ft in mm</div>
+</li>
+<li class="level1">
+<div class="li">10,10*u.ft</div>
+</li>
+<li class="level1">
+<div class="li">45*u.deg&gt;100</div>
+</li>
+</ul>
+<h4>File</h4>
+</div>
+<div class="level2">
+<p>It opens drop down menu for the<span>&nbsp;</span><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file" class="wikilink1" title="file">file</a><span>&nbsp;</span>manipulation. The menu consists of</p>
+<ul>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#new" class="wikilink1" title="file">New</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#open" class="wikilink1" title="file">Open</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#import" class="wikilink1" title="file">Import</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#close" class="wikilink1" title="file">Close</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#save" class="wikilink1" title="file">Save &lt;R38</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#save_as" class="wikilink1" title="file">Save as</a>&hellip;</div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#save_layer_as" class="wikilink1" title="file">Save layer as</a>&hellip;</div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#print_screen" class="wikilink1" title="file">Print screen</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#print" class="wikilink1" title="file">Print</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file#quit" class="wikilink1" title="file">Quit</a></div>
+</li>
+</ul>
+</div>
+<h4>Edit</h4>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Undo</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Redo</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Cut</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Copy</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Paste</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Select</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Select all</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=edit" class="wikilink1" title="edit">Deselect</a></div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:preferences" class="wikilink1" title="commands:preferences">Preferences</a></div>
+</li>
+</ul>
+<h4>Draw</h4>
+</div>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li">Basic</div>
+<ul>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:point" class="wikilink1" title="commands:point">Point</a></div>
+</li>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:segment" class="wikilink1" title="commands:segment">Segment</a></div>
+</li>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:rect" class="wikilink1" title="commands:rect">Rectangle</a></div>
+</li>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:circle" class="wikilink1" title="commands:circle">Circle</a><span>&nbsp;</span>center and radius</div>
+</li>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:circle2pts" class="wikilink1" title="commands:circle2pts">Circle (2pts)</a><span>&nbsp;</span>diameter points</div>
+</li>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:arc" class="wikilink1" title="commands:arc">Arc</a></div>
+</li>
+</ul>
+</li>
+<li class="level1">
+<div class="li">Con. lines (construction lines)</div>
+<ul>
+<li class="level2">
+<div class="li">Horizontal</div>
+</li>
+<li class="level2">
+<div class="li">Vertical</div>
+</li>
+<li class="level2">
+<div class="li">Angled</div>
+</li>
+<li class="level2">
+<div class="li">Two points</div>
+</li>
+<li class="level2">
+<div class="li">Perpendicular</div>
+</li>
+<li class="level2">
+<div class="li">Parallel</div>
+</li>
+<li class="level2">
+<div class="li">Tangent</div>
+</li>
+<li class="level2">
+<div class="li">Tangent 2 circ</div>
+</li>
+</ul>
+</li>
+<li class="level1">
+<div class="li">Con. circs. (construction circles)</div>
+<ul>
+<li class="level2">
+<div class="li">Center pt.</div>
+</li>
+<li class="level2">
+<div class="li">Two pts.</div>
+</li>
+<li class="level2">
+<div class="li">Single tangency</div>
+</li>
+<li class="level2">
+<div class="li">Dual tangency</div>
+</li>
+</ul>
+</li>
+<li class="level1">
+<div class="li">Chamfer</div>
+</li>
+<li class="level1">
+<div class="li">Fillets</div>
+<ul>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:filletpoint" class="wikilink1" title="commands:filletpoint">point</a></div>
+</li>
+<li class="level2">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:fillettwoline" class="wikilink1" title="commands:fillettwoline">twoline</a></div>
+</li>
+</ul>
+</li>
+<li class="level1">
+<div class="li">Leader</div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:polyline" class="wikilink1" title="commands:polyline">Polyline</a></div>
+</li>
+<li class="level1">
+<div class="li">Polygon (int.)</div>
+</li>
+<li class="level1">
+<div class="li">Polygon (ext.)</div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=commands:text" class="wikilink1" title="commands:text">Text</a></div>
+</li>
+<li class="level1">
+<div class="li">Set</div>
+<ul>
+<li class="level2">
+<div class="li">Colors</div>
+</li>
+<li class="level2">
+<div class="li">Sizes</div>
+</li>
+<li class="level2">
+<div class="li">Style</div>
+</li>
+<li class="level2">
+<div class="li">TextStyle</div>
+</li>
+<li class="level2">
+<div class="li">DimStyle</div>
+</li>
+<li class="level2">
+<div class="li">Display</div>
+</li>
+<li class="level2">
+<div class="li">Units</div>
+</li>
+</ul>
+</li>
+<li class="level1">
+<div class="li">Add new</div>
+<ul>
+<li class="level2">
+<div class="li">Style</div>
+</li>
+<li class="level2">
+<div class="li">Line type</div>
+</li>
+</ul>
+</li>
+</ul>
+<h4>Modify</h4>
+</div>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li">Move - alter the position of entities</div>
+</li>
+<li class="level1">
+<div class="li">Stretch - alter the size of entities</div>
+</li>
+<li class="level1">
+<div class="li">Split - create additional vertices in entities</div>
+</li>
+<li class="level1">
+<div class="li">Mirror -</div>
+</li>
+<li class="level1">
+<div class="li">Transfer - move entities to another layer</div>
+</li>
+<li class="level1">
+<div class="li">Rotate - rotate entities to an angle around a point</div>
+</li>
+<li class="level1">
+<div class="li">Delete</div>
+</li>
+<li class="level1">
+<div class="li">Change</div>
+</li>
+<li class="level1">
+<div class="li"><a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=modifie:trim_r38" class="wikilink1" title="modifie:trim_r38">Trim &gt;= R38</a></div>
+</li>
+</ul>
+<h4>View</h4>
+</div>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li">Zoom window - draw a rectangle to designate the area to be displayed</div>
+</li>
+<li class="level1">
+<div class="li">Zoom in</div>
+</li>
+<li class="level1">
+<div class="li">Zoom out</div>
+</li>
+<li class="level1">
+<div class="li">Zoom Pan - Pan the Drawing</div>
+</li>
+<li class="level1">
+<div class="li">Zoom fit - show the drawing at a size that will include all entities</div>
+</li>
+</ul>
+<h4>Snap</h4>
+</div>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li">Mid Point - Snap the Media Point of a segment</div>
+</li>
+<li class="level1">
+<div class="li">Point - Snap On a Point</div>
+</li>
+<li class="level1">
+<div class="li">Center - Snap On the Center of arc circle</div>
+</li>
+<li class="level1">
+<div class="li">End Point - Snap The end point of a segment</div>
+</li>
+<li class="level1">
+<div class="li">Intersection Point -Snap on the intersection point</div>
+</li>
+<li class="level1">
+<div class="li">Origin Point - Snap on the Drawing origin point 0,0</div>
+</li>
+<li class="level1">
+<div class="li">Perpendicular - Snap on perpendicular</div>
+</li>
+<li class="level1">
+<div class="li">Tangent - Snap on Tangent</div>
+</li>
+</ul>
+<h4>Dimensions</h4>
+</div>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li">Linear</div>
+</li>
+<li class="level1">
+<div class="li">Horizontal</div>
+</li>
+<li class="level1">
+<div class="li">Vertical</div>
+</li>
+<li class="level1">
+<div class="li">Radial</div>
+</li>
+<li class="level1">
+<div class="li">Angular</div>
+</li>
+</ul>
+<h4>Debug</h4>
+</div>
+<div class="level2">
+<ul>
+<li class="level1">
+<div class="li">Focus</div>
+</li>
+<li class="level1">
+<div class="li">Undo stack</div>
+</li>
+<li class="level1">
+<div class="li">Redo stack</div>
+</li>
+<li class="level1">
+<div class="li">Image undo</div>
+</li>
+<li class="level1">
+<div class="li">Image redo</div>
+</li>
+<li class="level1">
+<div class="li">GC</div>
+</li>
+</ul>
+<h4>Code Organization</h4>
+<p><br>An overall goal is to keep the front-end interface code as separate from the back-end code as can be achieved. Using a high level language like Python helps immensely in moving towards this goal, as Python provides basic data structures like lists, tuples, and directories (hashes) as built-in components of the language. There is no need to hand-roll these data structures so that all the code, both generic and interface specific, could make use of these essential building blocks of a program. As both the interface and back-end code have these structures available by the nature of the language, the task of keeping the interface code and generic code separated is much simpler.</p>
+<p>All code that comprises the core objects in the program, and anything else that is interface neutral, is kept in the Generic subdirectory. The interface code is kept in an Interface directory, and the code for a specific interface is kept in a subdirectory below that. The initial release has a Gtk subdirectory, and it is hoped that there will be several companion subdirectories eventually.</p>
+<h4>Generic Directory</h4>
+<p><br>There are presently no subdirectories in this directory. It is in this directory that the code for things like points, segments, layers, etc., is located. Also, there is code in here for things such as calculating intersections of the objects, compressed file reading and writing, saving and loading of files, and various utility functions. There will probably be several subdirectories in here at some point, and files performing certain functions will be moved as needed, but these changes will depend on how the program evolves. All code that finds its way into this directory should never rely on any Python modules outside of the standard set of Python modules.</p>
+<h4>Interface Directory</h4>
+<p><br>Here is where the Gtk subdirectory sits, and in that directory is all the code for presenting the user interface. It is this code that relies on the PyGTK module. So far that module is the only third party module needed for running PythonCAD.</p>
+<p>As more interfaces are added, their code should then be placed in this directory. All code in the Interface directory uses code in the Generic directory to whatever extent is needed. If a particular interface is requiring some specific functionality in the drawing entities, rather than code being added in this directory that performs the function, that functionality should be considered being moved to the entity itself so that other interfaces may also benefit. By enriching the basic functionality of the core objects, the interface code can be kept to a minimum, and interface-specific object functionality will be reduced. This should hopefully produce a more robust core code-base.</p>
+<h4>Features</h4>
+<ol>
+<li>Draw points, lines, rectangles, circles, arcs, polygons, text</li>
+<li>Draw fillets and chamfers</li>
+<li>Draw dimensions</li>
+<li>Styles: Linetype (solid, dashed), color, thickness</li>
+<li>Move</li>
+<li>Stretch</li>
+<li>Rotate</li>
+<li>Split</li>
+<li>Layers</li>
+<li>Open, Save in XML format, and Print drawings</li>
+<li>Undo</li>
+<li>Zoom in, out, window, fit, Dynamic pan and zooming</li>
+<li>Select All by object type</li>
+<li>Set preferences for Units, colors, line thickness, Object sizes, text and dimensions</li>
+<li>Draw with the following units: micrometers, millimeters, Meters, Kilometers, Inches, Feet, Yards, Miles</li>
+<li>Command line for entering commands</li>
+<li>Dynamic snap</li>
+</ol>
+<p>File format 參考:&nbsp;<a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file_format_reference">http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file_format_reference</a>&nbsp;</p>
+</div><br />Kinematics << <a href='Kinematics.html'>Previous</a> <a href='分組專題.html'>Next</a> >> 分組專題</section></div></body></html>
