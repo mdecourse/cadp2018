@@ -21,10 +21,16 @@
 <v t="leo.20180904144325.6" a="E"><vh>body</vh>
 <v t="leo.20180904144325.7" a="E"><vh>reveal div</vh>
 <v t="leo.20180904144325.8" a="E"><vh>slides div</vh>
-<v t="leo.20180904144325.9" a="E"><vh>封面投影片</vh>
+<v t="leo.20180904144325.9"><vh>封面投影片</vh>
 <v t="leo.20180904144325.10"><vh>封面投影片內容</vh></v>
 </v>
-<v t="leo.20180904144325.11" a="E"><vh>快捷鍵</vh>
+<v t="leo.20180904181252.1" a="E"><vh>9月10日</vh>
+<v t="leo.20180904181252.2"><vh>2018 Fal l上課模式</vh></v>
+</v>
+<v t="leo.20180904182228.1" a="E"><vh>9月10日之一</vh>
+<v t="leo.20180904182228.2"><vh>2018 Fal l上課模式</vh></v>
+</v>
+<v t="leo.20180904144325.11"><vh>快捷鍵</vh>
 <v t="leo.20180904144325.12"><vh>投影片快捷鍵</vh></v>
 </v>
 <v t="leo.20180904144325.13"><vh>各式內容引用範例</vh>
@@ -343,6 +349,45 @@ make.start()
 
 
 						
+</t>
+<t tx="leo.20180904181252.1">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
+<t tx="leo.20180904181252.2"># 2018 Fall CADP
+
+* 指定 OnShape 12 週課程教材
+* 各學員依序自行掌握進度
+* 將實際操作影片上傳 Youtube
+* 自製教學手冊放入 CMSimfly
+* 自製簡報放入 Reveal.js
+* 學習流程與心得放入 Pelican 網誌
+* 第十週之後, 六人一組執行期末專案
+
+</t>
+<t tx="leo.20180904182228.1">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
+<t tx="leo.20180904182228.2"># 2018 Fall CADP (續)
+
+* Github 與 Youtube 將完整紀錄學員進度
+* 學習成績將以自評互評與倉儲內容為準
+* 期末專案可以採 OnShape 或其他 CAD 繪圖
+* 動態系統模擬將採 V-rep 進行
+* 驅動與控制將使用 Arduino 與直流或伺服馬達
+* 本課程為協同產品設計實習的先導課程
+
 </t>
 </tnodes>
 </leo_file>

@@ -13,7 +13,7 @@
 <v t="amd.20160714225308.2"><vh>@data qt-gui-plugin-style-sheet</vh></v>
 <v t="amd.20160714225308.3"><vh>@string initial_split_orientation = horizontal</vh></v>
 </v>
-<v t="leo.20180702145534.1"><vh>wsgi start/stop</vh>
+<v t="leo.20180702145534.1" a="E"><vh>wsgi start/stop</vh>
 <v t="leo.20180702142719.1"><vh>@button start wsgi</vh></v>
 <v t="leo.20180702142849.1"><vh>@button stop wsgi</vh></v>
 </v>
@@ -2698,6 +2698,12 @@ function cmsFilePicker(callback, value, meta) {
 &lt;script type="text/javascript" src="/static/gearUtils-05.js"&gt;&lt;/script&gt;
 
 必須直接放在 syntaxhighlight 與 syntaxhighlight2 中, 因為若直接放入各頁面, 會導致只有動態系統可以正常運作, 而靜態頁面無法擷取, 因為動態採絕對目錄取 static 內容, 而靜態頁面則必須採相對目錄擷取.
+
+若要放在各頁面, 則必須在 get_page2 中加入
+
+page = [w.replace('/static/', './../static/') for w in page]
+
+表示要將頁面中動態模式的絕對 static 目錄轉換為靜態頁面所需的相對目錄格式
 
 </t>
 <t tx="leo.20180702104314.1">目前以 uwsgi 設定判斷是在一般模式執行 (python wsgi.py) 或 uwsgi 模式執行 (http://lab.kmol.info/blog/cmsimfly-and-fossil-on-same-machine.html)
