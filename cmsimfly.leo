@@ -1033,48 +1033,14 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 &lt;script src="https://scrum-3.github.io/web/brython/brython.js"&gt;&lt;/script&gt;
 &lt;script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"&gt;&lt;/script&gt;
 --&gt;
+&lt;style&gt;
+img {
+    border: 3px solid red;
+}
+&lt;/style&gt;
 '''
 
 
-def syntaxhighlight2():
-    return '''
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"&gt;&lt;/script&gt;
-&lt;link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/&gt;
-&lt;script type="text/javascript"&gt;SyntaxHighlighter.all();&lt;/script&gt;
-
-&lt;!-- for LaTeX equations 暫時不用
-&lt;script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"&gt;&lt;/script&gt;
-&lt;script type="text/javascript"&gt;
-init_mathjax = function() {
-    if (window.MathJax) {
-        // MathJax loaded
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [ ['$','$'], ["\\\\(","\\\\)"] ],
-                displayMath: [ ['$$','$$'], ["\\\\[","\\\\]"] ]
-            },
-            displayAlign: 'left', // Change this to 'center' to center equations.
-            "HTML-CSS": {
-                styles: {'.MathJax_Display': {"margin": 0}}
-            }
-        });
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    }
-}
-init_mathjax();
-&lt;/script&gt;
---&gt;
-&lt;!-- 暫時不用
 </t>
 <t tx="amd.20160714232140.1"># 與 file_selector 搭配的取檔程式
 def downloadselect_access_list(files, starti, endi):
@@ -2548,7 +2514,46 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 整體依附在 OpenShift 的部分必須刪除?
 
 可能在 generate_pages  時針對 downloads 與 images 目錄中的引用,  將動態格式轉為靜態格式</t>
-<t tx="leo.20180630233136.1">&lt;script src="./../static/fengari-web.js"&gt;&lt;/script&gt;
+<t tx="leo.20180630233136.1">def syntaxhighlight2():
+    return '''
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shCore.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJScript.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushJava.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPython.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushSql.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushXml.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushPhp.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushLua.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCpp.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCss.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="./../static/syntaxhighlighter/shBrushCSharp.js"&gt;&lt;/script&gt;
+&lt;link type="text/css" rel="stylesheet" href="./../static/syntaxhighlighter/css/shCoreDefault.css"/&gt;
+&lt;script type="text/javascript"&gt;SyntaxHighlighter.all();&lt;/script&gt;
+
+&lt;!-- for LaTeX equations 暫時不用
+&lt;script src="https://scrum-3.github.io/web/math/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\\\(","\\\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\\\[","\\\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+&lt;/script&gt;
+--&gt;
+&lt;!-- 暫時不用
+&lt;script src="./../static/fengari-web.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="./../static/Cango-13v08-min.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="./../static/CangoAxes-4v01-min.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="./../static/gearUtils-05.js"&gt;&lt;/script&gt;
@@ -2557,6 +2562,11 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 &lt;script src="https://scrum-3.github.io/web/brython/brython.js"&gt;&lt;/script&gt;
 &lt;script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"&gt;&lt;/script&gt;
 --&gt;
+&lt;style&gt;
+img {
+    border: 3px solid red;
+}
+&lt;/style&gt;
 '''
 
 
