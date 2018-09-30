@@ -285,6 +285,7 @@ make.start()
     
     &lt;!-- Theme used for syntax highlighting of code --&gt;
     &lt;link rel="stylesheet" href="lib/css/zenburn.css"&gt;
+    &lt;link rel="icon" href="favicon.ico" type="image/x-icon" /&gt;
 
     &lt;!-- Printing and PDF exports --&gt;
     &lt;script&gt;

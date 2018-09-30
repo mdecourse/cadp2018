@@ -1150,6 +1150,7 @@ a.xhfbfile:hover{
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
 &lt;title&gt;電腦輔助設計實習教材&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="/static/cmsimply.css"&gt;
+&lt;link rel="icon" href="/static/favicon.ico" type="image/x-icon" /&gt;
 ''' + syntaxhighlight()
 
     outstring += '''
@@ -2473,6 +2474,7 @@ def sitemap2(head):
 &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
 &lt;title&gt;電腦輔助設計實習教材&lt;/title&gt; \
 &lt;link rel="stylesheet" type="text/css" href="./../static/cmsimply.css"&gt;
+&lt;link rel="icon" href="./../static/favicon.ico" type="image/x-icon" /&gt;
 ''' + syntaxhighlight2()
 
     outstring += '''

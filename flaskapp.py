@@ -1781,6 +1781,7 @@ def set_css():
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <title>電腦輔助設計實習教材</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
+<link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
 ''' + syntaxhighlight()
 
     outstring += '''
@@ -1838,6 +1839,7 @@ def set_css2():
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <title>電腦輔助設計實習教材</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
+<link rel="icon" href="./../static/favicon.ico" type="image/x-icon" />
 ''' + syntaxhighlight2()
 
     outstring += '''
