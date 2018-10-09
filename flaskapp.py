@@ -20,7 +20,7 @@ import urllib.parse
 import cgi
 import sys
 # for new parse_content function
-from bs4 import BeautifulSoup
+import bs4
 
 # get the current directory of the file
 _curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
@@ -1390,20 +1390,50 @@ def parse_config():
 
 
 def _remove_h123_attrs(soup):
-    for tag in soup.findAll(['h1', 'h2', 'h3']): 
-        # 去除標註中的所有 attributes
-        tag.attrs = {}
-        # 標註內容只留下字串, 必須要額外處理無字串的標題
-        # 例如: <p> 或 <img> 等標註, 若 h1, h2, h3 contents 中有 img, 則
-        # 利用 tag.replaceWithChildren() 只保留 img, 去除 h 標註
-        if (tag.string is not None) and (tag.get_text() is not None):
-            tag.string = tag.get_text()
+    tag_order = 0
+    for tag in soup.find_all(['h1', 'h2', 'h3']):
+        # 假如標註內容沒有字串
+        #if len(tag.text) == 0:
+        if len(tag.contents) ==0:
+            # 且該標註為排序第一
+            if tag_order == 0:
+                tag.string = "First"
+            else:
+                # 若該標註非排序第一, 則移除無內容的標題標註
+                tag.extract()
+        # 針對單一元件的標題標註
+        elif len(tag.contents) == 1:
+            # 若內容非為純文字, 表示內容為其他標註物件
+            if tag.get_text() == "":
+                # 且該標註為排序第一
+                if tag_order == 0:
+                    # 在最前方插入標題
+                    tag.insert_before(soup.new_tag('h1', 'First'))
+                else:
+                    # 移除 h1, h2 或 h3 標註, 只留下內容
+                    tag.replaceWithChildren()
+            # 針對其餘單一字串內容的標註, 則保持原樣
+        # 針對內容一個以上的標題標註
+        #elif len(tag.contents) > 1:
         else:
-            # 只保留標題內容,  去除 h1, h2 或 h3 標註
-            tag.replaceWithChildren()
+            # 假如該標註內容長度大於 1
+            # 且該標註為排序第一
+            if tag_order == 0:
+                # 先移除 h1, h2 或 h3 標註, 只留下內容
+                #tag.replaceWithChildren()
+                # 在最前方插入標題
+                tag.insert_before(soup.new_tag('h1', 'First'))
+            else:
+                # 只保留標題內容,  去除 h1, h2 或 h3 標註
+                # 為了與前面的內文區隔, 先在最前面插入 br 標註
+                tag.insert_before(soup.new_tag('br'))
+                # 再移除非排序第一的 h1, h2 或 h3 標註, 只留下內容
+                tag.replaceWithChildren()
+        tag_order = tag_order + 1
+
     return soup
 
-def good_parse_content():
+def parse_content():
     """use bs4 and re module functions to parse content.htm"""
     #from pybean import Store, SQLiteWriter
     # if no content.db, create database file with cms table
@@ -1437,93 +1467,9 @@ def good_parse_content():
     level_list = []
     page_list = []
     # make the soup out of the html content
-    soup = BeautifulSoup(subject, 'html.parser')
-    # get all h1, h2, h3 tags into list
-    htag= soup.find_all(['h1', 'h2', 'h3'])
-    n = len(htag)
-    # get all h tags
-    # g.es(soup.find_all(re.compile(r"^h\d$")))
-    # get the page content to split subject using each h tag
-    # i = 0
-    temp_data = subject.split(str(htag[0]))
-    if len(temp_data) > 2:
-        subject = str(htag[0]).join(temp_data[1:])
-    else:
-        subject = temp_data[1]
-    if n >1:
-            # i from 1 to i-1
-            for i in range(1, len(htag)):
-                # add the first page title
-                head_list.append(htag[i-1].text.strip())
-                # use name attribute of h* tag to get h1, h2 or h3
-                # the number of h1, h2 or h3 is the level of page menu
-                level_list.append(htag[i-1].name[1])
-                temp_data = subject.split(str(htag[i]))
-                if len(temp_data) > 2:
-                    subject = str(htag[i]).join(temp_data[1:])
-                else:
-                    subject = temp_data[1]
-                # cut the other page content out of htag from 1 to i-1
-                cut = temp_data[0]
-                # add the page content
-                page_list.append(cut)
-    # last i
-    # add the last page title
-    head_list.append(htag[n-1].text.strip())
-    # add the last level
-    level_list.append(htag[n-1].name[1])
-    temp_data = subject.split(str(htag[n-1]))
-    # the last subject
-    subject = temp_data[0]
-    # cut the last page content out
-    cut = temp_data[0]
-    # the last page content
-    page_list.append(cut)
-    return head_list, level_list, page_list
-
-
-def bad_parse_content():
-    """use bs4 and re module functions to parse content.htm"""
-    #from pybean import Store, SQLiteWriter
-    # if no content.db, create database file with cms table
-    '''
-    if not os.path.isfile(config_dir+"content.db"):
-        library = Store(SQLiteWriter(config_dir+"content.db", frozen=False))
-        cms = library.new("cms")
-        cms.follow = 0
-        cms.title = "head 1"
-        cms.content = "content 1"
-        cms.memo = "first memo"
-        library.save(cms)
-        library.commit()
-    '''
-    # if no content.htm, generate a head 1 and content 1 file
-    if not os.path.isfile(config_dir+"content.htm"):
-        # create content.htm if there is no content.htm
-        File = open(config_dir + "content.htm", "w", encoding="utf-8")
-        File.write("<h1>head 1</h1>content 1")
-        File.close()
-    subject = file_get_contents(config_dir+"content.htm")
-    # deal with content without content
-    if subject == "":
-        # create content.htm if there is no content.htm
-        File = open(config_dir + "content.htm", "w", encoding="utf-8")
-        File.write("<h1>head 1</h1>content 1")
-        File.close()
-        subject = "<h1>head 1</h1>content 1"
-    # initialize the return lists
-    head_list = []
-    level_list = []
-    page_list = []
-    # make the soup out of the html content
-    soup = BeautifulSoup(subject, 'html.parser')
-    # 嘗試移除 h 標註中的任何 attributes 設定
+    soup = bs4.BeautifulSoup(subject, 'html.parser')
+    # 嘗試解讀各種情況下的標題
     soup = _remove_h123_attrs(soup)
-    # 這裡還需要將 h1~h3 的內容中可能出現的各種標註去除
-    # 目前仍無法處理標題中的 <p> 標註
-    for title_tags in soup.find_all(['h1', 'h2', 'h3']):
-        title_text = title_tags.get_text()
-        title_tags.string.replace_with(title_text)
     # 改寫 content.htm 後重新取 subject
     with open(config_dir + "content.htm", "wb") as f:
         f.write(soup.encode("utf-8"))
@@ -1531,10 +1477,7 @@ def bad_parse_content():
     # get all h1, h2, h3 tags into list
     htag= soup.find_all(['h1', 'h2', 'h3'])
     n = len(htag)
-    # get all h tags
-    # g.es(soup.find_all(re.compile(r"^h\d$")))
     # get the page content to split subject using each h tag
-    # i = 0
     temp_data = subject.split(str(htag[0]))
     if len(temp_data) > 2:
         subject = str(htag[0]).join(temp_data[1:])
@@ -1543,12 +1486,7 @@ def bad_parse_content():
     if n >1:
             # i from 1 to i-1
             for i in range(1, len(htag)):
-                # add the first page title
-                #soup = BeautifulSoup(htag[i-1].text.strip())
-                #title_text = soup.get_text()
-                # 原先只有下列一行, 改為上面兩行與下面一行
                 head_list.append(htag[i-1].text.strip())
-                #head_list.append(title_text)
                 # use name attribute of h* tag to get h1, h2 or h3
                 # the number of h1, h2 or h3 is the level of page menu
                 level_list.append(htag[i-1].name[1])
@@ -1563,13 +1501,7 @@ def bad_parse_content():
                 page_list.append(cut)
     # last i
     # add the last page title
-    # 再利用 bs4 移除標題中可能的其他標註
-    #soup = BeautifulSoup(htag[n-1].text.strip())
-    #title_text = soup.get_text()
-    # 原先只有下列一行
     head_list.append(htag[n-1].text.strip())
-    # 配合上上兩行, 改為下一行
-    #head_list.append(title_text)
     # add the last level
     level_list.append(htag[n-1].name[1])
     temp_data = subject.split(str(htag[n-1]))
@@ -1580,13 +1512,6 @@ def bad_parse_content():
     # the last page content
     page_list.append(cut)
     return head_list, level_list, page_list
-
-
-def parse_content():
-    try:
-        return good_parse_content()
-    except:
-        return bad_parse_content()
 
 def render_menu(head, level, page, sitemap=0):
     directory = ""
