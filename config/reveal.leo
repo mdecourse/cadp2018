@@ -24,16 +24,19 @@
 <v t="leo.20180904144325.9"><vh>封面投影片</vh>
 <v t="leo.20180904144325.10"><vh>封面投影片內容</vh></v>
 </v>
-<v t="leo.20180904181252.1" a="E"><vh>9月10日</vh>
+<v t="leo.20180904181252.1"><vh>9月10日</vh>
 <v t="leo.20180904181252.2"><vh>2018 Fal l上課模式</vh></v>
 </v>
 <v t="leo.20180904182228.1" a="E"><vh>9月10日之一</vh>
 <v t="leo.20180904182228.2"><vh>2018 Fal l上課模式</vh></v>
 </v>
-<v t="leo.20180904144325.11"><vh>快捷鍵</vh>
+<v t="leo.20181001094259.1" a="E"><vh>10月1日</vh>
+<v t="leo.20181001094259.2"><vh>2018 Fal l上課模式</vh></v>
+</v>
+<v t="leo.20180904144325.11" a="E"><vh>快捷鍵</vh>
 <v t="leo.20180904144325.12"><vh>投影片快捷鍵</vh></v>
 </v>
-<v t="leo.20180904144325.13"><vh>各式內容引用範例</vh>
+<v t="leo.20180904144325.13" a="E"><vh>各式內容引用範例</vh>
 <v t="leo.20180904144325.14" a="E"><vh>導入數學符號與方程式</vh>
 <v t="leo.20180904144325.15"><vh>LaTeX 格式方程式</vh></v>
 </v>
@@ -200,7 +203,7 @@ Created by [KMOLab](http://lab.kmol.info/)
 Inline math equations go in like so: $\omega = d\phi / dt$. Display
 math should get its own line and be put in in double-dollarsigns:
 
-$$I = \int \rho R^{2} dV$$
+$$I = \int \rho R^{3} dV$$
 </t>
 <t tx="leo.20180904144325.16">&lt;section data-markdown&gt;
     &lt;script type="text/template"&gt;
@@ -388,6 +391,26 @@ make.start()
 * 動態系統模擬將採 V-rep 進行
 * 驅動與控制將使用 Arduino 與直流或伺服馬達
 * 本課程為協同產品設計實習的先導課程
+
+</t>
+<t tx="leo.20181001094259.1">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
+<t tx="leo.20181001094259.2"># 2018 Fall CADP Week4
+
+* 指定 OnShape 12 週課程教材
+* 各學員依序自行掌握進度
+* 將實際操作影片上傳 Youtube
+* 自製教學手冊放入 CMSimfly
+* 自製簡報放入 Reveal.js
+* 學習流程與心得放入 Pelican 網誌
+* 第十週之後, 六人一組執行期末專案
 
 </t>
 </tnodes>
