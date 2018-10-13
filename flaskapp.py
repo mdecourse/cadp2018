@@ -1412,6 +1412,11 @@ def _remove_h123_attrs(soup):
                 else:
                     # 移除 h1, h2 或 h3 標註, 只留下內容
                     tag.replaceWithChildren()
+            # 表示單一元件的標題標註, 且標題為單一字串者
+            else:
+                # 判定若其排序第一, 則將 tag.name 為 h2 或 h3 者換為 h1
+                if tag_order == 0:
+                    tag.name = "h1"
             # 針對其餘單一字串內容的標註, 則保持原樣
         # 針對內容一個以上的標題標註
         #elif len(tag.contents) > 1:
