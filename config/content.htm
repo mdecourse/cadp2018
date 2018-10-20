@@ -3917,7 +3917,166 @@ for i in range(len(result)):
 </ol>
 <p>File format 參考: <a href="http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file_format_reference">http://pythoncad.sourceforge.net/dokuwiki/doku.php?id=file_format_reference</a> </p>
 </div>
-<h1>分組專題</h1>
+<h2>WaferRobot</h2>
+<h4>WaferPro Software</h4>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/fqhJ9K5NaOI" width="560"></iframe></p>
+<h4>Silicon Wafer Production</h4>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/AMgQ1-HdElM" width="560"></iframe></p>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/gBy7kTAyaxE" width="560"></iframe></p>
+<h4>Wafer Handling</h4>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/WhnpOTpZbk8" width="560"></iframe></p>
+<h4>Wafer Mover</h4>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/FCmAaGcqk5I" width="560"></iframe></p>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/VBxTrts82Js" width="560"></iframe></p>
+<h4>Wafer Sorter</h4>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/f2qmXFXhqNY" width="560"></iframe></p>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/tqSNHKhkyEw" width="560"></iframe></p>
+<h4><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/L2yUtgUhRNw" width="560"></iframe></h4>
+<h4>Wafer Prober</h4>
+<p><iframe allowfullscreen="allowfullscreen" height="314" src="//www.youtube.com/embed/UTreD4jP7c0" width="560"></iframe></p>
+<p>參考資料:</p>
+<p><a href="http://trc2018.cn.nctu.edu.tw/">http://trc2018.cn.nctu.edu.tw/</a> </p>
+<p><a href="/downloads/trc2018_info.pdf">trc2018_info.pdf</a></p>
+<p><a href="/downloads/trc2018_qanda.pdf">trc2018 Q&amp;A.pdf</a></p>
+<p><a href="/downloads/trc2018_proposal_sample.pdf">trc2018_proposal_sample.pdf</a></p>
+<h4>任務一:晶圓傳送 <small>(Cassette-Chamber-Cassette)</small></h4>
+<p class="text-center">由 Cassette A 取出一片晶圓依序傳送至六個腔體 (Chamber A~F), 短暫停留指定時間, 最後傳回 Cassette B.</p>
+<p class="text-center"><img alt="" height="220" src="/images/trc2018_task1.jpg" width="700"/></p>
+<h4>任務二:晶圓排序 <small>(Wafer Sequence)</small></h4>
+<p class="text-center">參賽者向平台詢問 Cassette A  的 slotmap, 根據 slotmap 向平台詢問晶圓編號, 依編號由 Cassette A 取出晶圓後傳送至 Cassette B 對應 Slot.</p>
+<p class="text-center"><img alt="" height="220" src="/images/trc2018_task2.jpg" width="700"/></p>
+<h4>任務三:晶圓製程</h4>
+<p><span>最佳排程</span></p>
+<p><span>參賽者根據競賽平台指定之 6 片晶圓製程, 設計排程將每片晶圓取放至對應 Chamber, 依序完成每道製程內容, 競賽平台依完成全部製程之總時間給予評分.</span></p>
+<p><span><img alt="" height="584" src="/images/trc2018_optimal_scheduling.png" width="587"/></span></p>
+<p><span>精準取放</span></p>
+<p><span>參賽者將晶圓放入 Chamber A, 競賽平台以 CCD 相機偵測晶圓取放位置, 根據其精準度給予評分.</span></p>
+<p><span><img alt="" height="401" src="/images/trc2018_task3-2.png" width="488"/></span></p>
+<p><span>製程判斷</span></p>
+<p><span>Chamber B, D, E, F為製程站點, 參賽者放置好晶圓後, 須下 Chamber Start 指令給競賽平台, 並蒐集競賽平台提供之製程資料, 根據資料曲線判斷製程是否完成或有異常發生, 競賽平台根據參賽者製程判斷之準確性給予評分.</span></p>
+<p><span><img alt="" height="448" src="/images/trc2018_task3-3.png" width="562"/></span></p>
+<p><span>平穩傳送</span></p>
+<p><span>參賽者將晶圓放入 Chamber C, 競賽平台以 Dot Laser 偵測晶圓傳送過程之角度平均  𝜃 ̅ 與標準差  𝜎  給予評分.</span></p>
+<p><span><img alt="" height="413" src="/images/trc2018_task3-4.png" width="601"/></span></p>
+<p><span>瑕疵檢測</span></p>
+<p><span>Chamber C 為檢測站點, 參賽者放置好晶圓後, 須下 Chamber Start 指令給競賽平台, 並根據競賽平台提供之影像編號, 針對特定影像做瑕疵檢測, 競賽平台根據參賽者檢測結果之準確性給予評分.</span></p>
+<p><span>得分 = 100*(正確數量 - 誤判數量) /實際數量</span></p>
+<p><span><img alt="" height="240" src="/images/trc2018_task3-5.png" width="528"/></span></p>
+<h4>任務平台</h4>
+<p><img alt="" height="392" src="/images/trc2018_task_platform-1.jpg" width="700"/></p>
+<h4>任務平台尺寸</h4>
+<p><img alt="" height="492" src="/images/trc2018_task_platform-2.jpg" width="800"/></p>
+<p><a href="/downloads/trc2018_ROBOT_TEST_TOOL_V4.rar">任務平台 STEP 格式壓縮檔</a> (rar)</p>
+<p><a href="/downloads/trc2018_task_platform_dwg.7z">任務平台尺寸 DWG 格式壓縮檔案</a> (7z)</p>
+<p><a href="https://cad.onshape.com/documents/d128ccb1edce824f26a5ddbc/w/38e2983410e6430423554192/e/c2e706ad80afea195325b903">3D 任務平台  in Onshape</a></p>
+<h4>Chamber Pin 尺寸圖</h4>
+<p><img alt="" height="414" src="/images/trc2018_chamber_pin_dimension.png" width="906"/></p>
+<p><img alt="" height="100" src="/images/trc2018_chamber_pin_dimension-1.png" width="800"/></p>
+<p><span> </span></p>
+<h4>Cassette 尺寸</h4>
+<p><img alt="" height="268" src="/images/trc2018_cassette_dimension.png" width="330"/><img alt="" height="268" src="/images/trc2018_cassette_dimension-1.png" width="357"/></p>
+<h4>Wafer 尺寸</h4>
+<table border="1">
+<tbody>
+<tr>
+<td width="50%">Spec.</td>
+<td>8吋晶圓</td>
+</tr>
+<tr>
+<td>Diameter</td>
+<td>200+/-.2mm</td>
+</tr>
+<tr>
+<td>Thickness</td>
+<td>700um~1000um</td>
+</tr>
+</tbody>
+</table><h3>Evaluation</h3>
+<h4>1.計畫書審查</h4>
+<p>依構想計畫書進行評比, 針對其中的執行步驟、硬體設計以及設計特色進行給分, 評比標準如下.</p>
+<table border="1">
+<tbody>
+<tr>
+<th width="200">評比項目</th>
+<th>項目說明</th>
+<th width="100">配分</th>
+</tr>
+<tr>
+<td>硬體及控制系統設計構想</td>
+<td>機器手臂系統完整程度，包含<br/>原形機構設計、機電控制</td>
+<td>35%</td>
+</tr>
+<tr>
+<td>演算法初步構想</td>
+<td>針對各個任務所開發之演算法構想</td>
+<td>35%</td>
+</tr>
+<tr>
+<td>獨特性</td>
+<td>機械手臂設計的原創性</td>
+<td>30%</td>
+</tr>
+</tbody>
+</table>
+<h4>2.規劃簡報</h4>
+<p>依各組之簡報和目前手臂運作影片進行評比, 將對於其手臂完程度以及報告完整性作評分, 評比標準如下.</p>
+<table border="1">
+<tbody>
+<tr>
+<th width="200">評比項目</th>
+<th>項目說明</th>
+<th width="100">配分</th>
+</tr>
+<tr>
+<td>簡報完整性</td>
+<td>製作進度內容及表達完整性</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>影片審查</td>
+<td>機器人軟硬體實現程度</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>獨特性</td>
+<td>作品中的原創性</td>
+<td>30%</td>
+</tr>
+</tbody>
+</table>
+<h4 class="well">3.專案評比</h4>
+<p>依各組專案執行之書面報告審查進行評比, 評比標準如下.</p>
+<table border="1">
+<tbody>
+<tr>
+<th width="200">評比項目</th>
+<th>項目說明</th>
+<th width="100">配分</th>
+</tr>
+<tr>
+<td>性能評比</td>
+<td>Cycle Time、重複精度、定位精度、穩定度</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>排程運作</td>
+<td>操作時間、操作完成度、機器人教導便利性</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>檢測結果</td>
+<td>辨識準確率、辨識效率</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>創意加分</td>
+<td>創意思維、可延伸性</td>
+<td>10%</td>
+</tr>
+</tbody>
+</table>
+<div class="well"></div>
+<div class="well"></div><h1>分組專題</h1>
 <p>分組專題報告</p>
 <p>章節</p>
 <ul>
@@ -3933,8 +4092,7 @@ for i in range(len(result)):
 </ul>
 <p><a href="/downloads/cadp_project_ex1.pdf">cadp_project_ex1.pdf</a></p>
 <p>設計一個實用的網際 peer evaluation site:</p>
-<p><a href="/downloads/peer_evaluation_form.pdf">peer_evaluation_form.pdf</a></p>
-<h2>3D 列印機</h2>
+<p><a href="/downloads/peer_evaluation_form.pdf">peer_evaluation_form.pdf</a></p><h2>3D 列印機</h2>
 <p>分組專題人員: 六人</p>
 <p><span>設計模擬: 三人</span></p>
 <p>組立製作: 三人</p>

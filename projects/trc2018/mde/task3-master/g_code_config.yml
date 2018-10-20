@@ -1,0 +1,56 @@
+cass:
+  CassA:
+    height: 133.
+    low: 130
+  CassB:
+    height: 146
+    low: 143
+chamber:
+  down:
+  - B
+  - D
+  - F
+  lower:
+    height: 70.0
+    low: 50.0
+  up:
+  - A
+  - C
+  - E
+  upper:
+    height: 230.0
+    low: 210.0
+
+r elongation:
+  A:
+    &ab
+    long: 775.8
+    short: 400.0
+  B: *ab
+  C:
+    &cd
+    long: 775.8.0
+    short: 400.0
+  D: *cd
+  E:
+    &ef
+    long: 775.8.0
+    short: 400.0
+  F: *ef
+  CassA:
+    long: 670.0
+    short: 400.0
+  CassB:
+    long: 665.0
+    short: 400.0
+t rotate:
+  A: -36.6
+  B: -36.6
+  C: 0.0
+  D: 0.0
+  E: 36.0
+  F: 36.0
+  CassA: -71.5
+  CassB: 72.0
+
+location: communication
