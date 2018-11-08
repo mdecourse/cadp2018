@@ -46,8 +46,11 @@
 <v t="leo.20180904144325.16" a="E"><vh>導入縮排程式碼</vh>
 <v t="leo.20180904144325.17"><vh>引用程式碼</vh></v>
 </v>
-<v t="leo.20180904144325.18" a="E"><vh>導入影片</vh>
+<v t="leo.20180904144325.18"><vh>導入影片</vh>
 <v t="leo.20180904144325.19"><vh>iframe 導入影片</vh></v>
+</v>
+<v t="leo.20181102100757.1" a="E"><vh>導入 Youtube 影片</vh>
+<v t="leo.20181102100757.2"><vh>iframe 導入影片</vh></v>
 </v>
 </v>
 </v>
@@ -433,6 +436,21 @@ make.start()
 * 確認再確認
 * 團隊協同
 
+</t>
+<t tx="leo.20181102100757.1">&lt;section data-markdown&gt;
+    &lt;script type="text/template"&gt;
+@others
+    &lt;/script&gt;
+&lt;/section&gt;
+
+
+						
+</t>
+<t tx="leo.20181102100757.2">### 使用 iframe 導入 Youtube 影片
+
+### 導入影片 template
+
+&lt;iframe width="560" height="315" src="https://www.youtube.com/embed/yAzfQm2gBEQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
 </t>
 </tnodes>
 </leo_file>
