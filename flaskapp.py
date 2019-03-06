@@ -20,6 +20,8 @@ import urllib.parse
 import cgi
 import sys
 # for new parse_content function
+#from bs4 import BeautifulSoup
+# 為了使用 bs4.element, 改為 import bs4
 import bs4
 # for ssavePage and savePage
 import shutil
@@ -159,7 +161,7 @@ def doSearch():
                                 head[index] + "</a><br />"
         return set_css() + "<div class='container'><nav>"+ \
                    directory + "</nav><section><h1>Search Result</h1>keyword: " + \
-                   keyword.lower()+"<br /><br />in the following pages:<br /><br />" + \
+                   keyword.lower() + "<br /><br />in the following pages:<br /><br />" + \
                    match + "</section></div></body></html>"
 
 
@@ -175,10 +177,7 @@ def download():
         return send_from_directory(image_dir, filename=filename)
     
 
-#@app.route('/download_list', defaults={'edit':1})
-#@app.route('/download_list/<path:edit>')
 @app.route('/download_list', methods=['GET'])
-#def download_list(edit, item_per_page=5, page=1, keyword=None):
 def download_list():
     """List files in downloads directory."""
     if not isAdmin():
@@ -197,11 +196,14 @@ def download_list():
         else:
             item_per_page = request.args.get('item_per_page')
         if not request.args.get('keyword'):
-            keyword = None
+            keyword = ""
         else:
             keyword = request.args.get('keyword')
-        
+            session['download_keyword'] = keyword
     files = os.listdir(download_dir)
+    if keyword is not "":
+        files = [elem for elem in files if str(keyword) in elem]
+    files.sort()
     total_rows = len(files)
     totalpage = math.ceil(total_rows/int(item_per_page))
     starti = int(item_per_page) * (int(page) - 1) + 1
@@ -716,30 +718,44 @@ def generate_pages():
         # 目前重複標題出現總數
         count = head[:i].count(v)
         # 針對重複標題者, 附加目前重複標題出現數 +1, 未重複採原標題
-        newhead.append(v + str(count + 1) if totalcount > 1 else v)
+        newhead.append(v + "-" + str(count + 1) if totalcount > 1 else v)
     # 刪除 content 目錄中所有 html 檔案
     filelist = [ f for f in os.listdir(_curdir + "\\content\\") if f.endswith(".html") ]
     for f in filelist:
         os.remove(os.path.join(_curdir + "\\content\\", f))
     # 這裡需要建立專門寫出 html 的 write_page
     # index.html
-    file = open(_curdir + "\\content\\index.html", "w", encoding="utf-8")
-    file.write(get_page2(None, newhead, 0))
-    file.close()
+    with open(_curdir + "\\content\\index.html", "w", encoding="utf-8") as f:
+        f.write(get_page2(None, newhead, 0))
     # sitemap
-    file = open(_curdir + "\\content\\sitemap.html", "w", encoding="utf-8")
-    # sitemap2 需要 newhead
-    file.write(sitemap2(newhead))
-    file.close()
+    with open(_curdir + "\\content\\sitemap.html", "w", encoding="utf-8") as f:
+        # sitemap2 需要 newhead
+        f.write(sitemap2(newhead))
     # 以下轉檔, 改用 newhead 數列
+
+    def visible(element):
+        if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+            return False
+        elif re.match('<!--.*-->', str(element.encode('utf-8'))):
+            return False
+        return True
+
+    search_content = []
     for i in range(len(newhead)):
         # 在此必須要將頁面中的 /images/ 字串換為 images/, /downloads/ 換為 downloads/
         # 因為 Flask 中靠 /images/ 取檔案, 但是一般 html 則採相對目錄取檔案
         # 此一字串置換在 get_page2 中進行
-        file = open(_curdir + "\\content\\" + newhead[i] + ".html", "w", encoding="utf-8")
-        # 增加以 newhead 作為輸入
-        file.write(get_page2(newhead[i], newhead, 0))
-        file.close()
+        # 加入 tipue search 模式
+        get_page_content = []
+        html_doc = get_page2(newhead[i], newhead, 0, get_page_content)
+        soup = bs4.BeautifulSoup(" ".join(get_page_content), "lxml")
+        search_content.append({"title": newhead[i], "text": " ".join(filter(visible, soup.findAll(text=True))), "tags": "", "url": newhead[i] + ".html"})
+        with open(_curdir + "\\content\\" + newhead[i] + ".html", "w", encoding="utf-8") as f:
+            # 增加以 newhead 作為輸入
+            f.write(html_doc)
+    # GENERATE js file
+    with open(_curdir + "\\content\\tipuesearch_content.js", "w", encoding="utf-8") as f:
+        f.write("var tipuesearch = {\"pages\": " + str(search_content) + "};")
     # generate each page html under content directory
     return "已經將網站轉為靜態網頁. <a href='/'>Home</a>"
 # seperate page need heading and edit variables, if edit=1, system will enter edit mode
@@ -819,16 +835,22 @@ def get_page(heading, edit):
 @app.route('/get_page2/<heading>', defaults={'edit': 0})
 @app.route('/get_page2/<heading>/<int:edit>')
 '''
-def get_page2(heading, head, edit):
+# before add tipue search function
+#def get_page2(heading, head, edit):
+def get_page2(heading, head, edit, get_page_content = None):
     not_used_head, level, page = parse_content()
     # 直接在此將 /images/ 換為 ./../images/, /downloads/ 換為 ./../downloads/, 以 content 為基準的相對目錄設定
     page = [w.replace('/images/', './../images/') for w in page]
     page = [w.replace('/downloads/', './../downloads/') for w in page]
+    # 假如有 src="/static/ace/則換為 src="./../static/ace/
+    page = [w.replace('src="/static/', 'src="./../static/') for w in page]
     directory = render_menu2(head, level, page)
     if heading is None:
         heading = head[0]
     # 因為同一 heading 可能有多頁, 因此不可使用 head.index(heading) 搜尋 page_order
     page_order_list, page_content_list = search_content(head, page, heading)
+    if get_page_content is not None:
+        get_page_content.extend(page_content_list)
     return_content = ""
     pagedata = ""
     outstring = ""
@@ -841,13 +863,13 @@ def get_page2(heading, head, edit):
         if page_order == 0:
             last_page = ""
         else:
-            #last_page = head[page_order-1]+" << <a href='/get_page/"+head[page_order-1]+"'>Previous</a>"
+            #last_page = head[page_order-1]+ " << <a href='/get_page/" + head[page_order-1] + "'>Previous</a>"
             last_page = head[page_order-1] + " << <a href='"+head[page_order-1] + ".html'>Previous</a>"
         if page_order == len(head) - 1:
             # no next page
             next_page = ""
         else:
-            #next_page = "<a href='/get_page/"+head[page_order+1]+"'>Next</a> >> "+ head[page_order+1]
+            #next_page = "<a href='/get_page/"+head[page_order+1] + "'>Next</a> >> " + head[page_order+1]
             next_page = "<a href='" + head[page_order+1] + ".html'>Next</a> >> " + head[page_order+1]
         if len(page_order_list) > 1:
             return_content += last_page + " " + next_page + "<br /><h1>" + \
@@ -867,8 +889,13 @@ def get_page2(heading, head, edit):
     
     # edit=0 for viewpage
     if edit == 0:
+        '''
+        # before add tipue search function
         return set_css2() + "<div class='container'><nav>"+ \
         directory + "</nav><section>" + return_content + "</section></div></body></html>"
+        '''
+        return set_css2() + "<div class='container'><nav>"+ \
+        directory + "</nav><section><div id=\"tipue_search_content\">" + return_content + "</div></section></div></body></html>"
     # enter edit mode
     else:
         # check if administrator
@@ -882,8 +909,8 @@ def get_page2(heading, head, edit):
                     outstring_duplicate += outstring_list[i] + "<br /><hr>"
                 return outstring_duplicate
             else:
-            #pagedata = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+search_content(head, page, heading)
-            #outstring = last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata), page_order)
+            #pagedata = "<h" + level[page_order]+">" + heading + "</h" + level[page_order] + ">" + search_content(head, page, heading)
+            #outstring = last_page + " " + next_page + "<br />" + tinymce_editor(directory, cgi.escape(pagedata), page_order)
                 return outstring
 
 
@@ -912,7 +939,7 @@ def image_delete_file():
                               filename[index] + "'><br />"
     outstring += "<br /><input type='submit' value='delete'></form>"
 
-    return set_css() + "<div class='container'><nav>"+ \
+    return set_css() + "<div class='container'><nav>" + \
              directory + "</nav><section><h1>Download List</h1>" + \
              outstring + "<br/><br /></body></html>"
 
@@ -943,17 +970,37 @@ def image_doDelete():
     head, level, page = parse_content()
     directory = render_menu(head, level, page)
 
-    return set_css() + "<div class='container'><nav>"+ \
+    return set_css() + "<div class='container'><nav>" + \
              directory + "</nav><section><h1>Image List</h1>" + \
              outstring + "<br/><br /></body></html>"
 
 
-@app.route('/image_list', defaults={'edit':1})
-@app.route('/image_list/<path:edit>')
-def image_list(edit, item_per_page=5, page=1, keyword=None):
+@app.route('/image_list', methods=['GET'])
+def image_list():
     if not isAdmin():
         return redirect("/login")
+    else:
+        if not request.args.get('edit'):
+            edit= 1
+        else:
+            edit = request.args.get('edit')
+        if not request.args.get('page'):
+            page = 1
+        else:
+            page = request.args.get('page')
+        if not request.args.get('item_per_page'):
+            item_per_page = 10
+        else:
+            item_per_page = request.args.get('item_per_page')
+        if not request.args.get('keyword'):
+            keyword = ""
+        else:
+            keyword = request.args.get('keyword')
+            session['image_keyword'] = keyword
     files = os.listdir(image_dir)
+    if keyword is not "":
+        files = [elem for elem in files if str(keyword) in elem]
+    files.sort()
     total_rows = len(files)
     totalpage = math.ceil(total_rows/int(item_per_page))
     starti = int(item_per_page) * (int(page) - 1) + 1
@@ -967,13 +1014,13 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
         if int(page) > 1:
             outstring += "<a href='"
             outstring += "image_list?&amp;page=1&amp;item_per_page=" + \
-                              str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
+                              str(item_per_page) + "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
             outstring += "image_list?&amp;page=" + str(page_num) + \
                               "&amp;item_per_page=" + str(item_per_page) + \
-                              "&amp;keyword=" + str(session.get('download_keyword'))
+                              "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'>Previous</a> "
         span = 10
         for index in range(int(page)-span, int(page)+span):
@@ -985,7 +1032,7 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
                     outstring += "<a href='"
                     outstring += "image_list?&amp;page=" + str(page_now) + \
                                       "&amp;item_per_page=" + str(item_per_page) + \
-                                      "&amp;keyword=" + str(session.get('download_keyword'))
+                                      "&amp;keyword=" + str(session.get('image_keyword'))
                     outstring += "'>" + str(page_now) + "</a> "
 
         if notlast == True:
@@ -993,12 +1040,12 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
             outstring += " <a href='"
             outstring += "image_list?&amp;page=" + str(nextpage) + \
                               "&amp;item_per_page=" + str(item_per_page) + \
-                              "&amp;keyword=" + str(session.get('download_keyword'))
+                              "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
             outstring += "image_list?&amp;page=" + str(totalpage) + \
                               "&amp;item_per_page=" + str(item_per_page) + \
-                              "&amp;keyword=" + str(session.get('download_keyword'))
+                              "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'>>></a><br /><br />"
         if (int(page) * int(item_per_page)) < total_rows:
             notlast = True
@@ -1010,13 +1057,13 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
         if int(page) > 1:
             outstring += "<a href='"
             outstring += "image_list?&amp;page=1&amp;item_per_page=" + \
-                              str(item_per_page) + "&amp;keyword=" + str(session.get('download_keyword'))
+                              str(item_per_page) + "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'><<</a> "
             page_num = int(page) - 1
             outstring += "<a href='"
             outstring += "image_list?&amp;page=" + str(page_num) + \
                               "&amp;item_per_page=" + str(item_per_page) + \
-                              "&amp;keyword=" + str(session.get('download_keyword'))
+                              "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'>Previous</a> "
         span = 10
         for index in range(int(page)-span, int(page)+span):
@@ -1028,19 +1075,19 @@ def image_list(edit, item_per_page=5, page=1, keyword=None):
                     outstring += "<a href='"
                     outstring += "image_list?&amp;page=" + str(page_now) + \
                                       "&amp;item_per_page=" + str(item_per_page) + \
-                                      "&amp;keyword=" + str(session.get('download_keyword'))
+                                      "&amp;keyword=" + str(session.get('image_keyword'))
                     outstring += "'>"+str(page_now) + "</a> "
         if notlast == True:
             nextpage = int(page) + 1
             outstring += " <a href='"
             outstring += "image_list?&amp;page=" + str(nextpage) + \
                               "&amp;item_per_page=" + str(item_per_page) + \
-                              "&amp;keyword=" + str(session.get('download_keyword'))
+                              "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'>Next</a>"
             outstring += " <a href='"
             outstring += "image_list?&amp;page=" + str(totalpage) + \
                               "&amp;item_per_page=" + str(item_per_page) + \
-                              "&amp;keyword=" + str(session.get('download_keyword'))
+                              "&amp;keyword=" + str(session.get('image_keyword'))
             outstring += "'>>></a>"
     else:
         outstring += "no data!"
@@ -1163,8 +1210,9 @@ return 'images/';
 @app.route('/')
 def index():
     head, level, page = parse_content()
-    # fix first Chinese heading error
-    return redirect("/get_page/" + urllib.parse.quote_plus(head[0]))
+    # 2018.12.13, 將空白轉為"+" 號, 會導致連線錯誤, 改為直接取頁面標題
+    #return redirect("/get_page/" + urllib.parse.quote_plus(head[0], encoding="utf-8"))
+    return redirect("/get_page/" + head[0])
     # the following will never execute
     directory = render_menu(head, level, page)
     if heading is None:
@@ -1329,7 +1377,7 @@ def loadlist_access_list(files, starti, endi, filedir):
     for index in range(int(starti)-1, int(endi)):
         fileName, fileExtension = os.path.splitext(files[index])
         fileExtension = fileExtension.lower()
-        fileSize = sizeof_fmt(os.path.getsize(config_dir+filedir+"_programs/"+files[index]))
+        fileSize = sizeof_fmt(os.path.getsize(config_dir + filedir + "_programs/" + files[index]))
         # images files
         if fileExtension == ".png" or fileExtension == ".jpg" or fileExtension == ".gif":
             outstring += '<input type="checkbox" name="filename" value="' + files[index] + \
@@ -1378,12 +1426,11 @@ def logout():
 def parse_config():
     if not os.path.isfile(config_dir+"config"):
         # create config file if there is no config file
-        file = open(config_dir + "config", "w", encoding="utf-8")
         # default password is admin
         password="admin"
         hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
-        file.write("siteTitle:CMSimfly \npassword:"+hashed_password)
-        file.close()
+        with open(config_dir + "config", "w", encoding="utf-8") as f:
+            f.write("siteTitle:CMSimfly \npassword:"+hashed_password)
     config = file_get_contents(config_dir + "config")
     config_data = config.split("\n")
     site_title = config_data[0].split(":")[1]
@@ -1392,11 +1439,12 @@ def parse_config():
 
 
 def _remove_h123_attrs(soup):
+    """處理特殊情況下的頁面解讀"""
     tag_order = 0
     for tag in soup.find_all(['h1', 'h2', 'h3']):
         # 假如標註內容沒有字串
         #if len(tag.text) == 0:
-        if len(tag.contents) ==0:
+        if len(tag.contents) == 0:
             # 且該標註為排序第一
             if tag_order == 0:
                 tag.string = "First"
@@ -1458,16 +1506,14 @@ def parse_content():
     # if no content.htm, generate a head 1 and content 1 file
     if not os.path.isfile(config_dir+"content.htm"):
         # create content.htm if there is no content.htm
-        File = open(config_dir + "content.htm", "w", encoding="utf-8")
-        File.write("<h1>head 1</h1>content 1")
-        File.close()
+        with open(config_dir + "content.htm", "w", encoding="utf-8") as f:
+            f.write("<h1>head 1</h1>content 1")
     subject = file_get_contents(config_dir+"content.htm")
     # deal with content without content
     if subject == "":
         # create content.htm if there is no content.htm
-        File = open(config_dir + "content.htm", "w", encoding="utf-8")
-        File.write("<h1>head 1</h1>content 1")
-        File.close()
+        with open(config_dir + "content.htm", "w", encoding="utf-8") as f:
+            f.write("<h1>head 1</h1>content 1")
         subject = "<h1>head 1</h1>content 1"
     # initialize the return lists
     head_list = []
@@ -1476,6 +1522,7 @@ def parse_content():
     # make the soup out of the html content
     soup = bs4.BeautifulSoup(subject, 'html.parser')
     # 嘗試解讀各種情況下的標題
+    # 請注意, 若嘗試解讀傳回 soup 為空字串, 則所有內容將被刪除!!
     soup = _remove_h123_attrs(soup)
     # 改寫 content.htm 後重新取 subject
     with open(config_dir + "content.htm", "wb") as f:
@@ -1521,6 +1568,7 @@ def parse_content():
     return head_list, level_list, page_list
 
 def render_menu(head, level, page, sitemap=0):
+    '''允許使用者在 h1 標題後直接加上 h3 標題, 或者隨後納入 h4 之後作為標題標註'''
     directory = ""
     # 從 level 數列第一個元素作為開端
     current_level = level[0]
@@ -1578,7 +1626,9 @@ def render_menu2(head, level, page, sitemap=0):
     if sitemap:
         directory += "<ul>"
     else:
-        directory += "<ul id='css3menu1' class='topmenu'>"
+        # before add tipue search function
+        #directory += "<ul id='css3menu1' class='topmenu'>"
+        directory += "<ul id='css3menu1' class='topmenu'><div class=\"tipue_search_group\"><input style=\"width: 6vw;\" type=\"text\" name=\"q\" id=\"tipue_search_input\" pattern=\".{2,}\" title=\"Press enter key to search\" required></div>"
     for index in range(len(head)):
         this_level = level[index]
         # 若處理中的層級比上一層級高超過一層, 則將處理層級升級 (處理 h1 後直接接 h3 情況)
@@ -1618,26 +1668,6 @@ def render_menu2(head, level, page, sitemap=0):
         current_level = this_level
     directory += "</li></ul>"
     return directory
-# reveal 方法主要將位於 reveal 目錄下的檔案送回瀏覽器
-'''
-目前在 CMSimfly 管理模式下已經無需透過 Flask送回 reveal 與 Pelican blog 資料
-因為設計成使用者啟動隨身系統時, 除了 Flask 外還加上 http server 來檢視 reveal 與 Pelican blog 的資料
-'''
-@app.route('/reveal/<path:path>')
-def reveal(path):
-  return send_from_directory(_curdir+"/reveal/", path)
-
-
-# blog 方法主要將位於 blog目錄下的檔案送回瀏覽器
-'''
-目前在 CMSimfly 管理模式下已經無需透過 Flask 送回 reveal 與 Pelican blog 資料
-因為設計成使用者啟動隨身系統時, 除了 Flask 外還加上 http server 來檢視 reveal 與 Pelican blog 的資料
-'''
-@app.route('/blog/<path:path>')
-def blog(path):
-  return send_from_directory(_curdir+"/blog/", path)
-
-
 @app.route('/saveConfig', methods=['POST'])
 def saveConfig():
     if not isAdmin():
@@ -1667,6 +1697,7 @@ def saveConfig():
 
 @app.route('/savePage', methods=['POST'])
 def savePage():
+    """save all pages function"""
     page_content = request.form['page_content']
     # check if administrator
     if not isAdmin():
@@ -1675,22 +1706,10 @@ def savePage():
         return error_log("no content to save!")
     # 在插入新頁面資料前, 先複製 content.htm 一分到 content_backup.htm
     shutil.copy2(config_dir + "content.htm", config_dir + "content_backup.htm")
-    file = open(config_dir+"content.htm", "w", encoding="utf-8")
     # in Windows client operator, to avoid textarea add extra \n
     page_content = page_content.replace("\n","")
-    file.write(page_content)
-    file.close()
-
-    # if every savePage generate_pages needed
-    #generate_pages()
-    '''
-    # need to parse_content() to eliminate duplicate heading
-    head, level, page = parse_content()
-    file = open(config_dir+"content.htm", "w", encoding="utf-8")
-    for index in range(len(head)):
-        file.write("<h"+str(level[index])+">"+str(head[index])+"</h"+str(level[index])+">"+str(page[index]))
-    file.close()
-    '''
+    with open(config_dir + "content.htm", "w", encoding="utf-8") as f:
+        f.write(page_content)
     return redirect("/edit_page")
 
 
@@ -1744,7 +1763,7 @@ def search_form(edit):
         head, level, page = parse_content()
         directory = render_menu(head, level, page)
         return set_css() + "<div class='container'><nav>" + \
-                 directory+"</nav><section><h1>Search</h1> \
+                 directory + "</nav><section><h1>Search</h1> \
                  <form method='post' action='doSearch'> \
                  keywords:<input type='text' name='keyword'> \
                  <input type='submit' value='search'></form> \
@@ -1781,7 +1800,7 @@ def set_admin_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>電腦輔助設計實習教材</title> \
+<title>''' + init.Init.site_title + '''</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
 ''' + syntaxhighlight()
 
@@ -1832,9 +1851,8 @@ def set_css():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>電腦輔助設計實習教材</title> \
+<title>''' + init.Init.site_title + '''</title> \
 <link rel="stylesheet" type="text/css" href="/static/cmsimply.css">
-<link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
 ''' + syntaxhighlight()
 
     outstring += '''
@@ -1890,18 +1908,28 @@ def set_css2():
     outstring = '''<!doctype html>
 <html><head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>電腦輔助設計實習教材</title> \
+<title>''' + init.Init.site_title + '''</title> \
 <link rel="stylesheet" type="text/css" href="./../static/cmsimply.css">
-<link rel="icon" href="./../static/favicon.ico" type="image/x-icon" />
+<script src="tipuesearch_content.js"></script>
+<script src="./../static/jquery.js"></script>
+<link rel="stylesheet" href="./../static/tipuesearch/css/tipuesearch.css">
+<script src="./../static/tipuesearch/tipuesearch_set.js"></script>
+<script src="./../static/tipuesearch/tipuesearch.min.js"></script>
 ''' + syntaxhighlight2()
 
     outstring += '''
-<script src="./../static/jquery.js"></script>
 <script type="text/javascript">
+/*shorthand of $(document).ready(function(){};); */
 $(function(){
     $("ul.topmenu> li:has(ul) > a").append('<div class="arrow-right"></div>');
     $("ul.topmenu > li ul li:has(ul) > a").append('<div class="arrow-right"></div>');
 });
+function doSearch() {
+     $('#tipue_search_input').tipuesearch({
+        newWindow: true, minimumLength: 2
+     });
+}
+$(document).ready(doSearch);
 </script>
 '''
     if uwsgi:
@@ -1939,8 +1967,6 @@ def set_footer():
         <br />Powered by <a href='http://cmsimple.cycu.org'>CMSimply</a> \
         </footer> \
         </body></html>"
-
-
 @app.route('/sitemap', defaults={'edit': 1})
 @app.route('/sitemap/<path:edit>')
 def sitemap(edit):
@@ -1951,16 +1977,15 @@ def sitemap(edit):
     return set_css() + "<div class='container'><nav>" + directory + \
              "</nav><section><h1>Site Map</h1>" + sitemap + \
              "</section></div></body></html>"
-
-
 def sitemap2(head):
     """sitemap for static content generation"""
     edit = 0
     not_used_head, level, page = parse_content()
     directory = render_menu2(head, level, page)
     sitemap = render_menu2(head, level, page, sitemap=1)
+    # add tipue search id
     return set_css2() + "<div class='container'><nav>" + directory + \
-             "</nav><section><h1>Site Map</h1>" + sitemap + \
+             "</nav><section><h1>Site Map</h1><div id=\"tipue_search_content\"></div>" + sitemap + \
              "</section></div></body></html>"
 
 
@@ -1971,8 +1996,6 @@ def sizeof_fmt(num):
             return "%3.1f%s" % (num, x)
         num /= 1024.0
     return "%3.1f%s" % (num, 'TB')
-
-
 @app.route('/ssavePage', methods=['POST'])
 def ssavePage():
     """seperate save page function"""
@@ -2008,8 +2031,8 @@ def ssavePage():
     if original_head_title is None:
         return redirect("/")
     if original_head_title == head[int(page_order)]:
-        #edit_url = "/get_page/"+urllib.parse.quote_plus(head[int(page_order)])+"&edit=1"
-        #edit_url = "/get_page/"+urllib.parse.quote_plus(original_head_title)+"/1"
+        #edit_url = "/get_page/" + urllib.parse.quote_plus(head[int(page_order)]) + "&edit=1"
+        #edit_url = "/get_page/" + urllib.parse.quote_plus(original_head_title) + "/1"
         edit_url = "/get_page/" + original_head_title + "/1"
         return redirect(edit_url)
     else:
@@ -2064,12 +2087,8 @@ def syntaxhighlight():
 <script src="https://scrum-3.github.io/web/brython/brython.js"></script>
 <script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
 -->
-<style>
-img {
-    border: 3px solid red;
-}
-</style>
 '''
+
 
 
 def syntaxhighlight2():
@@ -2120,11 +2139,6 @@ init_mathjax();
 <script src="https://scrum-3.github.io/web/brython/brython.js"></script>
 <script src="https://scrum-3.github.io/web/brython/brython_stdlib.js"></script>
 -->
-<style>
-img {
-    border: 3px solid red;
-}
-</style>
 '''
 
 
@@ -2164,7 +2178,7 @@ def unique(items):
             keep.append(item)
         else:
             count[item] += 1
-            keep.append(str(item)+"_"+str(count[item]))
+            keep.append(str(item) + "_" + str(count[item]))
     return keep
 
 
